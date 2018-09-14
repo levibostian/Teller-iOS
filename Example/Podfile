@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'Teller_Example' do
+  pod 'Teller', :path => '../'
+
+  target 'Teller_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end

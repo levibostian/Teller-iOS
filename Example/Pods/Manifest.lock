@@ -1,0 +1,16 @@
+PODS:
+  - Teller (0.1.0)
+
+DEPENDENCIES:
+  - Teller (from `../`)
+
+EXTERNAL SOURCES:
+  Teller:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Teller: ed0b5ec39f37ffea7bb4ea324a057a86e07195e5
+
+PODFILE CHECKSUM: d451983108123266cd68956a0fc0aacefd0592f2
+
+COCOAPODS: 1.5.3
