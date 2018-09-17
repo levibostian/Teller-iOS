@@ -1,15 +1,22 @@
 PODS:
-  - Teller (0.1.0)
+  - RxSwift (4.2.0)
+  - Teller (0.1.0):
+    - RxSwift (~> 4.0)
 
 DEPENDENCIES:
   - Teller (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - RxSwift
 
 EXTERNAL SOURCES:
   Teller:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Teller: ed0b5ec39f37ffea7bb4ea324a057a86e07195e5
+  RxSwift: 99e10317ddfcc7fbe01356aafd118fde4a0be104
+  Teller: 0d23a75e793e3e192d7b236a91b659672e799e93
 
 PODFILE CHECKSUM: d451983108123266cd68956a0fc0aacefd0592f2
 
