@@ -30,7 +30,7 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
             return true
         }
         
-        return self.lastTimeFetchedData(tag: tag)! > maxAgeOfData.toDate()
+        return self.lastTimeFetchedData(tag: tag)! < maxAgeOfData.toDate()
     }
     
     func hasEverFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Bool {
@@ -38,11 +38,11 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
     }
     
     func updateLastTimeFreshDataFetched(tag: OnlineRepositoryGetDataRequirements.Tag) {
-        userDefaults.set(Date().timeIntervalSince1970, forKey: tag)
+        userDefaults.set(Date().timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
     }
     
     func lastTimeFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Date? {
-        let lastFetchedTime = userDefaults.double(forKey: tag)
+        let lastFetchedTime = userDefaults.double(forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
         guard lastFetchedTime > 0 else { return nil }
         
         return Date(timeIntervalSince1970: lastFetchedTime)

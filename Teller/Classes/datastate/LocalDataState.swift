@@ -60,3 +60,13 @@ public struct LocalDataState<DataType: Any> {
     }
     
 }
+
+extension LocalDataState: Equatable where DataType: Equatable {
+    
+    public static func == (lhs: LocalDataState<DataType>, rhs: LocalDataState<DataType>) -> Bool {
+        return type(of: lhs.data) == type(of: rhs.data) &&
+            lhs.data == rhs.data &&
+            lhs.isEmpty == rhs.isEmpty
+    }
+    
+}

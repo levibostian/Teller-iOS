@@ -10,7 +10,8 @@ import Foundation
 /**
  Result of a OnlineRepository.sync() call.
  */
-public struct SyncResult {
+public struct SyncResult: Equatable {
+    
     let successful: Bool
     let failedError: Error?
     let skipped: SkippedReason?
@@ -43,6 +44,12 @@ public struct SyncResult {
     
     public func didSucceed() -> Bool {
         return successful
+    }
+    
+    public static func == (lhs: SyncResult, rhs: SyncResult) -> Bool {
+        return lhs.successful == rhs.successful &&
+            lhs.skipped == rhs.skipped &&
+            ErrorsUtil.areErrorsEqual(lhs: lhs.failedError, rhs: rhs.failedError)
     }
     
     struct FetchFailure: Error {

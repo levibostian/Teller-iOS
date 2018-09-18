@@ -23,20 +23,16 @@ import RxSwift
 // This class is meant to work with LocalRepository because it has the most basic states.
 internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
     
-    private var dataState: LocalDataState<DataType>? {
+    private var dataState: LocalDataState<DataType>! {
         didSet {
-            if let dataState = dataState {
-                if (subject == nil) {
-                    subject = BehaviorSubject(value: dataState)
-                }
-                
-                subject?.onNext(dataState)
-            }
+            subject.onNext(dataState)
         }
     }
-    private var subject: BehaviorSubject<LocalDataState<DataType>>? = nil
+    private let subject: BehaviorSubject<LocalDataState<DataType>>
     
     init() {
+        self.dataState = LocalDataState.isEmpty()
+        self.subject = BehaviorSubject(value: self.dataState)
     }    
     
     /**
@@ -57,7 +53,7 @@ internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
      * Get a [BehaviorSubject] as an [Observable]. Convenient as you more then likely do not need to care about the extra functionality of [BehaviorSubject] when you simply want to observe cacheData changes.
      */
     func asObservable() -> Observable<LocalDataState<DataType>> {
-        return subject!
+        return subject
     }
     
 }

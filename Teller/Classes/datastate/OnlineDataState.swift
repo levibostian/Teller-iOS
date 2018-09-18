@@ -185,3 +185,20 @@ public struct OnlineDataState<DataType: Any> {
     }
 
 }
+
+extension OnlineDataState: Equatable where DataType: Equatable {
+    
+    public static func == (lhs: OnlineDataState<DataType>, rhs: OnlineDataState<DataType>) -> Bool {        
+        return lhs.firstFetchOfData == rhs.firstFetchOfData &&
+            lhs.doneFirstFetchOfData == rhs.doneFirstFetchOfData &&
+            lhs.isEmpty == rhs.isEmpty &&
+            type(of: lhs.data) == type(of: rhs.data) &&
+            lhs.data == rhs.data &&
+            lhs.dataFetched?.timeIntervalSince1970 == rhs.dataFetched?.timeIntervalSince1970 &&
+            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFirstFetch, rhs: rhs.errorDuringFirstFetch) &&
+            lhs.isFetchingFreshData == rhs.isFetchingFreshData &&
+            lhs.doneFetchingFreshData == rhs.doneFetchingFreshData &&
+            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch)
+    }
+    
+}

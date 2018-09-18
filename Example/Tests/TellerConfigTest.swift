@@ -1,7 +1,15 @@
-import XCTest
-import Teller
+//
+//  TellerConfigTest.swift
+//  Teller_Tests
+//
+//  Created by Levi Bostian on 9/18/18.
+//  Copyright © 2018 CocoaPods. All rights reserved.
+//
 
-class Tests: XCTestCase {
+import XCTest
+@testable import Teller
+
+class TellerConfigTest: XCTestCase {
     
     override func setUp() {
         super.setUp()
@@ -13,16 +21,8 @@ class Tests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure() {
-            // Put the code you want to measure the time of here.
-        }
-    }
+    func test_appIdentifier() {
+        XCTAssertEqual(TellerConfig.shared.appIdentifier, Bundle.main.bundleIdentifier!)
+    }    
     
 }

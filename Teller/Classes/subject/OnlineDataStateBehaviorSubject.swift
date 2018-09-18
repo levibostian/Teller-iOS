@@ -25,16 +25,14 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     
     private var dataState: OnlineDataState<DataType>! {
         didSet {
-            if (subject == nil) {
-                subject = BehaviorSubject(value: dataState)
-            }
-                
-            subject?.onNext(dataState)
+            subject.onNext(dataState)
         }
     }
-    private var subject: BehaviorSubject<OnlineDataState<DataType>>? = nil
+    private let subject: BehaviorSubject<OnlineDataState<DataType>>
     
     init() {
+        self.dataState = OnlineDataState.isEmpty()
+        self.subject = BehaviorSubject(value: self.dataState)
     }
     
     /**
@@ -51,7 +49,6 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         dataState = OnlineDataState.isEmpty()
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
-            dataState = dataState.fetchingFreshData()
         }
     }
     
@@ -62,7 +59,6 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         dataState = OnlineDataState.data(data: data, dataFetched: dataFetched)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
-            dataState = dataState.fetchingFreshData()
         }
     }
     
@@ -88,7 +84,7 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
      * Get a [BehaviorSubject] as an [Observable]. Convenient as you more then likely do not need to care about the extra functionality of [BehaviorSubject] when you simply want to observe cacheData changes.
      */
     func asObservable() -> Observable<OnlineDataState<DataType>> {
-        return subject!
+        return subject
     }
     
 }

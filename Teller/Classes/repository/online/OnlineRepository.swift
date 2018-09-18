@@ -17,10 +17,11 @@ import RxSwift
  */
 public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     
-    var dataSource: DataSource?
+    private let dataSource: DataSource
     private let syncStateManager: RepositorySyncStateManager
     
-    init(syncStateManager: RepositorySyncStateManager = TellerRepositorySyncStateManager()) {
+    init(dataSource: DataSource, syncStateManager: RepositorySyncStateManager = TellerRepositorySyncStateManager()) {
+        self.dataSource = dataSource
         self.syncStateManager = syncStateManager
     }
     
@@ -28,39 +29,24 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
      * Call if you want to flag the [Repository] to force sync the next time that it needs to sync cacheData.
      */
     public func forceSyncNextTimeFetched() {
-        let dataSource = assertDataSourceSet()
-        
-        dataSource.forceSyncNextTimeFetched()
-    }
-    
-    private func assertDataSourceSet() -> DataSource {
-        guard let dataSource = self.dataSource else {
-            fatalError("You have not yet set the dataSource parameter.")
-        }
-        return dataSource
+        self.dataSource.forceSyncNextTimeFetched()
     }
     
     public func sync(loadDataRequirements: DataSource.GetDataRequirements, force: Bool) -> Single<SyncResult> {
-        let dataSource = assertDataSourceSet()
-        
-        if (force || dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: dataSource.maxAgeOfData)) {
-            return Single.create(subscribe: { (observer) -> Disposable in
-                dataSource.fetchFreshData(requirements: loadDataRequirements)
-                    .subscribe(onSuccess: { (fetchResponse) in
-                        dataSource.resetForceSyncNextTimeFetched()
-                        
-                        if (fetchResponse.isSuccessful()) {
-                            dataSource.saveData(fetchResponse.data!)
-                            self.syncStateManager.updateLastTimeFreshDataFetched(tag: loadDataRequirements.tag)
+        if (force || self.dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)) {
+            return self.dataSource.fetchFreshData(requirements: loadDataRequirements)
+                .map({ (fetchResponse: FetchResponse<DataSource.FetchResult>) -> SyncResult in
+                    self.dataSource.resetForceSyncNextTimeFetched()
+                    
+                    if (fetchResponse.isSuccessful()) {
+                        self.dataSource.saveData(fetchResponse.data!)
+                        self.syncStateManager.updateLastTimeFreshDataFetched(tag: loadDataRequirements.tag)
                             
-                            observer(SingleEvent.success(SyncResult.success()))
-                        } else {
-                            observer(SingleEvent.success(SyncResult.fail(fetchResponse.failure!)))
-                        }
-                    }, onError: { (error) in
-                        observer(SingleEvent.error(error))
-                    })
-            })
+                        return SyncResult.success()
+                    } else {
+                        return SyncResult.fail(fetchResponse.failure!)
+                    }
+                })
         } else {
             return Single.just(SyncResult.skipped(SyncResult.SkippedReason.dataNotTooOld))
         }
@@ -71,15 +57,19 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
      */
     public func observe(loadDataRequirements: DataSource.GetDataRequirements) -> Observable<OnlineDataState<DataSource.Cache>> {
         let stateOfDate: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject()
-        let dataSource = assertDataSourceSet()
         var observeDisposeBag = CompositeDisposable()
         
+        // Note: Only begin observing cached data *after* data has been successfully fetched.
         func initializeObservingCachedData() {
-            observeDisposeBag += dataSource.observeCachedData(requirements: loadDataRequirements)
+            if (!self.syncStateManager.hasEverFetchedData(tag: loadDataRequirements.tag)) {
+                fatalError("You cannot begin observing cached data until after data has been successfully fetched")
+            }
+            
+            observeDisposeBag += self.dataSource.observeCachedData(requirements: loadDataRequirements)
                 .subscribe(onNext: { (cache: DataSource.Cache) in
-                    let needsToFetchFreshData = dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: dataSource.maxAgeOfData)
+                    let needsToFetchFreshData = self.dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
                     
-                    if (dataSource.isDataEmpty(cache)) {
+                    if (self.dataSource.isDataEmpty(cache)) {
                         stateOfDate.onNextCacheEmpty(isFetchingFreshData: needsToFetchFreshData)
                     } else {
                         stateOfDate.onNextCachedData(data: cache, dataFetched: self.syncStateManager.lastTimeFetchedData(tag: loadDataRequirements.tag)!, isFetchingFreshData: needsToFetchFreshData)
@@ -88,7 +78,7 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                     if (needsToFetchFreshData) {
                         observeDisposeBag += self.sync(loadDataRequirements: loadDataRequirements, force: false)
                             .subscribe(onSuccess: { (syncResult: SyncResult) in
-                                stateOfDate.onNextDoneFetchingFreshData(errorDuringFetch: nil)
+                                stateOfDate.onNextDoneFetchingFreshData(errorDuringFetch: syncResult.failedError)
                             }, onError: { (error) in
                                 stateOfDate.onNextDoneFetchingFreshData(errorDuringFetch: error)
                             })
@@ -99,9 +89,9 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         if (!self.syncStateManager.hasEverFetchedData(tag: loadDataRequirements.tag)) {
             stateOfDate.onNextFirstFetchOfData()
             
-            observeDisposeBag += self.sync(loadDataRequirements: loadDataRequirements, force: false)
+            observeDisposeBag += self.sync(loadDataRequirements: loadDataRequirements, force: true)
                 .subscribe(onSuccess: { (syncResult: SyncResult) in
-                    stateOfDate.onNextDoneFirstFetch(errorDuringFetch: nil)
+                    stateOfDate.onNextDoneFirstFetch(errorDuringFetch: syncResult.failedError)
                     initializeObservingCachedData()
                 }) { (error) in
                     stateOfDate.onNextDoneFirstFetch(errorDuringFetch: error)

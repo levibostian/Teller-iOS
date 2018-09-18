@@ -6,6 +6,7 @@ target 'Teller_Example' do
   target 'Teller_Tests' do
     inherit! :search_paths
 
-    
+    pod 'RxBlocking', '~> 4.3'
+    pod 'RxTest',     '~> 4.3'    
   end
 end

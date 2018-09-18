@@ -37,6 +37,8 @@ public protocol OnlineRepositoryDataSource {
     
     /**
      * Get existing cached cacheData saved to the device if it exists. Return nil is cacheData does not exist or is empty.
+     *
+     * This function is only called after data has been fetched successfully. Assume that data is empty (no cache data) or there is cache data.
      */
     func observeCachedData(requirements: GetDataRequirements) -> Observable<Cache>
     
@@ -47,9 +49,9 @@ public protocol OnlineRepositoryDataSource {
 
 }
 
-public extension OnlineRepositoryDataSource {
+extension OnlineRepositoryDataSource {
     
-    private func getForceSyncNextTimeFetchKey() -> String {
+    internal func getForceSyncNextTimeFetchKey() -> String {
         return "\(TellerConstants.userDefaultsPrefix)forceSyncNextTimeFetch_\(String(describing: type(of: self)))_key"
     }
     
