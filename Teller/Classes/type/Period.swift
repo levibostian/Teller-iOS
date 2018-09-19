@@ -9,13 +9,18 @@ import Foundation
 
 public struct Period {
     public let unit: Int
-    public let component: NSCalendar.Unit
+    public let component: Calendar.Component
+    
+    public init(unit: Int, component: Calendar.Component) {
+        self.unit = unit
+        self.component = component
+    }
 }
 
 public extension Period {
     
     public func toDate() -> Date {
-        return NSCalendar(identifier: NSCalendar.Identifier.gregorian)!.date(byAdding: self.component, value: -self.unit, to: Date(), options: NSCalendar.Options())!
+        return Calendar(identifier: Calendar.Identifier.gregorian).date(byAdding: self.component, value: -self.unit, to: Date())!
     }
     
 }

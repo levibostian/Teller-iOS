@@ -36,7 +36,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     func test_isDataTooOld_dataNeverFetchedBefore() {
         initManager()
         
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: NSCalendar.Unit.hour))
+        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.hour))
         
         XCTAssertTrue(isDataTooOld)
     }
@@ -47,7 +47,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
         let dateLastUpdated = Date()
         userDefaults.set(dateLastUpdated.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
         
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: NSCalendar.Unit.second))
+        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
         
         XCTAssertFalse(isDataTooOld)
     }
@@ -58,7 +58,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
         let olderDate: Date = Calendar.current.date(byAdding: .minute, value: -1, to: Date())!
         userDefaults.set(olderDate.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
         
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: NSCalendar.Unit.second))
+        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
         
         XCTAssertTrue(isDataTooOld)
     }

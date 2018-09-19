@@ -28,7 +28,7 @@ class OnlineRepositoryDataSourceTest: XCTestCase {
         super.tearDown()
     }
     
-    private func initDataSource(fakeData: MockOnlineRepositoryDataSource.FakeData = MockOnlineRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfData: Period = Period(unit: 1, component: NSCalendar.Unit.second)) {
+    private func initDataSource(fakeData: MockOnlineRepositoryDataSource.FakeData = MockOnlineRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfData: Period = Period(unit: 1, component: Calendar.Component.second)) {
         self.dataSource = MockOnlineRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
     }
     

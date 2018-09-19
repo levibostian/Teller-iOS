@@ -24,11 +24,11 @@ class PeriodTest: XCTestCase {
     }
     
     func test_toDate() {
-        self.period = Period(unit: 1, component: NSCalendar.Unit.second)
+        self.period = Period(unit: 1, component: Calendar.Component.second)
         XCTAssertLessThan(self.period.toDate().timeIntervalSince1970, Date().timeIntervalSince1970)
         
-        let lessThan = Period(unit: 2, component: NSCalendar.Unit.second)
-        let olderThan = Period(unit: 1, component: NSCalendar.Unit.second)
+        let lessThan = Period(unit: 2, component: Calendar.Component.second)
+        let olderThan = Period(unit: 1, component: Calendar.Component.second)
         XCTAssertLessThan(lessThan.toDate().timeIntervalSince1970, olderThan.toDate().timeIntervalSince1970)
     }
     
