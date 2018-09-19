@@ -146,44 +146,6 @@ public struct OnlineDataState<DataType: Any> {
             errorDuringFetch: errorDuringFetch)
     }
     
-    /**
-     * This is usually used in the UI of an app to display cacheData to a user.
-     *
-     * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
-     */
-    public func deliver(listener: OnlineDataStateListener) {
-        deliverCache(listener: listener)
-        deliverFetching(listener: listener)
-        deliverFirstFetch(listener: listener)
-    }
-    
-    public func deliverFetching(listener: OnlineDataStateFetchingListener) {
-        if (self.isFetchingFreshData) {
-            listener.fetchingFreshCacheData()
-        }
-        if (self.doneFetchingFreshData) {
-            listener.finishedFetchingFreshCacheData(errorDuringFetch: self.errorDuringFetch)
-        }
-    }
-    
-    public func deliverCache(listener: OnlineDataStateCacheListener) {
-        if (self.isEmpty) {
-            listener.cacheEmpty()
-        }
-        if let data = data {
-            listener.cacheData(data: data, fetched: dataFetched!)
-        }
-    }
-    
-    public func deliverFirstFetch(listener: OnlineDataStateFirstFetchListener) {
-        if (self.firstFetchOfData) {
-            listener.firstFetchOfData()
-        }
-        if (self.doneFirstFetchOfData) {
-            listener.finishedFirstFetchOfData(errorDuringFetch: errorDuringFirstFetch)
-        }
-    }
-
 }
 
 extension OnlineDataState: Equatable where DataType: Equatable {

@@ -39,37 +39,4 @@ class LocalDataStateTest: XCTestCase {
         XCTAssertEqual(dataState.data, data)
     }
     
-    func testDeliver_empty_callsFunctions() {
-        let listener = StubLocalDataStateListener()
-        
-        dataState = LocalDataState.isEmpty()
-        dataState.deliver(listener: listener)
-        
-        XCTAssertEqual(listener.isEmptyCount, 1)
-        XCTAssertEqual(listener.dataCount, 0)
-    }
-    
-    func testDeliver_data_callsFunctions() {
-        let listener = StubLocalDataStateListener()
-        let data = "foo"
-        
-        dataState = LocalDataState.data(data: data)
-        dataState.deliver(listener: listener)
-        
-        XCTAssertEqual(listener.isEmptyCount, 0)
-        XCTAssertEqual(listener.dataCount, 1)
-    }
-    
-    class StubLocalDataStateListener: LocalDataStateListener {
-        var isEmptyCount = 0
-        var dataCount = 0
-        
-        func isEmpty() {
-            isEmptyCount += 1
-        }
-        func data<DataType>(data: DataType) {
-            dataCount += 1
-        }
-    }
-    
 }

@@ -42,22 +42,7 @@ public struct LocalDataState<DataType: Any> {
     
     public static func data(data: DataType) -> LocalDataState {
         return LocalDataState(isEmpty: false, data: data)
-    }
-    
-    /**
-     * This is usually used in the UI of an app to display cacheData to a user.
-     *
-     * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
-     */
-    public func deliver(listener: LocalDataStateListener) {
-        if (isEmpty) {
-            listener.isEmpty()
-        }
-        
-        if let data = data {
-            listener.data(data: data)
-        }
-    }
+    }    
     
 }
 
@@ -70,3 +55,5 @@ extension LocalDataState: Equatable where DataType: Equatable {
     }
     
 }
+
+
