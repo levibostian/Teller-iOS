@@ -51,14 +51,6 @@ class OnlineRepositoryTest: XCTestCase {
         self.repository = OnlineRepository(dataSource: self.dataSource, syncStateManager: self.syncStateManager)
     }
     
-    func test_forceSyncNextTimeFetched() {
-        XCTAssertFalse(self.dataSource.doSyncNextTimeFetched())
-        
-        self.repository.forceSyncNextTimeFetched()
-        
-        XCTAssertTrue(self.dataSource.doSyncNextTimeFetched())
-    }
-    
     func test_sync_viaForce_successfullySyncs() {
         let force = true
         let data = "foo"
@@ -70,26 +62,8 @@ class OnlineRepositoryTest: XCTestCase {
         self.repository.sync(loadDataRequirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(), force: force).asObservable().subscribe(observer).dispose()
         
         XCTAssertEqual(self.dataSource.fetchFreshDataCount, 1)
-        XCTAssertFalse(self.dataSource.doSyncNextTimeFetched())
         XCTAssertEqual(self.dataSource.saveDataCount, 1)
         XCTAssertEqual(self.syncStateManager.updateLastTimeFreshDataFetchedCount, 1)
-        XCTAssertEqual(observer.events, [next(0, SyncResult.success()), completed(0)])
-    }
-    
-    func test_sync_syncAfterForceSyncNextTimeFetchedCalled() {
-        self.repository.forceSyncNextTimeFetched()
-        
-        let force = false
-        let syncStateManagerFakeData = getSyncStateManagerFakeData(isDataTooOld: false)
-        initSyncStateManager(syncStateManagerFakeData: syncStateManagerFakeData)
-        let data = "foo"
-        let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.success(data: data)))
-        initDataSource(fakeData: dataSourceFakeData)
-        initRepository()
-        
-        let observer = TestScheduler(initialClock: 0).createObserver(SyncResult.self)
-        self.repository.sync(loadDataRequirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(), force: force).asObservable().subscribe(observer).dispose()
-        
         XCTAssertEqual(observer.events, [next(0, SyncResult.success()), completed(0)])
     }
     
@@ -104,7 +78,8 @@ class OnlineRepositoryTest: XCTestCase {
         
         XCTAssertEqual(observer.events, [next(0, SyncResult.fail(FetchResponse<String>.fail(message: errorMessage).failure!)),
                                          completed(0)])
-        XCTAssertFalse(self.dataSource.doSyncNextTimeFetched())
+        XCTAssertEqual(self.dataSource.saveDataCount, 0)
+        XCTAssertEqual(self.syncStateManager.updateLastTimeFreshDataFetchedCount, 0)
     }
     
     func test_sync_skipped() {

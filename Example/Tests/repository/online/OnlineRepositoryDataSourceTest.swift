@@ -32,34 +32,4 @@ class OnlineRepositoryDataSourceTest: XCTestCase {
         self.dataSource = MockOnlineRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
     }
     
-    func test_forceSyncNextTimeFetched() {
-        initDataSource()
-        
-        XCTAssertFalse(userDefaults.bool(forKey: self.dataSource.getForceSyncNextTimeFetchKey()))
-        
-        self.dataSource.forceSyncNextTimeFetched()
-        XCTAssertTrue(userDefaults.bool(forKey: self.dataSource.getForceSyncNextTimeFetchKey()))
-    }
-    
-    func test_doSyncNextTimeFetched() {
-        initDataSource()
-        
-        XCTAssertFalse(self.dataSource.doSyncNextTimeFetched())
-        
-        self.dataSource.forceSyncNextTimeFetched()
-        XCTAssertTrue(self.dataSource.doSyncNextTimeFetched())
-    }
-    
-    func test_resetForceSyncNextTimeFetched() {
-        initDataSource()
-        
-        self.dataSource.forceSyncNextTimeFetched()
-        
-        XCTAssertTrue(self.dataSource.doSyncNextTimeFetched())
-        
-        self.dataSource.resetForceSyncNextTimeFetched()
-        
-        XCTAssertFalse(self.dataSource.doSyncNextTimeFetched())
-    }    
-    
 }

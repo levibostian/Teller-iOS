@@ -30,19 +30,10 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         self.syncStateManager = syncStateManager
     }
     
-    /**
-     * Call if you want to flag the [Repository] to force sync the next time that it needs to sync cacheData.
-     */
-    public func forceSyncNextTimeFetched() {
-        self.dataSource.forceSyncNextTimeFetched()
-    }
-    
     public func sync(loadDataRequirements: DataSource.GetDataRequirements, force: Bool) -> Single<SyncResult> {
-        if (force || self.dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)) {
+        if (force || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)) {
             return self.dataSource.fetchFreshData(requirements: loadDataRequirements)
                 .map({ (fetchResponse: FetchResponse<DataSource.FetchResult>) -> SyncResult in
-                    self.dataSource.resetForceSyncNextTimeFetched()
-                    
                     if (fetchResponse.isSuccessful()) {
                         self.dataSource.saveData(fetchResponse.data!)
                         self.syncStateManager.updateLastTimeFreshDataFetched(tag: loadDataRequirements.tag)
@@ -72,7 +63,7 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             
             observeDisposeBag += self.dataSource.observeCachedData(requirements: loadDataRequirements)
                 .subscribe(onNext: { (cache: DataSource.Cache) in
-                    let needsToFetchFreshData = self.dataSource.doSyncNextTimeFetched() || self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
+                    let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
                     
                     if (self.dataSource.isDataEmpty(cache)) {
                         stateOfDate.onNextCacheEmpty(isFetchingFreshData: needsToFetchFreshData)

@@ -48,23 +48,3 @@ public protocol OnlineRepositoryDataSource {
     func isDataEmpty(_ cache: Cache) -> Bool
 
 }
-
-extension OnlineRepositoryDataSource {
-    
-    internal func getForceSyncNextTimeFetchKey() -> String {
-        return "\(TellerConstants.userDefaultsPrefix)forceSyncNextTimeFetch_\(String(describing: type(of: self)))_key"
-    }
-    
-    func forceSyncNextTimeFetched() {
-        TellerConstants.userDefaults.set(true, forKey: getForceSyncNextTimeFetchKey())
-    }
-    
-    func doSyncNextTimeFetched() -> Bool {
-        return TellerConstants.userDefaults.bool(forKey: getForceSyncNextTimeFetchKey())
-    }
-    
-    func resetForceSyncNextTimeFetched() {
-        TellerConstants.userDefaults.set(false, forKey: getForceSyncNextTimeFetchKey())
-    }
-    
-}
