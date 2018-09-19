@@ -12,9 +12,9 @@ import Foundation
  */
 public struct SyncResult: Equatable {
     
-    let successful: Bool
-    let failedError: Error?
-    let skipped: SkippedReason?
+    public let successful: Bool
+    public let failedError: Error?
+    public let skipped: SkippedReason?
     
     private init(successful: Bool, failedError: Error?, skipped: SkippedReason?) {
         self.successful = successful
@@ -52,8 +52,8 @@ public struct SyncResult: Equatable {
             ErrorsUtil.areErrorsEqual(lhs: lhs.failedError, rhs: rhs.failedError)
     }
     
-    struct FetchFailure: Error {
-        let message: String
+    public struct FetchFailure: Error {
+        public let message: String
     }
     
     public enum SkippedReason {

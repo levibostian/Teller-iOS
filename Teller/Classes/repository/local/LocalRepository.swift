@@ -12,7 +12,7 @@ public class LocalRepository<DataSource: LocalRepositoryDataSource> {
     
     private let dataSource: DataSource
     
-    init(dataSource: DataSource) {
+    public init(dataSource: DataSource) {
         self.dataSource = dataSource
     }
     

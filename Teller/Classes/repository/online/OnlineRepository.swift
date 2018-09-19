@@ -20,7 +20,12 @@ public class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     private let dataSource: DataSource
     private let syncStateManager: RepositorySyncStateManager
     
-    init(dataSource: DataSource, syncStateManager: RepositorySyncStateManager = TellerRepositorySyncStateManager()) {
+    public init(dataSource: DataSource) {
+        self.dataSource = dataSource
+        self.syncStateManager = TellerRepositorySyncStateManager()
+    }
+    
+    internal init?(dataSource: DataSource, syncStateManager: RepositorySyncStateManager = TellerRepositorySyncStateManager()) {
         self.dataSource = dataSource
         self.syncStateManager = syncStateManager
     }

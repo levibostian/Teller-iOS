@@ -11,8 +11,9 @@ import Foundation
  Result of a OnlineRepositoryDataSource.fetchFreshData call. It's an object that is generic enough that OnlineRepository can understand it.
  */
 public struct FetchResponse<DataType: Any> {
-    let data: DataType?
-    let failure: Error?
+    
+    public let data: DataType?
+    public let failure: Error?
     
     private init(data: DataType?, failure: Error?) {
         self.data = data

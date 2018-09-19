@@ -23,7 +23,6 @@
 		F7818C5F21517C220050607E /* OnlineRepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5E21517C220050607E /* OnlineRepositoryTest.swift */; };
 		F7818C6121517C820050607E /* MockOnlineRepositoryDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6021517C820050607E /* MockOnlineRepositoryDataSource.swift */; };
 		F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */; };
-		F7818C6D2151A0E10050607E /* TellerConfigTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6C2151A0E10050607E /* TellerConfigTest.swift */; };
 		F7818C8E2152CA1F0050607E /* LocalDataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C8D2152CA1F0050607E /* LocalDataState+StateTest.swift */; };
 		F7818C912152CE440050607E /* OnlineDataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* OnlineDataState+StateTest.swift */; };
 		F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDE921505130008ECB51 /* LocalDataStateTest.swift */; };
@@ -71,7 +70,6 @@
 		F7818C5E21517C220050607E /* OnlineRepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineRepositoryTest.swift; sourceTree = "<group>"; };
 		F7818C6021517C820050607E /* MockOnlineRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOnlineRepositoryDataSource.swift; sourceTree = "<group>"; };
 		F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositorySyncStateManager.swift; sourceTree = "<group>"; };
-		F7818C6C2151A0E10050607E /* TellerConfigTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerConfigTest.swift; sourceTree = "<group>"; };
 		F7818C8D2152CA1F0050607E /* LocalDataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocalDataState+StateTest.swift"; sourceTree = "<group>"; };
 		F7818C902152CE440050607E /* OnlineDataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnlineDataState+StateTest.swift"; sourceTree = "<group>"; };
 		F7AFBDE921505130008ECB51 /* LocalDataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataStateTest.swift; sourceTree = "<group>"; };
@@ -164,7 +162,6 @@
 				F7AFBDED215059AC008ECB51 /* repository */,
 				F7AFBDE821505109008ECB51 /* datastate */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
-				F7818C6C2151A0E10050607E /* TellerConfigTest.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -494,7 +491,6 @@
 				F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */,
 				F7AFBDF0215059CC008ECB51 /* FetchResponseTest.swift in Sources */,
 				F7818C5B21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift in Sources */,
-				F7818C6D2151A0E10050607E /* TellerConfigTest.swift in Sources */,
 				F7818C912152CE440050607E /* OnlineDataState+StateTest.swift in Sources */,
 				F7818C8E2152CA1F0050607E /* LocalDataState+StateTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,

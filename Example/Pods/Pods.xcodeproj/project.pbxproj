@@ -183,7 +183,6 @@
 		CAC9EF9E7C939B7A845F5D0ADDA29517 /* ConcurrentMainScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75ECD4C44E9141DC747148AB14605079 /* ConcurrentMainScheduler.swift */; };
 		CAD56E6B490CD4A7303F4507DC033D23 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4629AD8C523D2FDA5C72258FAA2846DC /* Foundation.framework */; };
 		CBE07313AE0B0B2D6205192661230DC6 /* VirtualTimeScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177482411918DB11308D9F31941DD0A6 /* VirtualTimeScheduler.swift */; };
-		CC03D094F4B1BFCDD6346B9741B13B00 /* TellerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3473CF16B4CDA842DDC51ED10BF8F0 /* TellerConfig.swift */; };
 		D02B44F61A22F013ABE4D5C506911390 /* Platform.Linux.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A502C3041F20D3687A1FBBAF531F76E /* Platform.Linux.swift */; };
 		D04792099E85ECE8BB2C57DEFD17CFB4 /* Disposable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D609E4B7FE7020C659F76902D64FF05 /* Disposable.swift */; };
 		D115B9D058CD6DDFF277FB1BC9D42B63 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1339BC2249814C24844E5C675D49F2A8 /* Errors.swift */; };
@@ -561,7 +560,6 @@
 		F9C6CA4EE7915D0338576BD225E46E34 /* PriorityQueue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PriorityQueue.swift; path = Platform/DataStructures/PriorityQueue.swift; sourceTree = "<group>"; };
 		FA5AC578E5EA01D6A1E113B716DD7F2E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FAC655A98EBD26E6B9BA1FB5D407583A /* RxTest.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = RxTest.xcconfig; sourceTree = "<group>"; };
-		FC3473CF16B4CDA842DDC51ED10BF8F0 /* TellerConfig.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TellerConfig.swift; path = Teller/Classes/TellerConfig.swift; sourceTree = "<group>"; };
 		FD3372A4D9A96B5B134900309E61C402 /* ConnectableObservableType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ConnectableObservableType.swift; path = RxSwift/ConnectableObservableType.swift; sourceTree = "<group>"; };
 		FE15CA7C644AE3EDE5905896F217AE27 /* ToArray.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ToArray.swift; path = RxSwift/Observables/ToArray.swift; sourceTree = "<group>"; };
 		FE6E48EBB5E29976B3ADFB2D98CBC3ED /* SynchronizedOnType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SynchronizedOnType.swift; path = RxSwift/Concurrency/SynchronizedOnType.swift; sourceTree = "<group>"; };
@@ -860,7 +858,6 @@
 		AD4CD6BAA58DBC5B7BAEC0E9BD8B8774 /* Teller */ = {
 			isa = PBXGroup;
 			children = (
-				FC3473CF16B4CDA842DDC51ED10BF8F0 /* TellerConfig.swift */,
 				4878368855B890BA05D37CC5E4421CCF /* datastate */,
 				83E8B8590D1BAB3D4BCABF490314088B /* Pod */,
 				608688EE487791FD9EB5152032CEDD1B /* repository */,
@@ -1445,7 +1442,6 @@
 				5498B7FCD0C11D9B3D0B6117E7E58E0D /* RepositorySyncStateManager.swift in Sources */,
 				672DE1D539F88B228CAB5D1182F290D1 /* SyncResult.swift in Sources */,
 				F1F1AAF36B314966B354933DDF27D746 /* Teller-dummy.m in Sources */,
-				CC03D094F4B1BFCDD6346B9741B13B00 /* TellerConfig.swift in Sources */,
 				F7818C6B215188DC0050607E /* ErrorsUtil.swift in Sources */,
 				9C7DFF419CCEEBA56C93572ED8671276 /* TellerConstants.swift in Sources */,
 			);

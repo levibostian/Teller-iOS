@@ -30,15 +30,15 @@ import Foundation
  */
 public struct OnlineDataState<DataType: Any> {
 
-    let firstFetchOfData: Bool
-    let doneFirstFetchOfData: Bool
-    let isEmpty: Bool
-    let data: DataType?
-    let dataFetched: Date?
-    let errorDuringFirstFetch: Error?
-    let isFetchingFreshData: Bool
-    let doneFetchingFreshData: Bool
-    let errorDuringFetch: Error?
+    public let firstFetchOfData: Bool
+    public let doneFirstFetchOfData: Bool
+    public let isEmpty: Bool
+    public let data: DataType?
+    public let dataFetched: Date?
+    public let errorDuringFirstFetch: Error?
+    public let isFetchingFreshData: Bool
+    public let doneFetchingFreshData: Bool
+    public let errorDuringFetch: Error?
 
     private init(firstFetchOfData: Bool = false,
                  doneFirstFetchOfData: Bool = false,

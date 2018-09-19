@@ -28,8 +28,8 @@ import Foundation
  */
 public struct LocalDataState<DataType: Any> {
     
-    let isEmpty: Bool
-    let data: DataType?
+    public let isEmpty: Bool
+    public let data: DataType?
     
     private init(isEmpty: Bool, data: DataType?) {
         self.isEmpty = isEmpty
