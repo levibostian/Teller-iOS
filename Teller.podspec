@@ -36,6 +36,7 @@ Determining what state your data is in and managing it can be a big pain. That i
   s.social_media_url = 'https://twitter.com/levibostian'
 
   s.ios.deployment_target = '8.0'
+  s.swift_version = '4.2'
 
   s.source_files = 'Teller/Classes/**/*'
   
