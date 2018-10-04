@@ -17,7 +17,7 @@ import RxSwift
  */
 open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     
-    fileprivate let dataSource: DataSource
+    public let dataSource: DataSource
     fileprivate let syncStateManager: RepositorySyncStateManager
     
     required public init(dataSource: DataSource) {

@@ -10,7 +10,7 @@ import RxSwift
 
 open class LocalRepository<DataSource: LocalRepositoryDataSource> {
     
-    fileprivate let dataSource: DataSource
+    public let dataSource: DataSource
     
     required public init(dataSource: DataSource) {
         self.dataSource = dataSource
