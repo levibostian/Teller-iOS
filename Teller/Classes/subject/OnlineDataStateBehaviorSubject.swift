@@ -29,9 +29,11 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         }
     }
     private let subject: BehaviorSubject<OnlineDataState<DataType>>
+    private let getDataRequirements: OnlineRepositoryGetDataRequirements
     
-    init() {
-        self.dataState = OnlineDataState.isEmpty()
+    init(getDataRequirements: OnlineRepositoryGetDataRequirements) {
+        self.getDataRequirements = getDataRequirements
+        self.dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
         self.subject = BehaviorSubject(value: self.dataState)
     }
     
@@ -39,14 +41,14 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
      * The cacheData is being fetched for the first time.
      */
     func onNextFirstFetchOfData() {
-        dataState = OnlineDataState.firstFetchOfData()
+        dataState = OnlineDataState.firstFetchOfData(getDataRequirements: self.getDataRequirements)
     }    
     
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
      */
     func onNextCacheEmpty(isFetchingFreshData: Bool) {
-        dataState = OnlineDataState.isEmpty()
+        dataState = OnlineDataState.isEmpty(getDataRequirements: self.getDataRequirements)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
         }
@@ -56,7 +58,7 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
      * The status of cacheData is cacheData (optionally fetching new fresh cacheData as well).
      */
     func onNextCachedData(data: DataType, dataFetched: Date, isFetchingFreshData: Bool) {
-        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched)
+        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: self.getDataRequirements)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
         }

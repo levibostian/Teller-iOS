@@ -107,7 +107,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData(getDataRequirements: loadDataRequirements)])
     }
     
     func test_observe_firstFetch_failed() {
@@ -126,7 +126,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData().doneFirstFetch(error: fetchFail)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData(getDataRequirements: loadDataRequirements).doneFirstFetch(error: fetchFail)])
     }
     
     func test_observe_successfulBeginFetchingFreshData() {
@@ -146,7 +146,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData, getDataRequirements: loadDataRequirements).fetchingFreshData()])
     }
     
     func test_observe_cacheEmpty() {
@@ -162,7 +162,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: loadDataRequirements)])
     }
     
     func test_observe_successfulFetch() {
@@ -182,7 +182,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData).doneFetchingFreshData(errorDuringFetch: nil)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData, getDataRequirements: loadDataRequirements).doneFetchingFreshData(errorDuringFetch: nil)])
     }
     
     func test_observe_failedFetch() {
@@ -203,7 +203,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData).doneFetchingFreshData(errorDuringFetch: fetchError)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: lastTimeFetchedData, getDataRequirements: loadDataRequirements).doneFetchingFreshData(errorDuringFetch: fetchError)])
     }
     
     private class Fail: Error {

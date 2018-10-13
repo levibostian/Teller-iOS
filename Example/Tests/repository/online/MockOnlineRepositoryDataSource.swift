@@ -54,7 +54,11 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         let fetchFreshData: Single<FetchResponse<String>>
     }
     
-    struct MockGetDataRequirements: OnlineRepositoryGetDataRequirements {
+    struct MockGetDataRequirements: OnlineRepositoryGetDataRequirements, Equatable {
         var tag: OnlineRepositoryGetDataRequirements.Tag = "MockGetDataRequirements"
+        
+        static func == (lhs: MockGetDataRequirements, rhs: MockGetDataRequirements) -> Bool {
+            return lhs.tag == rhs.tag
+        }
     }
 }
