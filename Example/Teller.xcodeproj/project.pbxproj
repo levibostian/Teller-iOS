@@ -32,7 +32,6 @@
 		F7AFBDF521505D03008ECB51 /* LocalRepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDF421505D03008ECB51 /* LocalRepositoryTest.swift */; };
 		F7B5CD04216680B600EDC914 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7B5CD03216680B600EDC914 /* RxCocoa.framework */; };
 		F7B5CD06216682C900EDC914 /* ExampleOnlineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */; };
-		F7BAA9C721668A9E00C32491 /* ObjectMapper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BAA9C621668A9E00C32491 /* ObjectMapper.framework */; };
 		F7BE7234216677E800D0F288 /* ExampleLocalRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */; };
 		F7BE7236216677FA00D0F288 /* Teller.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE7235216677FA00D0F288 /* Teller.framework */; };
 		F7BE723821667EDA00D0F288 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE723721667EDA00D0F288 /* RxSwift.framework */; };
@@ -100,7 +99,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F7BAA9C721668A9E00C32491 /* ObjectMapper.framework in Frameworks */,
 				F7D275462166878E00D89CA5 /* Moya.framework in Frameworks */,
 				F7B5CD04216680B600EDC914 /* RxCocoa.framework in Frameworks */,
 				F7BE723821667EDA00D0F288 /* RxSwift.framework in Frameworks */,
@@ -367,11 +365,11 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1000;
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1000;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
 				};
@@ -683,8 +681,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -698,8 +695,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -716,8 +712,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Teller_Example.app/Teller_Example";
 			};
 			name = Debug;
@@ -731,8 +726,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Teller_Example.app/Teller_Example";
 			};
 			name = Release;

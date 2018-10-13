@@ -52,7 +52,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
      Dev note: You will notice that I am creating a new instance of OnlineDataStateBehaviorSubject every call to this function. At first, I was thinking about sharing 1 instance of OnlineDataStateBehaviorSubject between everyone that calls function. However, I decided to create a new one because of disposing. What if observe() gets called twice, one of those calls then calls dispose() on the Observable? Then that invalidates the other caller of observe(). I don't want to do that. Each Observable instance should be responsible for disposing of it. I am initializing the state of each stateOfData anyway below, so all instances of Observable returned from this function will receive the same events.
      */
     public final func observe(loadDataRequirements: DataSource.GetDataRequirements) -> Observable<OnlineDataState<DataSource.Cache>> {
-        let stateOfDate: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject()
+        let stateOfDate: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject(getDataRequirements: loadDataRequirements)
         var observeDisposeBag = CompositeDisposable()
         
         // Note: Only begin observing cached data *after* data has been successfully fetched.

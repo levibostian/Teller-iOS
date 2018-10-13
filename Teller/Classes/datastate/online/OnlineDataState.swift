@@ -39,6 +39,7 @@ public struct OnlineDataState<DataType: Any> {
     public let isFetchingFreshData: Bool
     public let doneFetchingFreshData: Bool
     public let errorDuringFetch: Error?
+    public let getDataRequirements: OnlineRepositoryGetDataRequirements
 
     private init(firstFetchOfData: Bool = false,
                  doneFirstFetchOfData: Bool = false,
@@ -48,7 +49,8 @@ public struct OnlineDataState<DataType: Any> {
                  errorDuringFirstFetch: Error? = nil,
                  isFetchingFreshData: Bool = false,
                  doneFetchingFreshData: Bool = false,
-                 errorDuringFetch: Error? = nil) {
+                 errorDuringFetch: Error? = nil,
+                 getDataRequirements: OnlineRepositoryGetDataRequirements) {
         self.firstFetchOfData = firstFetchOfData
         self.doneFirstFetchOfData = doneFirstFetchOfData
         self.isEmpty = isEmpty
@@ -58,19 +60,20 @@ public struct OnlineDataState<DataType: Any> {
         self.isFetchingFreshData = isFetchingFreshData
         self.doneFetchingFreshData = doneFetchingFreshData
         self.errorDuringFetch = errorDuringFetch
+        self.getDataRequirements = getDataRequirements
     }
 
     // Use these constructors to construct the initial state of this immutable object. Use the functions
-    public static func firstFetchOfData() -> OnlineDataState {
-        return OnlineDataState(firstFetchOfData: true)
+    public static func firstFetchOfData(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(firstFetchOfData: true, getDataRequirements: getDataRequirements)
     }
 
-    public static func isEmpty() -> OnlineDataState {
-        return OnlineDataState(isEmpty: true)
+    public static func isEmpty(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(isEmpty: true, getDataRequirements: getDataRequirements)
     }
 
-    public static func data(data: DataType, dataFetched: Date) -> OnlineDataState {
-        return OnlineDataState(data: data, dataFetched: dataFetched)
+    public static func data(data: DataType, dataFetched: Date, getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
     }
 
     /**
@@ -92,7 +95,8 @@ public struct OnlineDataState<DataType: Any> {
             isFetchingFreshData: self.isFetchingFreshData,
             doneFetchingFreshData: self.doneFetchingFreshData,
             // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFetch: nil)
+            errorDuringFetch: nil,
+            getDataRequirements: self.getDataRequirements)
     }
 
     /**
@@ -117,7 +121,8 @@ public struct OnlineDataState<DataType: Any> {
             isFetchingFreshData: true,
             doneFetchingFreshData: self.doneFetchingFreshData,
             // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFetch: nil)
+            errorDuringFetch: nil,
+            getDataRequirements: self.getDataRequirements)
     }
     
     /**
@@ -143,7 +148,8 @@ public struct OnlineDataState<DataType: Any> {
             // Done fetching
             doneFetchingFreshData: true,
             // Setting if error
-            errorDuringFetch: errorDuringFetch)
+            errorDuringFetch: errorDuringFetch,
+            getDataRequirements: self.getDataRequirements)
     }
     
 }
@@ -154,13 +160,13 @@ extension OnlineDataState: Equatable where DataType: Equatable {
         return lhs.firstFetchOfData == rhs.firstFetchOfData &&
             lhs.doneFirstFetchOfData == rhs.doneFirstFetchOfData &&
             lhs.isEmpty == rhs.isEmpty &&
-            type(of: lhs.data) == type(of: rhs.data) &&
             lhs.data == rhs.data &&
             lhs.dataFetched?.timeIntervalSince1970 == rhs.dataFetched?.timeIntervalSince1970 &&
             ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFirstFetch, rhs: rhs.errorDuringFirstFetch) &&
             lhs.isFetchingFreshData == rhs.isFetchingFreshData &&
             lhs.doneFetchingFreshData == rhs.doneFetchingFreshData &&
             ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch)
+            lhs.getDataRequirements.tag == rhs.getDataRequirements.tag
     }
     
 }
