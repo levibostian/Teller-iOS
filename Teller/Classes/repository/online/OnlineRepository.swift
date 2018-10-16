@@ -65,10 +65,11 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                 .subscribe(onNext: { (cache: DataSource.Cache) in
                     let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: loadDataRequirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
                     
+                    let lastTimeDataFetched: Date? = self.syncStateManager.lastTimeFetchedData(tag: loadDataRequirements.tag)
                     if (self.dataSource.isDataEmpty(cache)) {
-                        stateOfDate.onNextCacheEmpty(isFetchingFreshData: needsToFetchFreshData)
+                        stateOfDate.onNextCacheEmpty(isFetchingFreshData: needsToFetchFreshData, dataFetched: lastTimeDataFetched!)
                     } else {
-                        stateOfDate.onNextCachedData(data: cache, dataFetched: self.syncStateManager.lastTimeFetchedData(tag: loadDataRequirements.tag)!, isFetchingFreshData: needsToFetchFreshData)
+                        stateOfDate.onNextCachedData(data: cache, dataFetched: lastTimeDataFetched!, isFetchingFreshData: needsToFetchFreshData)
                     }
                     
                     if (needsToFetchFreshData) {

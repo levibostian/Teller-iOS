@@ -10,7 +10,7 @@ import Foundation
 extension OnlineDataState {
     
     public enum CacheState {
-        case cacheEmpty
+        case cacheEmpty(fetched: Date)
         case cacheData(data: DataType, fetched: Date)
     }
     
@@ -43,7 +43,7 @@ extension OnlineDataState {
      */
     public func cacheState() -> CacheState? {
         if (self.isEmpty) {
-            return CacheState.cacheEmpty
+            return CacheState.cacheEmpty(fetched: dataFetched!)
         }
         if let data = data {
             return CacheState.cacheData(data: data, fetched: dataFetched!)
@@ -91,8 +91,8 @@ extension OnlineDataState.CacheState: Equatable where DataType: Equatable {
     
     public static func == (lhs: OnlineDataState<DataType>.CacheState, rhs: OnlineDataState<DataType>.CacheState) -> Bool {
         switch (lhs, rhs) {
-        case (.cacheEmpty, .cacheEmpty):
-            return true
+        case (let .cacheEmpty(data1), let .cacheEmpty(data2)):
+            return data1 == data2
         case (let .cacheData(data1), let .cacheData(data2)):
             return data1 == data2
         default:

@@ -64,15 +64,23 @@ public struct OnlineDataState<DataType: Any> {
     }
 
     // Use these constructors to construct the initial state of this immutable object. Use the functions
-    public static func firstFetchOfData(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+    
+    /**
+     This constructor is meant to be more of a placeholder. It's having "no state".
+     */
+    internal static func none(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(getDataRequirements: getDataRequirements)
+    }
+    
+    internal static func firstFetchOfData(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
         return OnlineDataState(firstFetchOfData: true, getDataRequirements: getDataRequirements)
     }
-
-    public static func isEmpty(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(isEmpty: true, getDataRequirements: getDataRequirements)
+    
+    internal static func isEmpty(getDataRequirements: OnlineRepositoryGetDataRequirements, dataFetched: Date) -> OnlineDataState {
+        return OnlineDataState(isEmpty: true, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
     }
-
-    public static func data(data: DataType, dataFetched: Date, getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+    
+    internal static func data(data: DataType, dataFetched: Date, getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
         return OnlineDataState(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
     }
 
@@ -81,7 +89,7 @@ public struct OnlineDataState<DataType: Any> {
      *
      * @return New immutable instance of [OnlineDataState]
      */
-    public func doneFirstFetch(error: Error?) -> OnlineDataState {
+    internal func doneFirstFetch(error: Error?) -> OnlineDataState {
         return OnlineDataState(
             // Done fetching data
             firstFetchOfData: false,
@@ -104,7 +112,7 @@ public struct OnlineDataState<DataType: Any> {
      *
      * @return New immutable instance of [OnlineDataState]
      */
-    public func fetchingFreshData() -> OnlineDataState {
+    internal func fetchingFreshData() -> OnlineDataState {
         if (self.firstFetchOfData) {
             fatalError("The state of cacheData is saying you are already fetching for the first time. You cannot fetch for first time and fetch after cache.")
         }
@@ -130,7 +138,7 @@ public struct OnlineDataState<DataType: Any> {
      *
      * @return New immutable instance of [OnlineDataState]
      */
-    public func doneFetchingFreshData(errorDuringFetch: Error?) -> OnlineDataState {
+    internal func doneFetchingFreshData(errorDuringFetch: Error?) -> OnlineDataState {
         if (self.firstFetchOfData) {
             fatalError("Call doneFirstFetch() instead. Then all future calls *after* the first fetch will be done using fetchingFreshData() and doneFetchingFreshData().")
         }

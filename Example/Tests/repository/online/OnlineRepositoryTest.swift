@@ -151,7 +151,10 @@ class OnlineRepositoryTest: XCTestCase {
         let syncStateManagerFakeData = getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: lastTimeFetchedData)
         initSyncStateManager(syncStateManagerFakeData: syncStateManagerFakeData)
         
-        let dataSourceFakeData = self.getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.empty())
+        let dataSourceFakeData = self.getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.create({ (sub) -> Disposable in
+            sub.onNext("")
+            return Disposables.create()
+        }))
         initDataSource(fakeData: dataSourceFakeData)
         initRepository()
         
@@ -159,7 +162,7 @@ class OnlineRepositoryTest: XCTestCase {
         let loadDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
         self.repository.observe(loadDataRequirements: loadDataRequirements).subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: loadDataRequirements)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: loadDataRequirements, dataFetched: lastTimeFetchedData)])
     }
     
     func test_observe_successfulFetch() {

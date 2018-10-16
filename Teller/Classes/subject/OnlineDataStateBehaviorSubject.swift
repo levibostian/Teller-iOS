@@ -33,8 +33,10 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     
     init(getDataRequirements: OnlineRepositoryGetDataRequirements) {
         self.getDataRequirements = getDataRequirements
-        self.dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
-        self.subject = BehaviorSubject(value: self.dataState)
+        
+        let initialDataState = OnlineDataState<DataType>.none(getDataRequirements: self.getDataRequirements)
+        self.subject = BehaviorSubject(value: initialDataState)
+        self.dataState = initialDataState
     }
     
     /**
@@ -47,8 +49,8 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
      */
-    func onNextCacheEmpty(isFetchingFreshData: Bool) {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: self.getDataRequirements)
+    func onNextCacheEmpty(isFetchingFreshData: Bool, dataFetched: Date) {
+        dataState = OnlineDataState.isEmpty(getDataRequirements: self.getDataRequirements, dataFetched: dataFetched)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
         }
