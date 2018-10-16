@@ -165,7 +165,7 @@ extension OnlineDataState: Equatable where DataType: Equatable {
             ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFirstFetch, rhs: rhs.errorDuringFirstFetch) &&
             lhs.isFetchingFreshData == rhs.isFetchingFreshData &&
             lhs.doneFetchingFreshData == rhs.doneFetchingFreshData &&
-            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch)
+            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch) && 
             lhs.getDataRequirements.tag == rhs.getDataRequirements.tag
     }
     

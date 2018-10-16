@@ -115,10 +115,7 @@ class OnlineRepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: syncStateManagerFakeData)
         
         let fetchFail = Fail()
-        let dataSourceFakeData = self.getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.empty(), fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)).do(onSubscribe: {
-            // To begin observing cached data, we need to make sure that we have fetched data before.
-            self.syncStateManager.fakeData.hasEverFetchedData = true
-        }))
+        let dataSourceFakeData = self.getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.empty(), fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
         initDataSource(fakeData: dataSourceFakeData)
         initRepository()
         

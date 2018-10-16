@@ -88,7 +88,10 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             observeDisposeBag += self.sync(loadDataRequirements: loadDataRequirements, force: true)
                 .subscribe(onSuccess: { (syncResult: SyncResult) in
                     stateOfDate.onNextDoneFirstFetch(errorDuringFetch: syncResult.failedError)
-                    initializeObservingCachedData()
+                    
+                    if syncResult.didSucceed() {
+                        initializeObservingCachedData()
+                    }
                 }) { (error) in
                     stateOfDate.onNextDoneFirstFetch(errorDuringFetch: error)
             }
