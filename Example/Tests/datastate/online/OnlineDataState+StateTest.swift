@@ -26,8 +26,9 @@ class OnlineDataState_StateTest: XCTestCase {
     }
     
     func test_cacheState_cacheEmpty() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
-        XCTAssertEqual(dataState.cacheState(), OnlineDataState.CacheState.cacheEmpty)
+        let fetched = Date()
+        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: fetched)
+        XCTAssertEqual(dataState.cacheState(), OnlineDataState.CacheState.cacheEmpty(fetched: fetched))
     }
     
     func test_cacheState_cacheData() {
@@ -54,23 +55,23 @@ class OnlineDataState_StateTest: XCTestCase {
     }
     
     func test_firstFetchState_nil() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
+        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date())
         XCTAssertNil(dataState.firstFetchState())
     }
     
     func test_fetchingFreshDataState_fetchingFreshData() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements).fetchingFreshData()
+        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date()).fetchingFreshData()
         XCTAssertEqual(dataState.fetchingFreshDataState(), OnlineDataState.FetchingFreshDataState.fetchingFreshCacheData)
     }
     
     func test_fetchingFreshDataState_finishedFetchingFreshData() {
         let error = FetchError()
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
+        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date()).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
         XCTAssertEqual(dataState.fetchingFreshDataState(), OnlineDataState.FetchingFreshDataState.finishedFetchingFreshCacheData(errorDuringFetch: error))
     }
     
     func test_fetchingFreshDataState_nil() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
+        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date())
         XCTAssertNil(dataState.fetchingFreshDataState())
     }
     

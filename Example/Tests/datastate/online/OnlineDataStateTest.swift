@@ -40,13 +40,14 @@ class OnlineDataStateTest: XCTestCase {
     }
     
     func test_isEmpty() {
-        self.dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements)
+        let dataFetched = Date()
+        self.dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: dataFetched)
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
         XCTAssertTrue(dataState.isEmpty)
         XCTAssertNil(dataState.data)
-        XCTAssertNil(dataState.dataFetched)
+        XCTAssertEqual(dataState.dataFetched, dataFetched)
         XCTAssertNil(dataState.errorDuringFirstFetch)
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)

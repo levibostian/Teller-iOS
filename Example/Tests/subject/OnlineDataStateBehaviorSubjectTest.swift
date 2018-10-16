@@ -32,7 +32,7 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.asObservable().subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements)])
     }
     
     func test_onNextFirstFetchOfData() {
@@ -45,12 +45,13 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
     }
     
     func test_onNextCacheEmpty() {
-        self.subject.onNextCacheEmpty(isFetchingFreshData: true)
+        let fetched = Date()
+        self.subject.onNextCacheEmpty(isFetchingFreshData: true, dataFetched: fetched)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.asObservable().subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements, dataFetched: fetched).fetchingFreshData()])
     }
     
     func test_onNextCachedData() {
@@ -71,7 +72,7 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.asObservable().subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements).doneFetchingFreshData(errorDuringFetch: error)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements).doneFetchingFreshData(errorDuringFetch: error)])
     }
     
     func test_onNextFetchingFreshData() {
@@ -80,7 +81,7 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.asObservable().subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements).fetchingFreshData()])
     }
     
     func test_onNextDoneFirstFetch() {
@@ -101,7 +102,7 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         self.subject.onNextFetchingFreshData()
         dispose.dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements), OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements), OnlineDataState<String>.none(getDataRequirements: getDataRequirements).fetchingFreshData()])
     }
     
     func test_multipleObservers() {
