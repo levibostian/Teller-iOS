@@ -15,7 +15,6 @@ Teller works very well with MVVM and MVI design patterns (note the use of `Repos
 
 *Android developer?* Check out the [Android version of Teller](https://github.com/levibostian/Teller-Android/). 
 
-
 ## What is Teller?
 
 The data used in your mobile app: user profiles, a collection of photos, list of friends, etc. *all have state*. Your data is in 1 of many different states:
@@ -100,7 +99,14 @@ import Teller
 import RxSwift
 import RxCocoa
 
+// Determine what you want to observe locally using the `LocalRepositoryGetDataRequirements`. In this example, we are only going to watch 1 `UserDefaults` key but if you were watching multiple users in 1 app, for example, you could pass in the username of the user to observe and use that username in the `LocalRepositoryDataSource` below. 
+struct GitHubUsernameDataSourceGetDataRequirements: LocalRepositoryGetDataRequirements {
+}
+
 class GitHubUsernameDataSource: LocalRepositoryDataSource {
+    
+    typealias Cache = String
+    typealias GetDataRequirements = GitHubUsernameDataSourceGetDataRequirements
     
     fileprivate let userDefaultsKey = "githubuserdatasource"
     
@@ -110,7 +116,7 @@ class GitHubUsernameDataSource: LocalRepositoryDataSource {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
-    func observeData() -> Observable<String> {
+    func observeCachedData() -> Observable<String> {
         return UserDefaults.standard.rx.observe(String.self, userDefaultsKey)
             .map({ (value) -> String in return value! })
     }
@@ -159,7 +165,6 @@ class ReposRepositoryGetDataRequirements: OnlineRepositoryGetDataRequirements {
 }
 
 // Struct used to represent the JSON data pulled from the GitHub API.
-// ObjectMapper is used here to map the JSON to the struct.
 struct Repo: Codable {
     var id: Int!
     var name: String!
@@ -170,8 +175,6 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     typealias Cache = [Repo]
     typealias GetDataRequirements = ReposRepositoryGetDataRequirements
     typealias FetchResult = [Repo]
-    
-    fileprivate let cachedDataObservable: PublishSubject<[Repo]> = PublishSubject()
     
     var maxAgeOfData: Period = Period(unit: 5, component: .hour)
     
@@ -190,16 +193,15 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     
     func saveData(_ fetchedData: [Repo]) {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
-        
-        // Then, we will trigger an update to the observeCachedData subject so that anyone observing that observable can be updated with the new repos.
-        cachedDataObservable.on(Event<[Repo]>.next(fetchedData))
     }
     
     func observeCachedData(requirements: ReposRepositoryGetDataRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
-        // Anytime that the repos model has been updated, send an update to the Observable.
+        //
+        // When any of the repos in the database have been changed, we want to trigger an Observable update.
+        // Teller may call `observeCachedData` regularly to keep data fresh.
         
-        return cachedDataObservable.asObservable()
+        return Observable.just([])
     }
     
     func isDataEmpty(_ cache: [Repo]) -> Bool {
@@ -228,11 +230,12 @@ Now it's your turn. Create subclasses of `OnlineRepository` and `LocalRepository
 ```swift
 let disposeBag = DisposeBag()
 let repository: GitHubUsernameRepository = GitHubUsernameRepository()
+repository.requirements = GitHubUsernameDataSourceGetDataRequirements()
 
-repository
+try! repository
     .observe()
-    .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
+    .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
         switch dataState.state() {
         case .isEmpty:
@@ -244,9 +247,8 @@ repository
         }
     }).disposed(by: disposeBag)
 
-// Now let's say that you want to *update* the GitHub username. Anywhere in your code, you can create an instance of a GitHubUsernameRepository and save data to it. All of your observables will be notified of this change.
-
-repository.dataSource.saveData(data: "new username")    
+// Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
+repository.dataSource.saveData(data: "new username") 
 ```
 
 `OnlineRepository`
@@ -255,10 +257,10 @@ repository.dataSource.saveData(data: "new username")
 let disposeBag = DisposeBag()
 let repository: ReposRepository = ReposRepository()
 
-let reposDataSource = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
-
-repository
-    .observe(loadDataRequirements: reposDataSource)
+let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
+repository.requirements = reposGetDataRequirements
+try! repository
+    .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
     .subscribe(onNext: { (dataState: OnlineDataState<[Repo]>) in
@@ -282,6 +284,8 @@ repository
             // Repos have been fetched for the very first time for this specific user. A `cacheState()` will also be sent to the dataState. This state does *not* mean that the fetch was successful. It simply means that it is done.
             
             // If there was an error that happened during the fetch, errorDuringFetch will be populated.
+            
+            // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `OnlineRepository` to try again. It is your responsibility to manually try the first fetch again.
             break
         case .none:
             // The dataState has no first fetch state. This means that repos have been fetched before for this specific user so no first fetch is required.
@@ -314,24 +318,24 @@ Teller comes with extra, but optional, features you may also enjoy.
 
 #### Keep app data fresh in the background
 
-You want to make sure that the data of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to sync your `Repository`s with your remote storage.
+You want to make sure that the data of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to refresh your `Repository`s data with your remote storage.
 
 ```swift
-let repository: ReposRepository = ReposRepository()
-        
+let repository: ReposRepository = ReposRepository()        
 let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
+repository.requirements = reposGetDataRequirements
 
-repository.sync(loadDataRequirements: reposGetDataRequirements, force: false)
-            .subscribe()
+repository.refresh(force: false)
+        .subscribe()
 ```
 
-Teller `OnlineRepository`s provides a `sync` function. `sync` will check if the cached data is too old. If cached data is too old, it will fetch fresh data and save it and if it's not too old, it will simply ignore the request (unless `force` is `true`). `sync` returns a `Single`, so we need to subscribe to it to run the syncs.
+Teller `OnlineRepository`s provides a `refresh` function. `refresh` will check if the cached data is too old. If cached data is too old, it will fetch fresh data and save it and if it's not too old, it will simply ignore the request (unless `force` is `true`). `refresh` returns a `Single`, so we need to subscribe to it to run the refresh.
 
-You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `sync` on a set of `OnlineRepository`s periodically. 
+You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `OnlineRepository`s periodically. 
 
 ## Example app
 
-This library does *not* yet have a fully functional example iOS app created. However, if you check out the directory: `Example/Teller/` you will see example code snippets that you can use to learn about how to use Teller, learn best practices, and compile inside of XCode. 
+This library does *not* yet have a fully functional example iOS app created (yet). However, if you check out the directory: `Example/Teller/` you will see example code snippets that you can use to learn about how to use Teller, learn best practices, and compile inside of XCode. 
 
 ## Documentation
 

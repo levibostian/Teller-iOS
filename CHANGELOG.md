@@ -1,3 +1,8 @@
+## [0.2.0-alpha] - ???
+
+### Changed
+- **Breaking Change** `OnlineRepository`'s `sync()` has been renamed to `refresh()`. 
+
 ## [0.1.0-alpha] - 2018-10-04
 
 First release of Teller! 

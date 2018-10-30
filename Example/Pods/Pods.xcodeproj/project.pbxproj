@@ -402,7 +402,9 @@
 		F643BD51E0597D2F152A9276280B4B84 /* PrimitiveSequence+Zip+arity.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3EAEE7A5D2693DCC3800358C0090E1E /* PrimitiveSequence+Zip+arity.swift */; };
 		F71CC493CDE70F34BD316FCB8BB774B9 /* Single.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB90FAE4AA6CB8E5F3133AF143841B84 /* Single.swift */; };
 		F7215442934203BA864BE7719C2A8BA8 /* FetchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 597D0E9E48E68BF083A451359E602153 /* FetchResponse.swift */; };
+		F721D20F2187BEAC00C2C7E8 /* SchedulersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F721D20E2187BEAC00C2C7E8 /* SchedulersProvider.swift */; };
 		F73D9FD09CE0742CA140EBF70139BB08 /* RetryWhen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273E71D8298CD96FE670352AB11333BF /* RetryWhen.swift */; };
+		F7993745218929EF004F9482 /* TellerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7993744218929EF004F9482 /* TellerError.swift */; };
 		F8764B0ABCD92F2D9E27D54CD2EEA316 /* ItemEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7966BED464D2E63EA261A9D7912A861 /* ItemEvents.swift */; };
 		F919D7858D095B2DD9143A6802D75CB1 /* _RXDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C035E9C041C33A4979E3786E1C71C3F2 /* _RXDelegateProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F9EA61D484CC15FDDAB0D8C0D26D7949 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD98985968D7B999ADE37D4A993331D /* Result.swift */; };
@@ -979,6 +981,8 @@
 		F5D7C945CE758159C89655E38DD3F303 /* RxScrollViewDelegateProxy.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RxScrollViewDelegateProxy.swift; path = RxCocoa/iOS/Proxies/RxScrollViewDelegateProxy.swift; sourceTree = "<group>"; };
 		F630430D332112A0C18568C876DB5763 /* UIScrollView+Rx.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "UIScrollView+Rx.swift"; path = "RxCocoa/iOS/UIScrollView+Rx.swift"; sourceTree = "<group>"; };
 		F6A8C2DBEC0CAA0F2EC5987D14030439 /* Alamofire.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Alamofire.xcconfig; sourceTree = "<group>"; };
+		F721D20E2187BEAC00C2C7E8 /* SchedulersProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulersProvider.swift; sourceTree = "<group>"; };
+		F7993744218929EF004F9482 /* TellerError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TellerError.swift; sourceTree = "<group>"; };
 		F8558E9EF905A7A987C373731A165DB1 /* RepositorySyncStateManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RepositorySyncStateManager.swift; sourceTree = "<group>"; };
 		F9868E5D2906510C2FBC26D912F84B6B /* URLRequest+Encoding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "URLRequest+Encoding.swift"; path = "Sources/Moya/URLRequest+Encoding.swift"; sourceTree = "<group>"; };
 		FA587D460A34262BD71B2500414196B5 /* RecursiveLock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecursiveLock.swift; path = Platform/RecursiveLock.swift; sourceTree = "<group>"; };
@@ -1466,6 +1470,7 @@
 		5D53B99E02DF8C7761A373E31724E393 /* Teller */ = {
 			isa = PBXGroup;
 			children = (
+				F7C3CCDB217A82C600FA0879 /* error */,
 				15724E0979BF5F33CA14871061D052F6 /* datastate */,
 				EC061FDE820E7A840235A9CD5FF5C281 /* Pod */,
 				D1F4213C42EED2D06A11E0046CAD7E68 /* repository */,
@@ -1511,6 +1516,7 @@
 			isa = PBXGroup;
 			children = (
 				066C3A444BCC3307B023350E8E81957A /* extensions */,
+				F721D20E2187BEAC00C2C7E8 /* SchedulersProvider.swift */,
 			);
 			name = rxswift;
 			path = Teller/Classes/rxswift;
@@ -1854,6 +1860,15 @@
 				6D71FA6364955F2D2D29FC414B2BEDBE /* Teller.podspec */,
 			);
 			name = Pod;
+			sourceTree = "<group>";
+		};
+		F7C3CCDB217A82C600FA0879 /* error */ = {
+			isa = PBXGroup;
+			children = (
+				F7993744218929EF004F9482 /* TellerError.swift */,
+			);
+			name = error;
+			path = Teller/Classes/error;
 			sourceTree = "<group>";
 		};
 		FD766567EE41860FC5B7A71393ED43C6 /* Pods-Teller_Example */ = {
@@ -2499,7 +2514,9 @@
 				C156BC86C70A0A26332858FAC99215E0 /* LocalRepositoryDataSource.swift in Sources */,
 				9B35658E971C8D69E3F0F7D0B4310D30 /* OnlineDataState+State.swift in Sources */,
 				4A13213D6F8E032A04EA7DC75DC1CB86 /* OnlineDataState.swift in Sources */,
+				F7993745218929EF004F9482 /* TellerError.swift in Sources */,
 				B2A89D483E1616E3482EE19C1F473BC9 /* OnlineDataStateBehaviorSubject.swift in Sources */,
+				F721D20F2187BEAC00C2C7E8 /* SchedulersProvider.swift in Sources */,
 				1F8D244CBF579F1857B508D141B11E6A /* OnlineRepository.swift in Sources */,
 				FFFE30FA7AF8E7C59A3CC85F1589139A /* OnlineRepositoryDataSource.swift in Sources */,
 				53E60DCF97D31736B7282237E1B146B5 /* Period.swift in Sources */,

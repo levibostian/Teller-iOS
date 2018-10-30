@@ -28,7 +28,7 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
             subject.onNext(dataState)
         }
     }
-    private let subject: BehaviorSubject<OnlineDataState<DataType>>
+    internal let subject: BehaviorSubject<OnlineDataState<DataType>>
     private let getDataRequirements: OnlineRepositoryGetDataRequirements
     
     init(getDataRequirements: OnlineRepositoryGetDataRequirements) {
@@ -82,13 +82,6 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     
     func onNextDoneFirstFetch(errorDuringFetch: Error?) {
         dataState = dataState.doneFirstFetch(error: errorDuringFetch)
-    }
-    
-    /**
-     * Get a [BehaviorSubject] as an [Observable]. Convenient as you more then likely do not need to care about the extra functionality of [BehaviorSubject] when you simply want to observe cacheData changes.
-     */
-    func asObservable() -> Observable<OnlineDataState<DataType>> {
-        return subject
     }
     
 }

@@ -17,12 +17,14 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     typealias FetchResult = String
     
     var fetchFreshDataCount = 0
+    var fetchFreshDataRequirements: MockGetDataRequirements? = nil
     var saveDataCount = 0
+    var saveDataFetchedData: String? = nil
     var observeCachedDataCount = 0
     var isDataEmptyCount = 0
     
     var maxAgeOfData: Period
-    private let fakeData: FakeData
+    var fakeData: FakeData
     
     init(fakeData: FakeData, maxAgeOfData: Period) {
         self.fakeData = fakeData
@@ -31,11 +33,13 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     
     func fetchFreshData(requirements: MockGetDataRequirements) -> Single<FetchResponse<String>> {
         fetchFreshDataCount += 1
+        fetchFreshDataRequirements = requirements
         return self.fakeData.fetchFreshData
     }
     
     func saveData(_ fetchedData: String) {
         saveDataCount += 1
+        saveDataFetchedData = fetchedData
     }
     
     func observeCachedData(requirements: MockGetDataRequirements) -> Observable<String> {
@@ -49,9 +53,9 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     }    
     
     struct FakeData {
-        let isDataEmpty: Bool
-        let observeCachedData: Observable<String>
-        let fetchFreshData: Single<FetchResponse<String>>
+        var isDataEmpty: Bool
+        var observeCachedData: Observable<String>
+        var fetchFreshData: Single<FetchResponse<String>>
     }
     
     struct MockGetDataRequirements: OnlineRepositoryGetDataRequirements, Equatable {

@@ -12,7 +12,8 @@ import Foundation
 internal class MockRepositorySyncStateManager: RepositorySyncStateManager {
     
     var isDataTooOldCount = 0
-    var updateLastTimeFreshDataFetchedCount = 0
+    var updateAgeOfDataCount = 0
+    var updateAgeOfDataListener: (() -> Bool?)? = nil
     var hasEverFetchedDataCount = 0
     var lastTimeFetchedDataCount = 0
     
@@ -33,8 +34,11 @@ internal class MockRepositorySyncStateManager: RepositorySyncStateManager {
         return self.fakeData.isDataTooOld
     }
     
-    func updateLastTimeFreshDataFetched(tag: OnlineRepositoryGetDataRequirements.Tag) {
-        updateLastTimeFreshDataFetchedCount += 1
+    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag) {
+        updateAgeOfDataCount += 1
+        if let newHasEverFetchedData = updateAgeOfDataListener?() {
+            self.fakeData.hasEverFetchedData = newHasEverFetchedData
+        }
     }
     
     func hasEverFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Bool {

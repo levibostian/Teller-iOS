@@ -22,7 +22,9 @@ public protocol OnlineRepositoryDataSource {
     var maxAgeOfData: Period { get }
     
     /**
-     * Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
+     Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
+     
+     Feel free to call this function yourself anytime that you want to perform an API call *without* affecting the `OnlineRepository`.
      */
     func fetchFreshData(requirements: GetDataRequirements) -> Single<FetchResponse<FetchResult>>
     
@@ -36,9 +38,11 @@ public protocol OnlineRepositoryDataSource {
     func saveData(_ fetchedData: FetchResult)
     
     /**
-     * Get existing cached cacheData saved to the device if it exists. Return nil is cacheData does not exist or is empty.
-     *
-     * This function is only called after data has been fetched successfully. Assume that data is empty (no cache data) or there is cache data.
+     Get existing cached cacheData saved to the device if it exists. If no data exists, return an empty data set. **Do not** return nil or an Observable with nil as a value.
+     
+     This function will be always executed on a background thread.
+     
+     This function is only called after data has been fetched successfully. Assume that data is empty (no cache data) or there is cache data.
      */
     func observeCachedData(requirements: GetDataRequirements) -> Observable<Cache>
     

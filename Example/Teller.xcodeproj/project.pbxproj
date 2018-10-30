@@ -14,6 +14,8 @@
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
+		F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */; };
+		F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72A285B21876F96007444D7 /* TellerErrorTest.swift */; };
 		F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */; };
 		F7818C5121507B090050607E /* UserDefaultsUtilTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5021507B090050607E /* UserDefaultsUtilTest.swift */; };
 		F7818C53215143460050607E /* OnlineRepositoryDataSourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C52215143460050607E /* OnlineRepositoryDataSourceTest.swift */; };
@@ -35,6 +37,7 @@
 		F7BE7234216677E800D0F288 /* ExampleLocalRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */; };
 		F7BE7236216677FA00D0F288 /* Teller.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE7235216677FA00D0F288 /* Teller.framework */; };
 		F7BE723821667EDA00D0F288 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE723721667EDA00D0F288 /* RxSwift.framework */; };
+		F7C3CCDA217A7EFA00FA0879 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */; };
 		F7D275462166878E00D89CA5 /* Moya.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D275452166878E00D89CA5 /* Moya.framework */; };
 		F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D27547216687D400D89CA5 /* GitHubService.swift */; };
 /* End PBXBuildFile section */
@@ -68,6 +71,8 @@
 		EAE5EDFB0FDF26DE376FB19E /* Pods_Teller_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Teller_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB581EA92B0253DC5AEDEF61 /* Teller.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Teller.podspec; path = ../Teller.podspec; sourceTree = "<group>"; };
 		EDF3627C0E4FA9CEE926B448 /* Pods-Teller_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Teller_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsSchedulersProvider.swift; sourceTree = "<group>"; };
+		F72A285B21876F96007444D7 /* TellerErrorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerErrorTest.swift; sourceTree = "<group>"; };
 		F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerRepositorySyncStateManagerTest.swift; sourceTree = "<group>"; };
 		F7818C5021507B090050607E /* UserDefaultsUtilTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUtilTest.swift; sourceTree = "<group>"; };
 		F7818C52215143460050607E /* OnlineRepositoryDataSourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineRepositoryDataSourceTest.swift; sourceTree = "<group>"; };
@@ -90,6 +95,7 @@
 		F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleLocalRepository.swift; sourceTree = "<group>"; };
 		F7BE7235216677FA00D0F288 /* Teller.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Teller.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7BE723721667EDA00D0F288 /* RxSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RxSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		F7D275452166878E00D89CA5 /* Moya.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Moya.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7D27547216687D400D89CA5 /* GitHubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -178,6 +184,8 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				F721D2102187C3C700C2C7E8 /* rxswift */,
+				F72A285A21876F6A007444D7 /* error */,
 				F7818C5721514C2F0050607E /* subject */,
 				F7818C5421514ADB0050607E /* type */,
 				F7818C4F21507AF90050607E /* util */,
@@ -199,6 +207,7 @@
 		607FACF51AFB993E008FA782 /* Podspec Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */,
 				EB581EA92B0253DC5AEDEF61 /* Teller.podspec */,
 				5CF983509049B8C9A2C585D5 /* README.md */,
 				33A92DDBDB036D1998249913 /* LICENSE */,
@@ -218,6 +227,22 @@
 				EAE5EDFB0FDF26DE376FB19E /* Pods_Teller_Tests.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F721D2102187C3C700C2C7E8 /* rxswift */ = {
+			isa = PBXGroup;
+			children = (
+				F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */,
+			);
+			path = rxswift;
+			sourceTree = "<group>";
+		};
+		F72A285A21876F6A007444D7 /* error */ = {
+			isa = PBXGroup;
+			children = (
+				F72A285B21876F96007444D7 /* TellerErrorTest.swift */,
+			);
+			path = error;
 			sourceTree = "<group>";
 		};
 		F7818C43215074EA0050607E /* manager */ = {
@@ -401,6 +426,7 @@
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
+				F7C3CCDA217A7EFA00FA0879 /* CHANGELOG.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -525,6 +551,7 @@
 				F7818C5F21517C220050607E /* OnlineRepositoryTest.swift in Sources */,
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
 				F7818C5121507B090050607E /* UserDefaultsUtilTest.swift in Sources */,
+				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */,
 				F7AFBDF0215059CC008ECB51 /* FetchResponseTest.swift in Sources */,
@@ -534,6 +561,7 @@
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* SyncResultTest.swift in Sources */,
 				F7818C5D215172180050607E /* OnlineDataStateBehaviorSubjectTest.swift in Sources */,
+				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,
 				F7818C53215143460050607E /* OnlineRepositoryDataSourceTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
