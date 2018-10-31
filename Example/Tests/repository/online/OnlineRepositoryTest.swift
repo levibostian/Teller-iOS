@@ -245,10 +245,10 @@ class OnlineRepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: lastTimeDataFetched))
         let data = "success"
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.just(""), fetchFreshData: Single.just(FetchResponse.success(data: data))))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
         self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
             return true
         }
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)        
@@ -284,6 +284,23 @@ class OnlineRepositoryTest: XCTestCase {
         
         XCTAssertRecordedElements(observer.events, [
             OnlineDataState<String>.data(data: data, dataFetched: lastTimeDataFetched, getDataRequirements: repository.requirements!).doneFetchingFreshData(errorDuringFetch: fetchError)])
+    }
+    
+    func test_changingRequirementsTriggersFetchIfNeverDoneBefore() {
+        let lastTimeDataFetched = Date()
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: lastTimeDataFetched))
+        let data = "success"
+        initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(data), fetchFreshData: Single.just(FetchResponse.success(data: data))))
+        self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
+            return true
+        }
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        
+        XCTAssertEqual(self.dataSource.fetchFreshDataCount, 1)
+        
+        self.syncStateManager.fakeData.hasEverFetchedData = false
+        self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
+        XCTAssertEqual(self.dataSource.fetchFreshDataCount, 2) // After setting requirements and having "hasEverFetchedData" having not fetched data before, we should see the fetch being called for a second time.
     }
     
     private class Fail: Error {

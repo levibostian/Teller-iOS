@@ -26,6 +26,8 @@ public protocol LocalRepositoryDataSource {
     
     /**
      * This function should be setup to trigger anytime there is a data change. So if you were to call [saveData], anyone observing the [Observable] returned here will get notified of a new update.
+     
+     Note: Teller calls observeCachedData from the UI thread. 
      */
     func observeCachedData() -> Observable<Cache>
     

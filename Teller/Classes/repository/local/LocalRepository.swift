@@ -58,7 +58,7 @@ open class LocalRepository<DataSource: LocalRepositoryDataSource> {
     fileprivate func beginObservingCachedData(requirements: DataSource.GetDataRequirements) {
         observeCacheDisposable?.dispose()
         observeCacheDisposable = self.dataSource.observeCachedData()
-            .subscribeOn(schedulersProvider.background)
+            .subscribeOn(schedulersProvider.ui)
             .subscribe(onNext: { (cachedData) in
                 if (self.dataSource.isDataEmpty(data: cachedData)) {
                     self.currentStateOfData?.onNextEmpty()

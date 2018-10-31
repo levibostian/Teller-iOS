@@ -24,10 +24,12 @@ class GitHubUsernameDataSource: LocalRepositoryDataSource {
     
     typealias DataType = String
     
+    // This function gets called from whatever thread you call it from.
     func saveData(data: String) {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
+    // Note: Teller calls this function from the UI thread.
     func observeCachedData() -> Observable<String> {
         return UserDefaults.standard.rx.observe(String.self, userDefaultsKey)
             .map({ (value) -> String in return value! })

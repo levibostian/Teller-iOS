@@ -56,10 +56,12 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
             })
     }
     
+    // Note: Teller runs this function from a background thread. 
     func saveData(_ fetchedData: [Repo]) {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
     }
     
+    // Note: Teller runs this function from the UI thread
     func observeCachedData(requirements: ReposRepositoryGetDataRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
         //

@@ -33,7 +33,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                     let initialStateOfData = OnlineDataStateBehaviorSubject<DataSource.Cache>(getDataRequirements: requirements)
                     let initialValueStateOfData = try! initialStateOfData.subject.value()
                     self.currentStateOfData = initialStateOfData
-  
+                    
                     self.currentStateOfDataConnectableObservable = self.currentStateOfData!.subject.multicast { () -> BehaviorSubject<OnlineDataState<DataSource.Cache>> in
                         return BehaviorSubject(value: initialValueStateOfData)
                     }
@@ -42,6 +42,11 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                 
                 if self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
                     beginObservingCachedData(requirements: requirements)
+                } else {
+                    // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
+                    _ = try! self.refresh(force: false)
+                        .subscribeOn(self.schedulersProvider.background)
+                        .subscribe()
                 }
             }
         }
@@ -137,8 +142,10 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         
         observeCacheDisposable?.dispose()
         
+        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.                        
         observeCacheDisposable = self.dataSource.observeCachedData(requirements: requirements)
-            .subscribeOn(schedulersProvider.background)
+            .subscribeOn(schedulersProvider.ui)
+            .observeOn(schedulersProvider.ui)
             .subscribe(onNext: { (cache: DataSource.Cache) in
                 let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
                 
@@ -172,11 +179,11 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             throw TellerError.objectPropertiesNotSet(["requirements"])
         }
         
-//        // Trigger a refresh to help keep data up-to-date.
+        // Trigger a refresh to help keep data up-to-date.
         _ = try self.refresh(force: false)
             .subscribeOn(schedulersProvider.background)
             .subscribe()
-
+        
         return currentStateOfDataConnectableObservable!
     }
     

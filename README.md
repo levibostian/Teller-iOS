@@ -112,10 +112,12 @@ class GitHubUsernameDataSource: LocalRepositoryDataSource {
     
     typealias DataType = String
     
+    // This function gets called from whatever thread you call it from.    
     func saveData(data: String) {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
+    // Note: Teller calls this function from the UI thread. 
     func observeCachedData() -> Observable<String> {
         return UserDefaults.standard.rx.observe(String.self, userDefaultsKey)
             .map({ (value) -> String in return value! })
@@ -191,10 +193,12 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
             })
     }
     
+    // Note: Teller runs this function from a background thread. 
     func saveData(_ fetchedData: [Repo]) {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
     }
     
+    // Note: Teller runs this function from the UI thread
     func observeCachedData(requirements: ReposRepositoryGetDataRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
         //
@@ -248,7 +252,7 @@ try! repository
     }).disposed(by: disposeBag)
 
 // Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
-repository.dataSource.saveData(data: "new username") 
+repository.dataSource.saveData(data: "new username")
 ```
 
 `OnlineRepository`
