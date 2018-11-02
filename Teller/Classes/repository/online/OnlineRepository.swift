@@ -22,22 +22,15 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     internal let schedulersProvider: SchedulersProvider
     
     internal var observeCacheDisposable: Disposable? = nil
-    internal var currentStateOfDataMulticastDisposable: Disposable? = nil
-    internal var currentStateOfDataConnectableObservable: ConnectableObservable<OnlineDataState<DataSource.Cache>>? = nil // TODO remove me if doesnt work.
     internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache>? = nil
     
     public var requirements: DataSource.GetDataRequirements? = nil {
         didSet {
             if let requirements = requirements {
-                if self.currentStateOfData == nil {
-                    let initialStateOfData = OnlineDataStateBehaviorSubject<DataSource.Cache>(getDataRequirements: requirements)
-                    let initialValueStateOfData = try! initialStateOfData.subject.value()
-                    self.currentStateOfData = initialStateOfData
-                    
-                    self.currentStateOfDataConnectableObservable = self.currentStateOfData!.subject.multicast { () -> BehaviorSubject<OnlineDataState<DataSource.Cache>> in
-                        return BehaviorSubject(value: initialValueStateOfData)
-                    }
-                    self.currentStateOfDataMulticastDisposable = self.currentStateOfDataConnectableObservable!.connect()
+                if currentStateOfData == nil {
+                    self.currentStateOfData = OnlineDataStateBehaviorSubject(getDataRequirements: requirements)
+                } else {
+                    self.currentStateOfData!.getDataRequirements = requirements
                 }
                 
                 if self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
@@ -68,7 +61,6 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     
     deinit {
         currentStateOfData?.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
-        currentStateOfDataMulticastDisposable?.dispose()
         currentStateOfData?.subject.dispose()
         
         observeCacheDisposable?.dispose()
@@ -184,7 +176,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             .subscribeOn(schedulersProvider.background)
             .subscribe()
         
-        return currentStateOfDataConnectableObservable!
+        return self.currentStateOfData!.subject
     }
     
 }

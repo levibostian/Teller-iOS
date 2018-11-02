@@ -29,14 +29,18 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         }
     }
     internal let subject: BehaviorSubject<OnlineDataState<DataType>>
-    private let getDataRequirements: OnlineRepositoryGetDataRequirements
+    var getDataRequirements: OnlineRepositoryGetDataRequirements! {
+        didSet {
+            self.dataState = OnlineDataState<DataType>.none(getDataRequirements: getDataRequirements)
+        }
+    }
     
     init(getDataRequirements: OnlineRepositoryGetDataRequirements) {
-        self.getDataRequirements = getDataRequirements
-        
-        let initialDataState = OnlineDataState<DataType>.none(getDataRequirements: self.getDataRequirements)
+        let initialDataState = OnlineDataState<DataType>.none(getDataRequirements: getDataRequirements)
         self.subject = BehaviorSubject(value: initialDataState)
         self.dataState = initialDataState
+        
+        self.getDataRequirements = getDataRequirements
     }
     
     /**

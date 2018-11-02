@@ -12,7 +12,7 @@ import XCTest
 class OnlineDataStateTest: XCTestCase {
     
     private var dataState: OnlineDataState<String>!
-    let getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
+    let getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
     
     override func setUp() {
         super.setUp()

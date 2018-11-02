@@ -73,7 +73,7 @@ class OnlineRepositoryTest: XCTestCase {
         let data = "foo"
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initDataSource(fakeData: self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.success(data: data))))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(SyncResult.self)
         try! self.repository.refresh(force: force).asObservable().subscribe(observer).dispose()
@@ -90,7 +90,7 @@ class OnlineRepositoryTest: XCTestCase {
         let errorMessage = "failed message"
         let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(message: errorMessage)))
         initDataSource(fakeData: dataSourceFakeData)
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(SyncResult.self)
         try! self.repository.refresh(force: true).asObservable().subscribe(observer).dispose()
@@ -103,7 +103,7 @@ class OnlineRepositoryTest: XCTestCase {
     
     func test_refresh_skipped() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(SyncResult.self)
         try! self.repository.refresh(force: false).asObservable().subscribe(observer).dispose()
@@ -122,7 +122,7 @@ class OnlineRepositoryTest: XCTestCase {
     func test_observe_firstFetch_refreshes() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
         initDataSource(fakeData: self.getDataSourceFakeData(fetchFreshData: Single.never()))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
@@ -136,7 +136,7 @@ class OnlineRepositoryTest: XCTestCase {
         let fetchFail = Fail()
         let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
         initDataSource(fakeData: dataSourceFakeData)
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
@@ -170,7 +170,7 @@ class OnlineRepositoryTest: XCTestCase {
         let fetchFail = Fail()
         let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
         initDataSource(fakeData: dataSourceFakeData)
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
@@ -195,7 +195,7 @@ class OnlineRepositoryTest: XCTestCase {
         let fetchFail = Fail()
         let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
         initDataSource(fakeData: dataSourceFakeData)
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         let observerDisposable = try! self.repository.observe().subscribe(observer)
@@ -221,22 +221,59 @@ class OnlineRepositoryTest: XCTestCase {
             OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail)])
     }
     
-    func test_disposeRepository_disposesObservers() {
+    func test_multipleObserversOfRepository_changeRequirements_continueToGetNewEvents() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false))
         
         let fetchFail = Fail()
         let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
         initDataSource(fakeData: dataSourceFakeData)
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        let firstRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: "first")
+        initRepository(requirements: firstRequirements)
+        
+        let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
+        compositeDisposable += try! self.repository.observe().subscribe(observer)
+        let observer2 = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
+        compositeDisposable += try! self.repository.observe().subscribe(observer2)
+        
+        XCTAssertRecordedElements(observer.events, [
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail),
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!),
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail)])
+        XCTAssertRecordedElements(observer2.events, [
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail)])
+        
+        XCTAssertEqual(observer2.events.last!.value.element!.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, firstRequirements)
+        
+        // Setting requirements again will change
+        let secondRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: "second")
+        self.repository.requirements = secondRequirements
+        
+        XCTAssertRecordedElements(observer2.events, [
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail),
+            OnlineDataState<String>.none(getDataRequirements: repository.requirements!),
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!),
+            OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail)])
+        
+        XCTAssertEqual(observer2.events.last!.value.element!.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, secondRequirements)
+    }
+    
+    func test_disposeRepository_disposesObservers() {
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false))
+        
+        let fetchFail = Fail()
+        let dataSourceFakeData = self.getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse.fail(error: fetchFail)))
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        initDataSource(fakeData: dataSourceFakeData)
+        initRepository(requirements: requirements)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
         
-        let fetchEvent = Recorded.next(0, OnlineDataState<String>.firstFetchOfData(getDataRequirements: repository.requirements!).doneFirstFetch(error: fetchFail))
+        let event = OnlineDataState<String>.firstFetchOfData(getDataRequirements: requirements).doneFirstFetch(error: fetchFail)
         self.repository = nil
-        
+
         XCTAssertEqual(observer.events, [
-            fetchEvent,
+            Recorded.next(0, event),
             Recorded.completed(0)])
     }
     
@@ -248,7 +285,7 @@ class OnlineRepositoryTest: XCTestCase {
         self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
             return true
         }
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)        
@@ -262,7 +299,7 @@ class OnlineRepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: lastTimeDataFetched))
         let data = "success"
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(data)))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
@@ -277,7 +314,7 @@ class OnlineRepositoryTest: XCTestCase {
         let data = "success"
         let fetchError = Fail()
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(data), fetchFreshData: Single.just(FetchResponse.fail(error: fetchError))))
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += try! self.repository.observe().subscribe(observer)
@@ -294,12 +331,12 @@ class OnlineRepositoryTest: XCTestCase {
         self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
             return true
         }
-        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements())
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
         
         XCTAssertEqual(self.dataSource.fetchFreshDataCount, 1)
         
         self.syncStateManager.fakeData.hasEverFetchedData = false
-        self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
+        self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
         XCTAssertEqual(self.dataSource.fetchFreshDataCount, 2) // After setting requirements and having "hasEverFetchedData" having not fetched data before, we should see the fetch being called for a second time.
     }
     

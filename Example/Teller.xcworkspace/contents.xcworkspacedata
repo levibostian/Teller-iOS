@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:TellerPlayground.playground">
+   </FileRef>
+   <FileRef
       location = "group:Teller.xcodeproj">
    </FileRef>
    <FileRef

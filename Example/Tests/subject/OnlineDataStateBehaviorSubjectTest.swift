@@ -19,7 +19,7 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        self.getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements()
+        self.getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
         self.subject = OnlineDataStateBehaviorSubject(getDataRequirements: getDataRequirements)
     }
     
