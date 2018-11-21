@@ -25,7 +25,7 @@ class OnlineDataStateTest: XCTestCase {
     }
     
     func test_firstFetchOfData() {
-        self.dataState = OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements)
+        self.dataState = OnlineDataState.firstFetchOfData(requirements: getDataRequirements)
         
         XCTAssertTrue(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
@@ -36,12 +36,12 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)
         XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     func test_isEmpty() {
         let dataFetched = Date()
-        self.dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: dataFetched)
+        self.dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: dataFetched)
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
@@ -52,13 +52,13 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)
         XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     func test_data() {
         let data = "foo"
         let dataFetched = Date()
-        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
+        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: getDataRequirements)
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
@@ -69,12 +69,12 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)
         XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     func test_doneFirstFetch() {
         let error = Fail()
-        self.dataState = OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements).doneFirstFetch(error: error)
+        self.dataState = OnlineDataState.firstFetchOfData(requirements: getDataRequirements).doneFirstFetch(error: error)
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertTrue(dataState.doneFirstFetchOfData)
@@ -85,13 +85,13 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)
         XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     func test_fetchingFreshData() {
         let data = "foo"
         let dataFetched = Date()
-        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements).fetchingFreshData()
+        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: getDataRequirements).fetchingFreshData()
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
@@ -102,14 +102,14 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertTrue(dataState.isFetchingFreshData)
         XCTAssertFalse(dataState.doneFetchingFreshData)
         XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     func test_doneFetchingFreshData() {
         let data = "foo"
         let dataFetched = Date()
         let error = Fail()
-        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
+        self.dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: getDataRequirements).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
         
         XCTAssertFalse(dataState.firstFetchOfData)
         XCTAssertFalse(dataState.doneFirstFetchOfData)
@@ -120,7 +120,7 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertFalse(dataState.isFetchingFreshData)
         XCTAssertTrue(dataState.doneFetchingFreshData)
         XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: error, rhs: dataState.errorDuringFetch))
-        XCTAssertEqual(dataState.getDataRequirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
+        XCTAssertEqual(dataState.requirements as! MockOnlineRepositoryDataSource.MockGetDataRequirements, getDataRequirements)
     }
     
     class Fail: Error {

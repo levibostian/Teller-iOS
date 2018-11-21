@@ -40,12 +40,21 @@ class LocalRepositoryTest: XCTestCase {
         self.localRepository.requirements = FakeLocalGetDataRequirements()
     }
     
-    func test_observe_requirementsNotSet_throws() {
-        initRepository()
+    func test_observe_requirementsNotSet_willReceiveEventsOnceRequirementsSet() {
+        let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: true, observeData: Observable.just(""))
+        initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         self.localRepository.requirements = nil
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        XCTAssertThrowsError(try self.localRepository.observe().subscribe(observer).dispose())
+        compositeDisposable += self.localRepository.observe().subscribe(observer)
+        
+        XCTAssertRecordedElements(observer.events, [LocalDataState<String>.none()])
+        
+        self.localRepository.requirements = FakeLocalGetDataRequirements()
+        
+        XCTAssertRecordedElements(observer.events, [LocalDataState<String>.none(),
+                                                    LocalDataState<String>.none(), // 2nd .none() call since calling resetStateToNone()
+                                                    LocalDataState<String>.isEmpty()])
     }
     
     func test_observe_onNextEmpty() {
@@ -53,7 +62,7 @@ class LocalRepositoryTest: XCTestCase {
         initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        try! self.localRepository.observe().subscribe(observer).dispose()
+        self.localRepository.observe().subscribe(observer).dispose()
         
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.isEmpty()])
     }
@@ -64,7 +73,7 @@ class LocalRepositoryTest: XCTestCase {
         initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        try! self.localRepository.observe().subscribe(observer).dispose()
+        self.localRepository.observe().subscribe(observer).dispose()
         
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.data(data: data)])
     }
@@ -75,7 +84,7 @@ class LocalRepositoryTest: XCTestCase {
         initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        compositeDisposable += try! self.localRepository.observe().subscribe(observer)
+        compositeDisposable += self.localRepository.observe().subscribe(observer)
         
         self.localRepository = nil
         
@@ -89,10 +98,10 @@ class LocalRepositoryTest: XCTestCase {
         initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        compositeDisposable += try! self.localRepository.observe().subscribe(observer)
+        compositeDisposable += self.localRepository.observe().subscribe(observer)
         
         let observer2 = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
-        compositeDisposable += try! self.localRepository.observe().subscribe(observer2)
+        compositeDisposable += self.localRepository.observe().subscribe(observer2)
         
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.isEmpty()])
         XCTAssertRecordedElements(observer2.events, [LocalDataState<String>.isEmpty()])
@@ -100,8 +109,10 @@ class LocalRepositoryTest: XCTestCase {
         self.localRepository.requirements = FakeLocalGetDataRequirements()
         
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.isEmpty(),
+                                                    LocalDataState<String>.none(), // Call to resetStateToNone()
                                                     LocalDataState<String>.isEmpty()])
         XCTAssertRecordedElements(observer2.events, [LocalDataState<String>.isEmpty(),
+                                                     LocalDataState<String>.none(), // Call to resetStateToNone()
                                                      LocalDataState<String>.isEmpty()])
     }
     

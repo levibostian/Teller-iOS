@@ -13,14 +13,12 @@ import RxTest
 
 class OnlineDataStateBehaviorSubjectTest: XCTestCase {
 
-    var getDataRequirements: OnlineRepositoryGetDataRequirements!
     private var subject: OnlineDataStateBehaviorSubject<String>!
     
     override func setUp() {
         super.setUp()
         
-        self.getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
-        self.subject = OnlineDataStateBehaviorSubject(getDataRequirements: getDataRequirements)
+        self.subject = OnlineDataStateBehaviorSubject()
     }
     
     override func tearDown() {
@@ -32,82 +30,100 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none()])
     }
     
     func test_onNextFirstFetchOfData() {
-        self.subject.onNextFirstFetchOfData()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextFirstFetchOfData(requirements: requirements)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData(getDataRequirements: getDataRequirements)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData(requirements: requirements)])
     }
     
     func test_onNextCacheEmpty() {
         let fetched = Date()
-        self.subject.onNextCacheEmpty(isFetchingFreshData: true, dataFetched: fetched)
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: true, dataFetched: fetched)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(getDataRequirements: getDataRequirements, dataFetched: fetched).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(requirements: requirements, dataFetched: fetched).fetchingFreshData()])
     }
     
     func test_onNextCachedData() {
         let data = "foo"
         let fetched = Date()
-        self.subject.onNextCachedData(data: data, dataFetched: fetched, isFetchingFreshData: true)
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextCachedData(requirements: requirements, data: data, dataFetched: fetched, isFetchingFreshData: true)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: fetched, getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.data(data: data, dataFetched: fetched, requirements: requirements).fetchingFreshData()])
     }
     
     func test_onNextDoneFetchingFreshData() {
+        let fetched = Date()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
         let error = Fail()
+        self.subject.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: true, dataFetched: fetched)
         self.subject.onNextDoneFetchingFreshData(errorDuringFetch: error)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements).doneFetchingFreshData(errorDuringFetch: error)])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(requirements: requirements, dataFetched: fetched).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)])
     }
     
     func test_onNextFetchingFreshData() {
+        let fetched = Date()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: true, dataFetched: fetched)
         self.subject.onNextFetchingFreshData()
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.isEmpty(requirements: requirements, dataFetched: fetched).fetchingFreshData()])
     }
     
     func test_onNextDoneFirstFetch() {
         let error = Fail()
-        self.subject.onNextFirstFetchOfData()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextFirstFetchOfData(requirements: requirements)
         self.subject.onNextDoneFirstFetch(errorDuringFetch: error)
         
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         self.subject.subject.subscribe(observer).dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.firstFetchOfData(getDataRequirements: getDataRequirements).doneFirstFetch(error: error)])
+        XCTAssertRecordedElements(observer.events, [
+            OnlineDataState<String>.firstFetchOfData(requirements: requirements).doneFirstFetch(error: error)])
     }
     
     func test_onNextEmpty_receive2Events() {
         let observer = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         let dispose = self.subject.subject.subscribe(observer)
         
-        self.subject.onNextFetchingFreshData()
+        let fetched = Date()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: true, dataFetched: fetched)
         dispose.dispose()
         
-        XCTAssertRecordedElements(observer.events, [OnlineDataState<String>.none(getDataRequirements: getDataRequirements), OnlineDataState<String>.none(getDataRequirements: getDataRequirements).fetchingFreshData()])
+        XCTAssertRecordedElements(observer.events, [
+            OnlineDataState<String>.none(),
+            OnlineDataState<String>.isEmpty(requirements: requirements, dataFetched: fetched),
+            OnlineDataState<String>.isEmpty(requirements: requirements, dataFetched: fetched).fetchingFreshData()])
     }
     
     func test_multipleObservers() {
         var compositeDisposable = CompositeDisposable()
-        self.subject.onNextFirstFetchOfData()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.subject.resetStateToNone()
+        self.subject.onNextFirstFetchOfData(requirements: requirements)
         
         let observer1 = TestScheduler(initialClock: 0).createObserver(OnlineDataState<String>.self)
         compositeDisposable += self.subject.subject.subscribe(observer1)
@@ -118,11 +134,16 @@ class OnlineDataStateBehaviorSubjectTest: XCTestCase {
         
         let data = "foo"
         let fetched = Date()
-        self.subject.onNextCachedData(data: data, dataFetched: fetched, isFetchingFreshData: false)
+        self.subject.onNextCachedData(requirements: requirements, data: data, dataFetched: fetched, isFetchingFreshData: false)
         compositeDisposable.dispose()
         
-        XCTAssertRecordedElements(observer1.events, [OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements), OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements).doneFirstFetch(error: nil), OnlineDataState.data(data: data, dataFetched: fetched, getDataRequirements: getDataRequirements)])
-        XCTAssertRecordedElements(observer2.events, [OnlineDataState<String>.firstFetchOfData(getDataRequirements: getDataRequirements).doneFirstFetch(error: nil), OnlineDataState<String>.data(data: data, dataFetched: fetched, getDataRequirements: getDataRequirements)])
+        XCTAssertRecordedElements(observer1.events, [
+            OnlineDataState.firstFetchOfData(requirements: requirements),
+            OnlineDataState.firstFetchOfData(requirements: requirements).doneFirstFetch(error: nil),
+            OnlineDataState.data(data: data, dataFetched: fetched, requirements: requirements)])
+        XCTAssertRecordedElements(observer2.events, [
+            OnlineDataState<String>.firstFetchOfData(requirements: requirements).doneFirstFetch(error: nil),
+            OnlineDataState<String>.data(data: data, dataFetched: fetched, requirements: requirements)])
     }
     
     private class Fail: Error {

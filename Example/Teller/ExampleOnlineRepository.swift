@@ -93,7 +93,7 @@ class ExampleUsingOnlineRepository {
         
         let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements        
-        try! repository
+        repository
             .observe()
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribeOn(MainScheduler.instance)

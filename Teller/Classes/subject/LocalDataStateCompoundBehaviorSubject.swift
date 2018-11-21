@@ -31,9 +31,14 @@ internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
     internal let subject: BehaviorSubject<LocalDataState<DataType>>
     
     init() {
-        self.dataState = LocalDataState.isEmpty()
-        self.subject = BehaviorSubject(value: self.dataState)
-    }    
+        let initialDataState = LocalDataState<DataType>.none()
+        self.subject = BehaviorSubject<LocalDataState<DataType>>(value: initialDataState)
+        self.dataState = initialDataState
+    }
+    
+    func resetStateToNone() {
+        self.dataState = LocalDataState<DataType>.none()
+    }
     
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).

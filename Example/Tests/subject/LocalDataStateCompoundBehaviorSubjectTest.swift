@@ -30,7 +30,7 @@ class LocalDataStateCompoundBehaviorSubjectTest: XCTestCase {
         self.subject.subject.subscribe(observer).dispose()
         
         // Assert that isEmpty() is set on init()
-        XCTAssertRecordedElements(observer.events, [LocalDataState.isEmpty()])
+        XCTAssertRecordedElements(observer.events, [LocalDataState.none()])
     }
     
     func test_onNextEmpty_receive1Event() {
@@ -53,7 +53,7 @@ class LocalDataStateCompoundBehaviorSubjectTest: XCTestCase {
         dispose.dispose()
         
         // Receive 2 events because I am subscribing *before* I call onNextEmpty().
-        XCTAssertRecordedElements(observer.events, [LocalDataState.isEmpty(), LocalDataState.isEmpty()])
+        XCTAssertRecordedElements(observer.events, [LocalDataState.none(), LocalDataState.isEmpty()])
     }
     
     func test_multipleObservers() {
@@ -71,7 +71,7 @@ class LocalDataStateCompoundBehaviorSubjectTest: XCTestCase {
         self.subject.onNextData(data: data)
         compositeDisposable.dispose()
         
-        XCTAssertRecordedElements(observer1.events, [LocalDataState.isEmpty(), LocalDataState.isEmpty(), LocalDataState.data(data: data)])
+        XCTAssertRecordedElements(observer1.events, [LocalDataState.none(), LocalDataState.isEmpty(), LocalDataState.data(data: data)])
         XCTAssertRecordedElements(observer2.events, [LocalDataState.isEmpty(), LocalDataState.data(data: data)])
     }
     
@@ -85,6 +85,20 @@ class LocalDataStateCompoundBehaviorSubjectTest: XCTestCase {
         compositeDisposable += self.subject.subject.subscribe(observer)
         
         XCTAssertRecordedElements(observer.events, [LocalDataState.data(data: data)])
+    }
+    
+    func test_resetStateToNone() {
+        var compositeDisposable = CompositeDisposable()
+        
+        let data = "foo"
+        self.subject.onNextData(data: data)
+        
+        let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
+        compositeDisposable += self.subject.subject.subscribe(observer)
+        
+        self.subject.resetStateToNone()
+        
+        XCTAssertRecordedElements(observer.events, [LocalDataState.data(data: data), LocalDataState.none()])
     }
     
 }

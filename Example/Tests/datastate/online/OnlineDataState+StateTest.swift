@@ -27,51 +27,51 @@ class OnlineDataState_StateTest: XCTestCase {
     
     func test_cacheState_cacheEmpty() {
         let fetched = Date()
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: fetched)
+        dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: fetched)
         XCTAssertEqual(dataState.cacheState(), OnlineDataState.CacheState.cacheEmpty(fetched: fetched))
     }
     
     func test_cacheState_cacheData() {
         let data = "foo"
         let dataFetched = Date()
-        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
+        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: getDataRequirements)
         XCTAssertEqual(dataState.cacheState(), OnlineDataState.CacheState.cacheData(data: data, fetched: dataFetched))
     }
 
     func test_cacheState_nil() {
-        dataState = OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements)
+        dataState = OnlineDataState.firstFetchOfData(requirements: getDataRequirements)
         XCTAssertNil(dataState.cacheState())
     }
     
     func test_firstFetchState_firstFetchOfData() {
-        dataState = OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements)
+        dataState = OnlineDataState.firstFetchOfData(requirements: getDataRequirements)
         XCTAssertEqual(dataState.firstFetchState(), OnlineDataState.FirstFetchState.firstFetchOfData)
     }
     
     func test_firstFetchState_finishedFirstFetchOfData() {
         let error = FetchError()
-        dataState = OnlineDataState.firstFetchOfData(getDataRequirements: getDataRequirements).doneFirstFetch(error: error)
+        dataState = OnlineDataState.firstFetchOfData(requirements: getDataRequirements).doneFirstFetch(error: error)
         XCTAssertEqual(dataState.firstFetchState(), OnlineDataState.FirstFetchState.finishedFirstFetchOfData(errorDuringFetch: error))
     }
     
     func test_firstFetchState_nil() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date())
+        dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: Date())
         XCTAssertNil(dataState.firstFetchState())
     }
     
     func test_fetchingFreshDataState_fetchingFreshData() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date()).fetchingFreshData()
+        dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: Date()).fetchingFreshData()
         XCTAssertEqual(dataState.fetchingFreshDataState(), OnlineDataState.FetchingFreshDataState.fetchingFreshCacheData)
     }
     
     func test_fetchingFreshDataState_finishedFetchingFreshData() {
         let error = FetchError()
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date()).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
+        dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: Date()).fetchingFreshData().doneFetchingFreshData(errorDuringFetch: error)
         XCTAssertEqual(dataState.fetchingFreshDataState(), OnlineDataState.FetchingFreshDataState.finishedFetchingFreshCacheData(errorDuringFetch: error))
     }
     
     func test_fetchingFreshDataState_nil() {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: getDataRequirements, dataFetched: Date())
+        dataState = OnlineDataState.isEmpty(requirements: getDataRequirements, dataFetched: Date())
         XCTAssertNil(dataState.fetchingFreshDataState())
     }
     

@@ -36,6 +36,10 @@ public struct LocalDataState<DataType: Any> {
         self.data = data
     }
     
+    public static func none() -> LocalDataState {
+        return LocalDataState(isEmpty: false, data: nil)
+    }
+    
     public static func isEmpty() -> LocalDataState {
         return LocalDataState(isEmpty: true, data: nil)
     }

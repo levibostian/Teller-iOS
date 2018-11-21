@@ -29,6 +29,8 @@ import Foundation
  * @property errorDuringFetch Says that the [latestError] was caused during the fetching phase.
  */
 public struct OnlineDataState<DataType: Any> {
+    
+    fileprivate let requirementsNotSetErrorMessage = "You cannot change the state of the data when the requirements not yet set. You must have called the `none` constructor. Call another one to reset the state."
 
     public let firstFetchOfData: Bool
     public let doneFirstFetchOfData: Bool
@@ -39,7 +41,7 @@ public struct OnlineDataState<DataType: Any> {
     public let isFetchingFreshData: Bool
     public let doneFetchingFreshData: Bool
     public let errorDuringFetch: Error?
-    public let getDataRequirements: OnlineRepositoryGetDataRequirements
+    public let requirements: OnlineRepositoryGetDataRequirements?
 
     private init(firstFetchOfData: Bool = false,
                  doneFirstFetchOfData: Bool = false,
@@ -50,7 +52,7 @@ public struct OnlineDataState<DataType: Any> {
                  isFetchingFreshData: Bool = false,
                  doneFetchingFreshData: Bool = false,
                  errorDuringFetch: Error? = nil,
-                 getDataRequirements: OnlineRepositoryGetDataRequirements) {
+                 getDataRequirements: OnlineRepositoryGetDataRequirements?) {
         self.firstFetchOfData = firstFetchOfData
         self.doneFirstFetchOfData = doneFirstFetchOfData
         self.isEmpty = isEmpty
@@ -60,28 +62,28 @@ public struct OnlineDataState<DataType: Any> {
         self.isFetchingFreshData = isFetchingFreshData
         self.doneFetchingFreshData = doneFetchingFreshData
         self.errorDuringFetch = errorDuringFetch
-        self.getDataRequirements = getDataRequirements
+        self.requirements = getDataRequirements
     }
 
-    // Use these constructors to construct the initial state of this immutable object. Use the functions
+    // MARK - Intializers. Use these constructors to construct the initial state of this immutable object.
     
     /**
      This constructor is meant to be more of a placeholder. It's having "no state".
      */
-    internal static func none(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(getDataRequirements: getDataRequirements)
+    internal static func none() -> OnlineDataState {
+        return OnlineDataState(getDataRequirements: nil)
     }
     
-    internal static func firstFetchOfData(getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(firstFetchOfData: true, getDataRequirements: getDataRequirements)
+    internal static func firstFetchOfData(requirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(firstFetchOfData: true, getDataRequirements: requirements)
     }
     
-    internal static func isEmpty(getDataRequirements: OnlineRepositoryGetDataRequirements, dataFetched: Date) -> OnlineDataState {
-        return OnlineDataState(isEmpty: true, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
+    internal static func isEmpty(requirements: OnlineRepositoryGetDataRequirements, dataFetched: Date) -> OnlineDataState {
+        return OnlineDataState(isEmpty: true, dataFetched: dataFetched, getDataRequirements: requirements)
     }
     
-    internal static func data(data: DataType, dataFetched: Date, getDataRequirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(data: data, dataFetched: dataFetched, getDataRequirements: getDataRequirements)
+    internal static func data(data: DataType, dataFetched: Date, requirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
+        return OnlineDataState(data: data, dataFetched: dataFetched, getDataRequirements: requirements)
     }
 
     /**
@@ -90,6 +92,10 @@ public struct OnlineDataState<DataType: Any> {
      * @return New immutable instance of [OnlineDataState]
      */
     internal func doneFirstFetch(error: Error?) -> OnlineDataState {
+        if self.requirements == nil {
+            fatalError(requirementsNotSetErrorMessage)
+        }
+        
         return OnlineDataState(
             // Done fetching data
             firstFetchOfData: false,
@@ -104,7 +110,7 @@ public struct OnlineDataState<DataType: Any> {
             doneFetchingFreshData: self.doneFetchingFreshData,
             // Set nil to avoid calling the listener error() multiple times.
             errorDuringFetch: nil,
-            getDataRequirements: self.getDataRequirements)
+            getDataRequirements: self.requirements)
     }
 
     /**
@@ -115,6 +121,9 @@ public struct OnlineDataState<DataType: Any> {
     internal func fetchingFreshData() -> OnlineDataState {
         if (self.firstFetchOfData) {
             fatalError("The state of cacheData is saying you are already fetching for the first time. You cannot fetch for first time and fetch after cache.")
+        }
+        if self.requirements == nil {
+            fatalError(requirementsNotSetErrorMessage)
         }
 
         return OnlineDataState(
@@ -130,7 +139,7 @@ public struct OnlineDataState<DataType: Any> {
             doneFetchingFreshData: self.doneFetchingFreshData,
             // Set nil to avoid calling the listener error() multiple times.
             errorDuringFetch: nil,
-            getDataRequirements: self.getDataRequirements)
+            getDataRequirements: self.requirements)
     }
     
     /**
@@ -141,6 +150,9 @@ public struct OnlineDataState<DataType: Any> {
     internal func doneFetchingFreshData(errorDuringFetch: Error?) -> OnlineDataState {
         if (self.firstFetchOfData) {
             fatalError("Call doneFirstFetch() instead. Then all future calls *after* the first fetch will be done using fetchingFreshData() and doneFetchingFreshData().")
+        }
+        if self.requirements == nil {
+            fatalError(requirementsNotSetErrorMessage)
         }
     
         return OnlineDataState(
@@ -157,7 +169,7 @@ public struct OnlineDataState<DataType: Any> {
             doneFetchingFreshData: true,
             // Setting if error
             errorDuringFetch: errorDuringFetch,
-            getDataRequirements: self.getDataRequirements)
+            getDataRequirements: self.requirements)
     }
     
 }
@@ -174,7 +186,7 @@ extension OnlineDataState: Equatable where DataType: Equatable {
             lhs.isFetchingFreshData == rhs.isFetchingFreshData &&
             lhs.doneFetchingFreshData == rhs.doneFetchingFreshData &&
             ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch) && 
-            lhs.getDataRequirements.tag == rhs.getDataRequirements.tag
+            lhs.requirements?.tag == rhs.requirements?.tag
     }
     
 }

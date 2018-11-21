@@ -29,32 +29,32 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         }
     }
     internal let subject: BehaviorSubject<OnlineDataState<DataType>>
-    var getDataRequirements: OnlineRepositoryGetDataRequirements! {
-        didSet {
-            self.dataState = OnlineDataState<DataType>.none(getDataRequirements: getDataRequirements)
-        }
-    }
     
-    init(getDataRequirements: OnlineRepositoryGetDataRequirements) {
-        let initialDataState = OnlineDataState<DataType>.none(getDataRequirements: getDataRequirements)
+    init() {
+        let initialDataState = OnlineDataState<DataType>.none()
         self.subject = BehaviorSubject(value: initialDataState)
         self.dataState = initialDataState
-        
-        self.getDataRequirements = getDataRequirements
+    }
+    
+    /**
+     When the `OnlineRepositoryGetDataRequirements` is changed to an `OnlineRepository`, we want to reset to a "none" state where the data has no state. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
+     */
+    func resetStateToNone() {
+        self.dataState = OnlineDataState.none()
     }
     
     /**
      * The cacheData is being fetched for the first time.
      */
-    func onNextFirstFetchOfData() {
-        dataState = OnlineDataState.firstFetchOfData(getDataRequirements: self.getDataRequirements)
+    func onNextFirstFetchOfData(requirements: OnlineRepositoryGetDataRequirements) {
+        dataState = OnlineDataState.firstFetchOfData(requirements: requirements)
     }    
     
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
      */
-    func onNextCacheEmpty(isFetchingFreshData: Bool, dataFetched: Date) {
-        dataState = OnlineDataState.isEmpty(getDataRequirements: self.getDataRequirements, dataFetched: dataFetched)
+    func onNextCacheEmpty(requirements: OnlineRepositoryGetDataRequirements, isFetchingFreshData: Bool, dataFetched: Date) {
+        dataState = OnlineDataState.isEmpty(requirements: requirements, dataFetched: dataFetched)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
         }
@@ -63,8 +63,8 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     /**
      * The status of cacheData is cacheData (optionally fetching new fresh cacheData as well).
      */
-    func onNextCachedData(data: DataType, dataFetched: Date, isFetchingFreshData: Bool) {
-        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, getDataRequirements: self.getDataRequirements)
+    func onNextCachedData(requirements: OnlineRepositoryGetDataRequirements, data: DataType, dataFetched: Date, isFetchingFreshData: Bool) {
+        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: requirements)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
         }

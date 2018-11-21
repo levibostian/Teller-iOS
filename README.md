@@ -236,7 +236,7 @@ let disposeBag = DisposeBag()
 let repository: GitHubUsernameRepository = GitHubUsernameRepository()
 repository.requirements = GitHubUsernameDataSourceGetDataRequirements()
 
-try! repository
+repository
     .observe()
     .subscribeOn(MainScheduler.instance)
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
@@ -263,7 +263,7 @@ let repository: ReposRepository = ReposRepository()
 
 let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
 repository.requirements = reposGetDataRequirements
-try! repository
+repository
     .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)

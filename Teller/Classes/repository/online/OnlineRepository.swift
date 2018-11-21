@@ -22,17 +22,16 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     internal let schedulersProvider: SchedulersProvider
     
     internal var observeCacheDisposable: Disposable? = nil
-    internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache>? = nil
+    internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject()
     
+    /**
+     If requirements is set to nil, we will stop observing the cache changes and reset the state of data to nil.
+     */
     public var requirements: DataSource.GetDataRequirements? = nil {
         didSet {
+            self.currentStateOfData.resetStateToNone()
+            
             if let requirements = requirements {
-                if currentStateOfData == nil {
-                    self.currentStateOfData = OnlineDataStateBehaviorSubject(getDataRequirements: requirements)
-                } else {
-                    self.currentStateOfData!.getDataRequirements = requirements
-                }
-                
                 if self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
                     beginObservingCachedData(requirements: requirements)
                 } else {
@@ -41,6 +40,8 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                         .subscribeOn(self.schedulersProvider.background)
                         .subscribe()
                 }
+            } else {
+                self.observeCacheDisposable?.dispose()
             }
         }
     }
@@ -60,8 +61,8 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     }
     
     deinit {
-        currentStateOfData?.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
-        currentStateOfData?.subject.dispose()
+        currentStateOfData.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
+        currentStateOfData.subject.dispose()
         
         observeCacheDisposable?.dispose()
     }
@@ -88,18 +89,18 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             return self.dataSource.fetchFreshData(requirements: requirements)
                 .do(onSubscribe: { // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
                     if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
-                        self.currentStateOfData?.onNextFirstFetchOfData()
+                        self.currentStateOfData.onNextFirstFetchOfData(requirements: requirements)
                     } else {
-                        self.currentStateOfData?.onNextFetchingFreshData()
+                        self.currentStateOfData.onNextFetchingFreshData()
                     }
                 })
                 .map({ (fetchResponse: FetchResponse<DataSource.FetchResult>) -> SyncResult in
                     if let fetchError = fetchResponse.failure {
                         // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
                         if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
-                            self.currentStateOfData?.onNextDoneFirstFetch(errorDuringFetch: fetchError)
+                            self.currentStateOfData.onNextDoneFirstFetch(errorDuringFetch: fetchError)
                         } else {
-                            self.currentStateOfData?.onNextDoneFetchingFreshData(errorDuringFetch: fetchError)
+                            self.currentStateOfData.onNextDoneFetchingFreshData(errorDuringFetch: fetchError)
                         }
                         return SyncResult.fail(fetchResponse.failure!)
                     } else {
@@ -114,9 +115,9 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                         self.beginObservingCachedData(requirements: requirements)
                         
                         if !hasEverFetchedDataBefore {
-                            self.currentStateOfData?.onNextDoneFirstFetch(errorDuringFetch: nil)
+                            self.currentStateOfData.onNextDoneFirstFetch(errorDuringFetch: nil)
                         } else {
-                            self.currentStateOfData?.onNextDoneFetchingFreshData(errorDuringFetch: nil)
+                            self.currentStateOfData.onNextDoneFetchingFreshData(errorDuringFetch: nil)
                         }
                         
                         return SyncResult.success()
@@ -143,9 +144,9 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
                 
                 let lastTimeDataFetched: Date? = self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)
                 if (self.dataSource.isDataEmpty(cache)) {
-                    self.currentStateOfData?.onNextCacheEmpty(isFetchingFreshData: needsToFetchFreshData, dataFetched: lastTimeDataFetched!)
+                    self.currentStateOfData.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: needsToFetchFreshData, dataFetched: lastTimeDataFetched!)
                 } else {
-                    self.currentStateOfData?.onNextCachedData(data: cache, dataFetched: lastTimeDataFetched!, isFetchingFreshData: needsToFetchFreshData)
+                    self.currentStateOfData.onNextCachedData(requirements: requirements, data: cache, dataFetched: lastTimeDataFetched!, isFetchingFreshData: needsToFetchFreshData)
                 }
                 
                 if (needsToFetchFreshData) {
@@ -160,23 +161,20 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
      ### Observe changes to the state of data.
      
      **Note**
-     * Each time you call this function, it is your responsibility to dispose of the `Observable` returned from this function. Teller does not take care of that for you. Each time you call this function you receive a *new* `Observable` that needs to be disposed on it's own.
+     * The state of the Observable returned from this function is maintained by the OnlineRepository. When the OnlineRepository `deinit` is called, all observers will be disposed.
      * When you subscribe to the returned `Observable`, you will receive a result immediately with the current state of the data when you subscribe (even if there is "no state").
      
      - Returns: A RxSwift Observable<OnlineDataState<Cache>> instance that gets notified when the state of the cached data changes.
-     - Throws: TellerError.objectPropertiesNotSet if you did not set `requirements` before calling this function.
      */
-    public final func observe() throws -> Observable<OnlineDataState<DataSource.Cache>> {
-        guard let _ = self.requirements else {
-            throw TellerError.objectPropertiesNotSet(["requirements"])
+    public final func observe() -> Observable<OnlineDataState<DataSource.Cache>> {
+        if self.requirements != nil {
+            // Trigger a refresh to help keep data up-to-date.
+            _ = try! self.refresh(force: false)
+                .subscribeOn(schedulersProvider.background)
+                .subscribe()
         }
         
-        // Trigger a refresh to help keep data up-to-date.
-        _ = try self.refresh(force: false)
-            .subscribeOn(schedulersProvider.background)
-            .subscribe()
-        
-        return self.currentStateOfData!.subject
+        return self.currentStateOfData.subject
     }
     
 }

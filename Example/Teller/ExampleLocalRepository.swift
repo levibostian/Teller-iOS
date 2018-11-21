@@ -56,7 +56,7 @@ class ExampleUsingLocalRepository {
         let repository: GitHubUsernameRepository = GitHubUsernameRepository()
         repository.requirements = GitHubUsernameDataSourceGetDataRequirements()
         
-        try! repository
+        repository
             .observe()
             .subscribeOn(MainScheduler.instance)
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
