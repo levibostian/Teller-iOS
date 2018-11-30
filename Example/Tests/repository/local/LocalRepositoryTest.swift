@@ -80,15 +80,21 @@ class LocalRepositoryTest: XCTestCase {
     
     func test_disposeRepository_disposesObservers() {
         let data: String = "data here"
-        let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: false, observeData: Observable.just(data))
+        let observeCacheObservable: PublishSubject<String> = PublishSubject()
+        let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: false, observeData: observeCacheObservable)
         initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
         compositeDisposable += self.localRepository.observe().subscribe(observer)
+
+        observeCacheObservable.onNext(data)
         
         self.localRepository = nil
+
+        observeCacheObservable.onNext("This will never get to observer")
         
         XCTAssertEqual(observer.events, [
+            Recorded.next(0, LocalDataState<String>.none()),
             Recorded.next(0, LocalDataState<String>.data(data: data)),
             Recorded.completed(0)])
     }

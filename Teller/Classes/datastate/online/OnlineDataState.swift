@@ -8,61 +8,38 @@
 import Foundation
 
 /**
- * Data in apps are in 1 of 3 different types of state:
- *
- * 1. Data does not exist. It has never been obtained before.
- * 2. It is empty. Data has been obtained before, but there is none.
- * 3. Data exists.
- *
- * This class takes in a type of cacheData to keep state on via generic [DATA] and it maintains the state of that cacheData.
- *
- * Along with the 3 different states cacheData could be in, there are temporary states that cacheData could also be in.
- *
- * * An error occurred with that cacheData.
- * * Fresh cacheData is being fetched for this cacheData. It may be updated soon.
- *
- * The 3 states listed above empty, cacheData, loading are all permanent. Data is 1 of those 3 at all times. Data has this error or fetching status temporarily until someone calls [deliver] one time and then those temporary states are deleted.
- *
- * This class is used in companion with [Repository] and [OnlineStateDataCompoundBehaviorSubject] to maintain the state of cacheData to deliver to someone observing.
- *
- * @property firstFetchOfData When cacheData has never been fetched before for a cacheData type, this is where it all begins. After this, cacheData will be empty or cacheData state.
- * @property errorDuringFetch Says that the [latestError] was caused during the fetching phase.
+ Holds the current state of data that is obtained via a network call. This data structure is meant to be passed out of Teller and to the application using Teller so it can parse it and display the data representation in the app.
+
+ The online data state is *not* manipulated here. It is only stored.
+
+ Data in apps are in 1 of 3 different types of state:
+
+ 1. Cache data does not exist. It has never been attempted to be fetched or it has been attempted but failed and needs to be attempted again.
+ 2. Data has been cached in the app and is either empty or not.
+ 3. A cache exists, and we are fetching fresh data to update the cache.
  */
 public struct OnlineDataState<DataType: Any> {
-    
-    fileprivate let requirementsNotSetErrorMessage = "You cannot change the state of the data when the requirements not yet set. You must have called the `none` constructor. Call another one to reset the state."
 
-    public let firstFetchOfData: Bool
-    public let doneFirstFetchOfData: Bool
-    public let isEmpty: Bool
-    public let data: DataType?
-    public let dataFetched: Date?
-    public let errorDuringFirstFetch: Error?
-    public let isFetchingFreshData: Bool
-    public let doneFetchingFreshData: Bool
-    public let errorDuringFetch: Error?
-    public let requirements: OnlineRepositoryGetDataRequirements?
+    let noCacheExists: Bool
+    let fetchingForFirstTime: Bool
+    let cacheData: DataType?
+    let lastTimeFetched: Date?
+    let isFetchingFreshData: Bool
 
-    private init(firstFetchOfData: Bool = false,
-                 doneFirstFetchOfData: Bool = false,
-                 isEmpty: Bool = false,
-                 data: DataType? = nil,
-                 dataFetched: Date? = nil,
-                 errorDuringFirstFetch: Error? = nil,
-                 isFetchingFreshData: Bool = false,
-                 doneFetchingFreshData: Bool = false,
-                 errorDuringFetch: Error? = nil,
-                 getDataRequirements: OnlineRepositoryGetDataRequirements?) {
-        self.firstFetchOfData = firstFetchOfData
-        self.doneFirstFetchOfData = doneFirstFetchOfData
-        self.isEmpty = isEmpty
-        self.data = data
-        self.dataFetched = dataFetched
-        self.errorDuringFirstFetch = errorDuringFirstFetch
-        self.isFetchingFreshData = isFetchingFreshData
-        self.doneFetchingFreshData = doneFetchingFreshData
-        self.errorDuringFetch = errorDuringFetch
-        self.requirements = getDataRequirements
+    let requirements: OnlineRepositoryGetDataRequirements?
+    let stateMachine: OnlineDataStateStateMachine<DataType>?
+
+    // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of data, the following properties should be set once in the constuctor and then for future state calls, negate them.
+    let errorDuringFirstFetch: Error?
+    let justCompletedSuccessfulFirstFetch: Bool
+    let errorDuringFetch: Error?
+    let justCompletedSuccessfullyFetchingFreshData: Bool
+
+    /**
+     Used to change the state of data.
+     */
+    internal func change() -> OnlineDataStateStateMachine<DataType> {
+        return self.stateMachine!
     }
 
     // MARK - Intializers. Use these constructors to construct the initial state of this immutable object.
@@ -71,122 +48,37 @@ public struct OnlineDataState<DataType: Any> {
      This constructor is meant to be more of a placeholder. It's having "no state".
      */
     internal static func none() -> OnlineDataState {
-        return OnlineDataState(getDataRequirements: nil)
-    }
-    
-    internal static func firstFetchOfData(requirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(firstFetchOfData: true, getDataRequirements: requirements)
-    }
-    
-    internal static func isEmpty(requirements: OnlineRepositoryGetDataRequirements, dataFetched: Date) -> OnlineDataState {
-        return OnlineDataState(isEmpty: true, dataFetched: dataFetched, getDataRequirements: requirements)
-    }
-    
-    internal static func data(data: DataType, dataFetched: Date, requirements: OnlineRepositoryGetDataRequirements) -> OnlineDataState {
-        return OnlineDataState(data: data, dataFetched: dataFetched, getDataRequirements: requirements)
-    }
-
-    /**
-     * Tag on an error to this cacheData. Errors could be an error fetching fresh cacheData or reading cacheData off the device. The errors should have to deal with this cacheData, not some generic error encountered in the app.
-     *
-     * @return New immutable instance of [OnlineDataState]
-     */
-    internal func doneFirstFetch(error: Error?) -> OnlineDataState {
-        if self.requirements == nil {
-            fatalError(requirementsNotSetErrorMessage)
-        }
-        
         return OnlineDataState(
-            // Done fetching data
-            firstFetchOfData: false,
-            // Done with first fetch of data.
-            doneFirstFetchOfData: true,
-            isEmpty: self.isEmpty,
-            data: self.data,
-            dataFetched: self.dataFetched,
-            // Setting if error.
-            errorDuringFirstFetch: error,
-            isFetchingFreshData: self.isFetchingFreshData,
-            doneFetchingFreshData: self.doneFetchingFreshData,
-            // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFetch: nil,
-            getDataRequirements: self.requirements)
-    }
-
-    /**
-     * Set the status of this cacheData as fetching fresh cacheData.
-     *
-     * @return New immutable instance of [OnlineDataState]
-     */
-    internal func fetchingFreshData() -> OnlineDataState {
-        if (self.firstFetchOfData) {
-            fatalError("The state of cacheData is saying you are already fetching for the first time. You cannot fetch for first time and fetch after cache.")
-        }
-        if self.requirements == nil {
-            fatalError(requirementsNotSetErrorMessage)
-        }
-
-        return OnlineDataState(
-            firstFetchOfData: self.firstFetchOfData,
-            doneFirstFetchOfData: self.doneFirstFetchOfData,
-            isEmpty: self.isEmpty,
-            data: self.data,
-            dataFetched: self.dataFetched,
-            // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFirstFetch: nil,
-            // Is fetching fresh data
-            isFetchingFreshData: true,
-            doneFetchingFreshData: self.doneFetchingFreshData,
-            // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFetch: nil,
-            getDataRequirements: self.requirements)
-    }
-    
-    /**
-     * Set the status of this cacheData as done fetching fresh cacheData.
-     *
-     * @return New immutable instance of [OnlineDataState]
-     */
-    internal func doneFetchingFreshData(errorDuringFetch: Error?) -> OnlineDataState {
-        if (self.firstFetchOfData) {
-            fatalError("Call doneFirstFetch() instead. Then all future calls *after* the first fetch will be done using fetchingFreshData() and doneFetchingFreshData().")
-        }
-        if self.requirements == nil {
-            fatalError(requirementsNotSetErrorMessage)
-        }
-    
-        return OnlineDataState(
-            firstFetchOfData: self.firstFetchOfData,
-            doneFirstFetchOfData: self.doneFirstFetchOfData,
-            isEmpty: self.isEmpty,
-            data: self.data,
-            dataFetched: self.dataFetched,
-            // Set nil to avoid calling the listener error() multiple times.
-            errorDuringFirstFetch: nil,
-            // Done fetching
+            noCacheExists: false,
+            fetchingForFirstTime: false,
+            cacheData: nil,
+            lastTimeFetched: nil,
             isFetchingFreshData: false,
-            // Done fetching
-            doneFetchingFreshData: true,
-            // Setting if error
-            errorDuringFetch: errorDuringFetch,
-            getDataRequirements: self.requirements)
+            requirements: nil,
+            stateMachine: nil,
+            errorDuringFirstFetch: nil,
+            justCompletedSuccessfulFirstFetch: false,
+            errorDuringFetch: nil,
+            justCompletedSuccessfullyFetchingFreshData: false)
     }
     
 }
 
 extension OnlineDataState: Equatable where DataType: Equatable {
-    
-    public static func == (lhs: OnlineDataState<DataType>, rhs: OnlineDataState<DataType>) -> Bool {        
-        return lhs.firstFetchOfData == rhs.firstFetchOfData &&
-            lhs.doneFirstFetchOfData == rhs.doneFirstFetchOfData &&
-            lhs.isEmpty == rhs.isEmpty &&
-            lhs.data == rhs.data &&
-            lhs.dataFetched?.timeIntervalSince1970 == rhs.dataFetched?.timeIntervalSince1970 &&
-            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFirstFetch, rhs: rhs.errorDuringFirstFetch) &&
+
+    public static func == (lhs: OnlineDataState<DataType>, rhs: OnlineDataState<DataType>) -> Bool {
+        return lhs.noCacheExists == rhs.noCacheExists &&
+            lhs.fetchingForFirstTime == rhs.fetchingForFirstTime &&
+            lhs.cacheData == rhs.cacheData &&
             lhs.isFetchingFreshData == rhs.isFetchingFreshData &&
-            lhs.doneFetchingFreshData == rhs.doneFetchingFreshData &&
-            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch) && 
-            lhs.requirements?.tag == rhs.requirements?.tag
+            lhs.lastTimeFetched?.timeIntervalSince1970 == rhs.lastTimeFetched?.timeIntervalSince1970 &&
+
+            lhs.requirements?.tag == rhs.requirements?.tag &&
+
+            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFirstFetch, rhs: rhs.errorDuringFirstFetch) &&
+            lhs.justCompletedSuccessfulFirstFetch == rhs.justCompletedSuccessfulFirstFetch &&
+            lhs.justCompletedSuccessfullyFetchingFreshData == rhs.justCompletedSuccessfullyFetchingFreshData &&
+            ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch)
     }
     
 }

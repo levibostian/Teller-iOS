@@ -40,6 +40,10 @@
 		F7C3CCDA217A7EFA00FA0879 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */; };
 		F7D275462166878E00D89CA5 /* Moya.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D275452166878E00D89CA5 /* Moya.framework */; };
 		F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D27547216687D400D89CA5 /* GitHubService.swift */; };
+		F7DDEDA221B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA121B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift */; };
+		F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */; };
+		F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */; };
+		F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -98,6 +102,10 @@
 		F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		F7D275452166878E00D89CA5 /* Moya.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Moya.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7D27547216687D400D89CA5 /* GitHubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubService.swift; sourceTree = "<group>"; };
+		F7DDEDA121B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineDataStateStateMachineTest.swift; sourceTree = "<group>"; };
+		F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCacheStateMachineTest.swift; sourceTree = "<group>"; };
+		F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateMachineTest.swift; sourceTree = "<group>"; };
+		F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingFreshCacheStateMachineTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -291,6 +299,7 @@
 		F7818C8F2152CE2E0050607E /* online */ = {
 			isa = PBXGroup;
 			children = (
+				F7DDEDA021B00975005ADF92 /* state machine */,
 				F7AFBDEB21505339008ECB51 /* OnlineDataStateTest.swift */,
 				F7818C902152CE440050607E /* OnlineDataState+StateTest.swift */,
 			);
@@ -334,6 +343,17 @@
 				F7AFBDF421505D03008ECB51 /* LocalRepositoryTest.swift */,
 			);
 			path = local;
+			sourceTree = "<group>";
+		};
+		F7DDEDA021B00975005ADF92 /* state machine */ = {
+			isa = PBXGroup;
+			children = (
+				F7DDEDA121B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift */,
+				F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */,
+				F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */,
+				F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */,
+			);
+			path = "state machine";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -548,6 +568,7 @@
 				F7AFBDEC21505339008ECB51 /* OnlineDataStateTest.swift in Sources */,
 				F7AFBDF521505D03008ECB51 /* LocalRepositoryTest.swift in Sources */,
 				F7818C6121517C820050607E /* MockOnlineRepositoryDataSource.swift in Sources */,
+				F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */,
 				F7818C5F21517C220050607E /* OnlineRepositoryTest.swift in Sources */,
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
 				F7818C5121507B090050607E /* UserDefaultsUtilTest.swift in Sources */,
@@ -558,9 +579,12 @@
 				F7818C5B21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift in Sources */,
 				F7818C912152CE440050607E /* OnlineDataState+StateTest.swift in Sources */,
 				F7818C8E2152CA1F0050607E /* LocalDataState+StateTest.swift in Sources */,
+				F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* SyncResultTest.swift in Sources */,
+				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
 				F7818C5D215172180050607E /* OnlineDataStateBehaviorSubjectTest.swift in Sources */,
+				F7DDEDA221B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,
 				F7818C53215143460050607E /* OnlineRepositoryDataSourceTest.swift in Sources */,
 			);

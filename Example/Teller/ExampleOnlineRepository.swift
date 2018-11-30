@@ -110,7 +110,10 @@ class ExampleUsingOnlineRepository {
                     // the dataState has no cached state yet. This probably means that repos have never been fetched for this specific username before.
                     break
                 }
-                switch dataState.firstFetchState() {
+                switch dataState.noCacheState() {
+                case .noCache?:
+                    // Repos have never been fetched before for the specific user. Cache data is not beging fetched at this time.
+                    break
                 case .firstFetchOfData?:
                     // Repos have never been fetched before for the specific user. So, this state means that repos are being fetched for the very first time for this user.
                     break

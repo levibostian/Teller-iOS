@@ -22,26 +22,36 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     internal let schedulersProvider: SchedulersProvider
     
     internal var observeCacheDisposable: Disposable? = nil
-    internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject()
+    internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
+
+    internal var refreshDisposable: Disposable? = nil
     
     /**
      If requirements is set to nil, we will stop observing the cache changes and reset the state of data to nil.
      */
     public var requirements: DataSource.GetDataRequirements? = nil {
         didSet {
-            self.currentStateOfData.resetStateToNone()
-            
+            // 1. Cancel observing cache so no more reading of cache updates can happen.
+            // 2. Cancel refreshing so no fetch can finish.
+            // 3. Set curentStateOfData to something so anyone observing does not think they are still observing old requirements (old data).
+            // 4. Start everything up again.
+
+            self.refreshDisposable?.dispose()
+            self.observeCacheDisposable?.dispose()
+
             if let requirements = requirements {
                 if self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
+                    self.currentStateOfData.resetToCacheState(requirements: requirements, lastTimeFetched: self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)!)
                     beginObservingCachedData(requirements: requirements)
                 } else {
+                    self.currentStateOfData.resetToNoCacheState(requirements: requirements)
                     // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
                     _ = try! self.refresh(force: false)
                         .subscribeOn(self.schedulersProvider.background)
                         .subscribe()
                 }
             } else {
-                self.observeCacheDisposable?.dispose()
+                self.currentStateOfData.resetStateToNone()
             }
         }
     }
@@ -61,9 +71,11 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     }
     
     deinit {
+        refreshDisposable?.dispose()
+
         currentStateOfData.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
         currentStateOfData.subject.dispose()
-        
+
         observeCacheDisposable?.dispose()
     }
     
@@ -84,47 +96,58 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         guard let requirements = self.requirements else {
             throw TellerError.objectPropertiesNotSet(["requirements"])
         }
-        
-        if (force || !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) || self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)) {
-            return self.dataSource.fetchFreshData(requirements: requirements)
-                .do(onSubscribe: { // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
-                    if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
-                        self.currentStateOfData.onNextFirstFetchOfData(requirements: requirements)
-                    } else {
-                        self.currentStateOfData.onNextFetchingFreshData()
-                    }
-                })
-                .map({ (fetchResponse: FetchResponse<DataSource.FetchResult>) -> SyncResult in
-                    if let fetchError = fetchResponse.failure {
-                        // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
+
+        return Single.create { (observer) -> Disposable in
+            if (force || !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) || self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)) {
+                
+                self.refreshDisposable?.dispose()
+                self.refreshDisposable = self.dataSource.fetchFreshData(requirements: requirements)
+                    .do(onSubscribe: { // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
                         if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
-                            self.currentStateOfData.onNextDoneFirstFetch(errorDuringFetch: fetchError)
+                            self.currentStateOfData.changeState({ try! $0.firstFetch() })
                         } else {
-                            self.currentStateOfData.onNextDoneFetchingFreshData(errorDuringFetch: fetchError)
+                            self.currentStateOfData.changeState({ try! $0.fetchingFreshCache() })
                         }
-                        return SyncResult.fail(fetchResponse.failure!)
-                    } else {
-                        // Below is some interesting code I need to explain.
-                        // In iOS, CoreData is not Observable (that I know of) by RxSwift but other DBs like Realm are.
-                        // To be more universal, I am triggering an Observable onNext() update for the developer myself by disposing of the previous `cachedData` `Observable` before saving data, saving data, and then starting up the `Observable` again. This way, we always get the newest cached data triggered no matter what the dev is using.
-                        // Also, `refresh` is called if data has been fetched before or has never been called before. After the first fetch is ever successful, we need to begin observing cached data for the first time anyway. So call it here.
-                        self.observeCacheDisposable?.dispose() // Avoid Observable trigger from cached data if it decides to happen.
-                        self.dataSource.saveData(fetchResponse.data!)
-                        let hasEverFetchedDataBefore = self.syncStateManager.hasEverFetchedData(tag: requirements.tag) // Get value before calling `updateAgeOfData`.
-                        self.syncStateManager.updateAgeOfData(tag: requirements.tag)
-                        self.beginObservingCachedData(requirements: requirements)
-                        
-                        if !hasEverFetchedDataBefore {
-                            self.currentStateOfData.onNextDoneFirstFetch(errorDuringFetch: nil)
+                    }, onDispose: {
+                        observer(.success(SyncResult.skipped(.cancelled)))
+                    })
+                    .subscribe(onSuccess: { [unowned self] (fetchResponse) in
+                        if let fetchError = fetchResponse.failure {
+                            // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
+                            if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
+                                self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: fetchError) })
+                            } else {
+                                self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(fetchError) })
+                            }
+                            observer(.success(SyncResult.fail(fetchResponse.failure!)))
                         } else {
-                            self.currentStateOfData.onNextDoneFetchingFreshData(errorDuringFetch: nil)
+                            // Below is some interesting code I need to explain.
+                            // In iOS, CoreData is not Observable (that I know of) by RxSwift but other DBs like Realm are.
+                            // To be more universal, I am triggering an Observable onNext() update for the developer myself by disposing of the previous `cachedData` `Observable` before saving data, saving data, and then starting up the `Observable` again. This way, we always get the newest cached data triggered no matter what the dev is using.
+                            // Also, `refresh` is called if data has been fetched before or has never been called before. After the first fetch is ever successful, we need to begin observing cached data for the first time anyway. So call it here.
+                            self.observeCacheDisposable?.dispose() // Avoid Observable trigger from cached data if it decides to happen.
+                            let newCache = fetchResponse.data!
+                            self.dataSource.saveData(newCache)
+                            let hasEverFetchedDataBefore = self.syncStateManager.hasEverFetchedData(tag: requirements.tag) // Get value before calling `updateAgeOfData`.
+                            self.syncStateManager.updateAgeOfData(tag: requirements.tag)
+                            self.beginObservingCachedData(requirements: requirements)
+
+                            if !hasEverFetchedDataBefore {
+                                self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched: self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)!) })
+                            } else {
+                                self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: Date()) })
+                            }
+
+                            observer(.success(SyncResult.success()))
                         }
-                        
-                        return SyncResult.success()
-                    }
-                })
-        } else {
-            return Single.just(SyncResult.skipped(SyncResult.SkippedReason.dataNotTooOld))
+                    }, onError: { (error) in
+                        observer(.error(error))
+                    })
+            } else {
+                observer(.success(SyncResult.skipped(SyncResult.SkippedReason.dataNotTooOld)))
+            }
+
+            return Disposables.create()
         }
     }
     
@@ -139,14 +162,13 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         observeCacheDisposable = self.dataSource.observeCachedData(requirements: requirements)
             .subscribeOn(schedulersProvider.ui)
             .observeOn(schedulersProvider.ui)
-            .subscribe(onNext: { (cache: DataSource.Cache) in
+            .subscribe(onNext: { [unowned self] (cache: DataSource.Cache) in
                 let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
-                
-                let lastTimeDataFetched: Date? = self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)
+
                 if (self.dataSource.isDataEmpty(cache)) {
-                    self.currentStateOfData.onNextCacheEmpty(requirements: requirements, isFetchingFreshData: needsToFetchFreshData, dataFetched: lastTimeDataFetched!)
+                    self.currentStateOfData.changeState({ try! $0.cacheIsEmpty() })
                 } else {
-                    self.currentStateOfData.onNextCachedData(requirements: requirements, data: cache, dataFetched: lastTimeDataFetched!, isFetchingFreshData: needsToFetchFreshData)
+                    self.currentStateOfData.changeState({ try! $0.cachedData(cache) })
                 }
                 
                 if (needsToFetchFreshData) {

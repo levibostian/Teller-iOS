@@ -21,6 +21,7 @@ import RxSwift
  */
 
 // This class is meant to work with OnlineRepository because it has all the states cacheData can have, including loading and fetching of fresh cacheData.
+// You may see many `try!` statements in this file. The code based used to have many `fatalError` statements but those are (1) not testable and (2) not flexible with the potential try/catch in the future if we see a potential for that. So, using `try!` allows us to have errors thrown that we can then fix later. 
 internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     
     private var dataState: OnlineDataState<DataType>! {
@@ -37,55 +38,22 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
     }
     
     /**
-     When the `OnlineRepositoryGetDataRequirements` is changed to an `OnlineRepository`, we want to reset to a "none" state where the data has no state. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
+     When the `OnlineRepositoryGetDataRequirements` is changed in an `OnlineRepository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
      */
     func resetStateToNone() {
         self.dataState = OnlineDataState.none()
     }
-    
-    /**
-     * The cacheData is being fetched for the first time.
-     */
-    func onNextFirstFetchOfData(requirements: OnlineRepositoryGetDataRequirements) {
-        dataState = OnlineDataState.firstFetchOfData(requirements: requirements)
-    }    
-    
-    /**
-     * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
-     */
-    func onNextCacheEmpty(requirements: OnlineRepositoryGetDataRequirements, isFetchingFreshData: Bool, dataFetched: Date) {
-        dataState = OnlineDataState.isEmpty(requirements: requirements, dataFetched: dataFetched)
-        if (isFetchingFreshData) {
-            onNextFetchingFreshData()
-        }
+
+    func resetToNoCacheState(requirements: OnlineRepositoryGetDataRequirements) {
+        self.dataState = OnlineDataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
     }
-    
-    /**
-     * The status of cacheData is cacheData (optionally fetching new fresh cacheData as well).
-     */
-    func onNextCachedData(requirements: OnlineRepositoryGetDataRequirements, data: DataType, dataFetched: Date, isFetchingFreshData: Bool) {
-        dataState = OnlineDataState.data(data: data, dataFetched: dataFetched, requirements: requirements)
-        if (isFetchingFreshData) {
-            onNextFetchingFreshData()
-        }
+
+    func resetToCacheState(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date) {
+        self.dataState = OnlineDataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
     }
-    
-    /**
-     * Fresh cacheData is being fetched. Compound that status to the existing [StateData] instance.
-     */
-    func onNextFetchingFreshData() {
-        dataState = dataState.fetchingFreshData()
-    }
-    
-    /**
-     * Fresh cacheData is done being fetched. Compound that status to the existing [StateData] instance.
-     */
-    func onNextDoneFetchingFreshData(errorDuringFetch: Error?) {
-        dataState = dataState.doneFetchingFreshData(errorDuringFetch: errorDuringFetch)
-    }
-    
-    func onNextDoneFirstFetch(errorDuringFetch: Error?) {
-        dataState = dataState.doneFirstFetch(error: errorDuringFetch)
+
+    func changeState(_ change: (OnlineDataStateStateMachine<DataType>) -> OnlineDataState<DataType>) {
+        self.dataState = change(self.dataState.stateMachine!)
     }
     
 }

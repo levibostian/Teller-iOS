@@ -61,5 +61,10 @@ public struct SyncResult: Equatable {
          * Cached cacheData already exists for the cacheData type, it's not too old yet, and force sync was not true to force sync to run.
          */
         case dataNotTooOld
+
+        /**
+         The fetch call got cancelled. 
+        */
+        case cancelled
     }
 }
