@@ -48,7 +48,7 @@ open class LocalRepository<DataSource: LocalRepositoryDataSource> {
         
         observeCacheDisposable = self.dataSource.observeCachedData()
             .subscribeOn(schedulersProvider.ui)
-            .subscribe(onNext: { (cachedData) in
+            .subscribe(onNext: { [unowned self] (cachedData) in
                 if (self.dataSource.isDataEmpty(data: cachedData)) {
                     self.currentStateOfData.onNextEmpty()
                 } else {
