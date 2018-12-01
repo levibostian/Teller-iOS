@@ -108,6 +108,7 @@ class ExampleUsingOnlineRepository {
                     break
                 case .none:
                     // the dataState has no cached state yet. This probably means that repos have never been fetched for this specific username before.
+                    // Use the `noCacheState` to get more details on the state on not having a cache.
                     break
                 }
                 switch dataState.noCacheState() {

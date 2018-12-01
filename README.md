@@ -64,7 +64,7 @@ Alpha (where the library is at currently):
 - [ ] Make non-RxSwift version of the library to make it even smaller and more portable.
 - [ ] Documentation in form of Jazzy Apple Doc created.
 - [ ] Documentation on how to use in MVVM, MVI setup and other setups as well.
-- [ ] Fixup the API for the library if needed.
+- [X] Fixup the API for the library if needed.
 
 Beta:
 
@@ -278,9 +278,13 @@ repository
             break
         case .none:
             // the dataState has no cached state yet. This probably means that repos have never been fetched for this specific username before.
+            // Use the `noCacheState` to get more details on the state on not having a cache.
             break
         }
-        switch dataState.firstFetchState() {
+        switch dataState.noCacheState() {
+        case .noCache?:
+            // Repos have never been fetched before for the specific user. Cache data is not beging fetched at this time.
+            break
         case .firstFetchOfData?:
             // Repos have never been fetched before for the specific user. So, this state means that repos are being fetched for the very first time for this user.
             break
