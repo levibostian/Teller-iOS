@@ -7,9 +7,18 @@
 
 import Foundation
 
-internal class UserDefaultsUtil {
+internal protocol UserDefaultsUtil {
+    func clear()
+}
+
+internal class TellerUserDefaultsUtil: UserDefaultsUtil {
+
+    public static var shared: TellerUserDefaultsUtil = TellerUserDefaultsUtil()
+
+    private init() {
+    }
     
-    internal static func clear() {
+    internal func clear() {
         let userDefaults = TellerConstants.userDefaults
         
         userDefaults.dictionaryRepresentation().forEach { (key, value) in

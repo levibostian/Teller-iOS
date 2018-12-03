@@ -19,12 +19,12 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         userDefaults = TellerConstants.userDefaults
     }
     
     override func tearDown() {
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         
         super.tearDown()
     }

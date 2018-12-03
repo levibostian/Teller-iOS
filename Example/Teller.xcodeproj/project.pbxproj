@@ -17,7 +17,7 @@
 		F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */; };
 		F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72A285B21876F96007444D7 /* TellerErrorTest.swift */; };
 		F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */; };
-		F7818C5121507B090050607E /* UserDefaultsUtilTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5021507B090050607E /* UserDefaultsUtilTest.swift */; };
+		F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */; };
 		F7818C53215143460050607E /* OnlineRepositoryDataSourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C52215143460050607E /* OnlineRepositoryDataSourceTest.swift */; };
 		F7818C5621514AE70050607E /* PeriodTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5521514AE70050607E /* PeriodTest.swift */; };
 		F7818C5B21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5A21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift */; };
@@ -44,6 +44,8 @@
 		F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */; };
 		F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */; };
 		F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */; };
+		F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDAC21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift */; };
+		F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,7 +80,7 @@
 		F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsSchedulersProvider.swift; sourceTree = "<group>"; };
 		F72A285B21876F96007444D7 /* TellerErrorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerErrorTest.swift; sourceTree = "<group>"; };
 		F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerRepositorySyncStateManagerTest.swift; sourceTree = "<group>"; };
-		F7818C5021507B090050607E /* UserDefaultsUtilTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUtilTest.swift; sourceTree = "<group>"; };
+		F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerUserDefaultsUtilTest.swift; sourceTree = "<group>"; };
 		F7818C52215143460050607E /* OnlineRepositoryDataSourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineRepositoryDataSourceTest.swift; sourceTree = "<group>"; };
 		F7818C5521514AE70050607E /* PeriodTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeriodTest.swift; sourceTree = "<group>"; };
 		F7818C5A21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataStateCompoundBehaviorSubjectTest.swift; sourceTree = "<group>"; };
@@ -106,6 +108,8 @@
 		F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingFreshCacheStateMachineTest.swift; sourceTree = "<group>"; };
+		F7DDEDAC21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUtilMock.swift; sourceTree = "<group>"; };
+		F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,6 +204,7 @@
 				F7AFBDED215059AC008ECB51 /* repository */,
 				F7AFBDE821505109008ECB51 /* datastate */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
+				F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -265,7 +270,8 @@
 		F7818C4F21507AF90050607E /* util */ = {
 			isa = PBXGroup;
 			children = (
-				F7818C5021507B090050607E /* UserDefaultsUtilTest.swift */,
+				F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */,
+				F7DDEDAC21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -570,8 +576,9 @@
 				F7818C6121517C820050607E /* MockOnlineRepositoryDataSource.swift in Sources */,
 				F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */,
 				F7818C5F21517C220050607E /* OnlineRepositoryTest.swift in Sources */,
+				F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */,
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
-				F7818C5121507B090050607E /* UserDefaultsUtilTest.swift in Sources */,
+				F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */,
 				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */,
@@ -583,6 +590,7 @@
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* SyncResultTest.swift in Sources */,
 				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
+				F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */,
 				F7818C5D215172180050607E /* OnlineDataStateBehaviorSubjectTest.swift in Sources */,
 				F7DDEDA221B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,

@@ -24,7 +24,7 @@ class OnlineRepositoryTest: XCTestCase {
 
         compositeDisposable = CompositeDisposable()
         
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         initDataSource(fakeData: self.getDataSourceFakeData())
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData())
         initRepository(requirements: nil)
@@ -430,7 +430,7 @@ class OnlineRepositoryTest: XCTestCase {
             Recorded.completed(0)])
     }
 
-    // This is a test case to test a bug I had at one point. Teller's OnlineDataState used to couple the fetching cache data and having the cache data state together. So, when you call refresh, it was required that there was already a cache data state set (which gets set in the OnlineRepository observing of cache data). However, because of observing cache data on a background thread, if you call refresh immediately after setting requirements, the code will fail because the cache data has never been set to this point yet.
+    // Tests: https://github.com/levibostian/Teller-iOS/issues/20
     func test_setRequirements_immediatelyRefreshAfter() {
         let timeFetched = Date()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: timeFetched))
@@ -438,7 +438,7 @@ class OnlineRepositoryTest: XCTestCase {
         let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
         initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("data"), fetchFreshData: Single.never()))
 
-        self.repository = OnlineRepository(dataSource: self.dataSource, syncStateManager: self.syncStateManager, schedulersProvider: AppSchedulersProvider()) // Using the app schedulers provider to assert we use a background thread.
+        self.repository = OnlineRepository(dataSource: self.dataSource, syncStateManager: self.syncStateManager, schedulersProvider: AppSchedulersProvider()) // Using the app schedulers provider to assert we use a background thread. Very important to test this specific bug.
 
         self.repository.requirements = requirements
 
