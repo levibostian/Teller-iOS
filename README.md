@@ -355,6 +355,24 @@ If you read the README and still have questions, please, [create an issue](https
 
 Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy-iOS](https://github.com/levibostian/wendy-ios) (there is an [Android version too](https://github.com/levibostian/wendy-android)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at `GET` calls for your network API, Wendy is really good at `PUT, POST, DELETE` network API calls. Teller *pulls* data, Wendy *pushes* data. These 2 libraries work really nicely together! 
 
+## Development 
+
+Teller is a pretty simple CocoaPods XCode workspace. Follow the directions below for the optimal development experience. 
+
+* Install cocoapods/gems and setup workspace:
+
+```bash
+$> cd Teller/Example
+$> pod install
+$> bundle install
+```
+
+* Setup git hooks [via overcommit](https://github.com/brigade/overcommit/) to run misc tasks for you when using git. 
+
+```bash
+$> overcommit --install
+```
+
 ## Author
 
 * Levi Bostian - [GitHub](https://github.com/levibostian), [Twitter](https://twitter.com/levibostian), [Website/blog](http://levibostian.com)
