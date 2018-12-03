@@ -9,12 +9,12 @@
 import XCTest
 @testable import Teller
 
-class UserDefaultsUtilTest: XCTestCase {
+class TellerUserDefaultsUtilTest: XCTestCase {
     
     override func setUp() {
         super.setUp()
 
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
     }
     
     override func tearDown() {
@@ -44,7 +44,7 @@ class UserDefaultsUtilTest: XCTestCase {
         XCTAssertEqual(getNumberOfTellerItemsInUserDefaults(), numberOfItemsCurrently + 1)
         XCTAssertEqual(userDefaults.dictionaryRepresentation()[key] as! Bool, false)
         
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         XCTAssertEqual(getNumberOfTellerItemsInUserDefaults(), numberOfItemsCurrently) // Because we did not yet delete the "fake_" insertion.
     }
     
