@@ -32,7 +32,7 @@
 #  IndexTags:
 #    enabled: true # Generate a tags file with `ctags` each time HEAD changes
 
-PrePush:
+PreCommit:
   TellerTests:
     description: "Running tests"    
     quiet: false
