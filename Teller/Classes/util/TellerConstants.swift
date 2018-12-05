@@ -8,6 +8,8 @@
 import Foundation
 
 internal class TellerConstants {
+
+    internal static let namespace = "com.levibostian.teller"
     
     internal static let userDefaultsPrefix = "TELLER_"
     /**

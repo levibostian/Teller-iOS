@@ -408,6 +408,7 @@
 		F7DDED9D21AF2B80005ADF92 /* CacheStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDED9C21AF2B80005ADF92 /* CacheStateMachine.swift */; };
 		F7DDED9F21AF2F79005ADF92 /* FetchingFreshCacheStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDED9E21AF2F79005ADF92 /* FetchingFreshCacheStateMachine.swift */; };
 		F7DDEDAA21B5A651005ADF92 /* Teller.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA921B5A651005ADF92 /* Teller.swift */; };
+		F7EC6AB321B6EB11002D272A /* OnlineRepositoryRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EC6AB221B6EB11002D272A /* OnlineRepositoryRefreshManager.swift */; };
 		F81A82DD330CFB6C89675AE1D41A7543 /* TellerConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F164BC3C9964A4DB39869558C8BE40 /* TellerConstants.swift */; };
 		F8764B0ABCD92F2D9E27D54CD2EEA316 /* ItemEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7966BED464D2E63EA261A9D7912A861 /* ItemEvents.swift */; };
 		F919D7858D095B2DD9143A6802D75CB1 /* _RXDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C035E9C041C33A4979E3786E1C71C3F2 /* _RXDelegateProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -995,6 +996,7 @@
 		F7DDED9C21AF2B80005ADF92 /* CacheStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateMachine.swift; sourceTree = "<group>"; };
 		F7DDED9E21AF2F79005ADF92 /* FetchingFreshCacheStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingFreshCacheStateMachine.swift; sourceTree = "<group>"; };
 		F7DDEDA921B5A651005ADF92 /* Teller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Teller.swift; path = Teller/Classes/Teller.swift; sourceTree = "<group>"; };
+		F7EC6AB221B6EB11002D272A /* OnlineRepositoryRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineRepositoryRefreshManager.swift; sourceTree = "<group>"; };
 		F9868E5D2906510C2FBC26D912F84B6B /* URLRequest+Encoding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "URLRequest+Encoding.swift"; path = "Sources/Moya/URLRequest+Encoding.swift"; sourceTree = "<group>"; };
 		FA587D460A34262BD71B2500414196B5 /* RecursiveLock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RecursiveLock.swift; path = Platform/RecursiveLock.swift; sourceTree = "<group>"; };
 		FA95F6AAE3C935F3BD8B83FD8174F6AB /* _RXObjCRuntime.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = _RXObjCRuntime.m; path = RxCocoa/Runtime/_RXObjCRuntime.m; sourceTree = "<group>"; };
@@ -1533,6 +1535,7 @@
 			isa = PBXGroup;
 			children = (
 				762113DCEE29E2F50C1EEB85927B0DF6 /* RepositorySyncStateManager.swift */,
+				F7EC6AB221B6EB11002D272A /* OnlineRepositoryRefreshManager.swift */,
 			);
 			path = manager;
 			sourceTree = "<group>";
@@ -2720,6 +2723,7 @@
 				F7DDED9721AF1CDD005ADF92 /* NoCacheStateMachine.swift in Sources */,
 				A0874F45444B7AA36CE2863C1DFFD679 /* SchedulersProvider.swift in Sources */,
 				3E7F58C35DF660568A556A6570EC2902 /* SyncResult.swift in Sources */,
+				F7EC6AB321B6EB11002D272A /* OnlineRepositoryRefreshManager.swift in Sources */,
 				14BE92D1739C08533F2E2D8550F773BE /* Teller-dummy.m in Sources */,
 				F81A82DD330CFB6C89675AE1D41A7543 /* TellerConstants.swift in Sources */,
 				1DEF2576AB164A5DB65C9047A623AFC5 /* TellerError.swift in Sources */,
