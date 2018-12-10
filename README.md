@@ -70,6 +70,7 @@ Beta:
 
 - [ ] Library API has been used enough that the API does not have any huge changes planned for it.
 - [X] Tests written (and passing 😉) for the library.
+- [ ] API for quickly and easily creating tests with Teller in your app using Teller such as mocking the Teller API and setting up the environment. 
 
 Stable:
 

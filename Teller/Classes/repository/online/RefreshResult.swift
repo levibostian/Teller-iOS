@@ -1,5 +1,5 @@
 //
-//  SyncResult.swift
+//  RefreshResult.swift
 //  Teller
 //
 //  Created by Levi Bostian on 9/17/18.
@@ -8,9 +8,9 @@
 import Foundation
 
 /**
- Result of a OnlineRepository.sync() call.
+ Result of a OnlineRepository.refresh() call.
  */
-public struct SyncResult: Equatable {
+public struct RefreshResult: Equatable {
     
     public let successful: Bool
     public let failedError: Error?
@@ -22,16 +22,16 @@ public struct SyncResult: Equatable {
         self.skipped = skipped
     }
     
-    public static func success() -> SyncResult {
-        return SyncResult(successful: true, failedError: nil, skipped: nil)
+    public static func success() -> RefreshResult {
+        return RefreshResult(successful: true, failedError: nil, skipped: nil)
     }
     
-    public static func fail(_ error: Error) -> SyncResult {
-        return SyncResult(successful: false, failedError: error, skipped: nil)
+    public static func fail(_ error: Error) -> RefreshResult {
+        return RefreshResult(successful: false, failedError: error, skipped: nil)
     }
     
-    public static func skipped(_ reason: SkippedReason) -> SyncResult {
-        return SyncResult(successful: false, failedError: nil, skipped: reason)
+    public static func skipped(_ reason: SkippedReason) -> RefreshResult {
+        return RefreshResult(successful: false, failedError: nil, skipped: reason)
     }
     
     public func didSkip() -> Bool {
@@ -46,7 +46,7 @@ public struct SyncResult: Equatable {
         return successful
     }
     
-    public static func == (lhs: SyncResult, rhs: SyncResult) -> Bool {
+    public static func == (lhs: RefreshResult, rhs: RefreshResult) -> Bool {
         return lhs.successful == rhs.successful &&
             lhs.skipped == rhs.skipped &&
             ErrorsUtil.areErrorsEqual(lhs: lhs.failedError, rhs: rhs.failedError)

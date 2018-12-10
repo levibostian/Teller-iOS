@@ -19,7 +19,8 @@ internal protocol OnlineRepositoryRefreshManager {
     associatedtype FetchResponseDataType
 
     var delegate: OnlineRepositoryRefreshManagerDelegate? { get set }
-    func refresh(task: Single<FetchResponse<FetchResponseDataType>>) -> Single<SyncResult>
+    func refresh(task: Single<FetchResponse<FetchResponseDataType>>) -> Single<RefreshResult>
+    func cancelRefresh()
 }
 
 /**
@@ -28,7 +29,7 @@ internal protocol OnlineRepositoryRefreshManager {
  This class guarantees:
  1. Can cancel the current refresh network fetch call, from any thread, and you will not receive any callbacks or updates from the manager concerning the cancelled call. Cancel the refresh call by setting your manager instance to nil.
  2. Runs 1 and only 1 refresh fetch call at one time. Multiple calls to `refresh()` result in receiving 1 fetch being created and started and all future calls receive a reference to the call already being performed. Once the call errors or succeeds, the next `refresh` call will created and started.
- 3. Order of events (refresh begin, refresh end, fetch respone, fetch error) will be delivered in the correct order. To the main thread, by default.
+ 3. Order of events (refresh begin, refresh end, fetch respone, fetch error) will be delivered in the correct order. The events will be sent to the delegate from a background thread
 
  The main inspiration for this class was that multiple threads can call `OnlineRepository.refresh()` at anytime, especially because `OnlineRepository.refresh()` gets called internally inside of `OnlineRepository`. There should *not* be multiple fetch calls happening at 1 given time. Only 1 should be happening. That is where the need for a thread safe refresh manager was born. Only run 1 refresh call, per instance, of this manager in a thread-safe way.
  */
@@ -44,7 +45,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
      Why a ReplaySubject? Well, when you call `refresh()` and receive an instance of this `subject.asSingle()`, that Single instance may not be subscribed to right away. Especially in a multi threaded environment, there may be a delay for the subscribe to complete. Therefore, it is possible for the observer of `subject.asSingle()` to subscribe between (or after) the `subject.onNext()` call and the `subject.complete` call. As stated already, if you only receive the `complete` call, you will receive an RxError for sequence not containing any elements.
      To prevent this scenario, we use a ReplaySubject. That way when an observer subscribes to the Single, they will be guaranteed to not receive the RxError as it will or will not receive a `Single.success` call.
     */
-    fileprivate var refreshSubject: ReplaySubject<SyncResult>? = nil
+    fileprivate var refreshSubject: ReplaySubject<RefreshResult>? = nil
 
     fileprivate var refreshTaskDisposeBag: DisposeBag = DisposeBag()
 
@@ -57,21 +58,18 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
     }
 
     deinit {
-        self.refreshTaskDisposeBag = DisposeBag()
-
-        self.refreshSubject?.onNext(SyncResult.skipped(SyncResult.SkippedReason.cancelled))
-        self.refreshSubject?.onCompleted()
-        self.refreshSubject = nil
+        // You don't use queues in deinit function, but we still need to cancel the refresh by sending an event to observers.
+        _cancelRefresh(runInQueue: false)
     }
 
-    func refresh(task: Single<FetchResponse<FetchResponseData>>) -> Single<SyncResult> {
-        var refreshSubCopy: ReplaySubject<SyncResult>!
+    func refresh(task: Single<FetchResponse<FetchResponseData>>) -> Single<RefreshResult> {
+        var refreshSubCopy: ReplaySubject<RefreshResult>!
 
         refreshSubjectQueue.sync {
             if let refreshSubject = self.refreshSubject {
                 refreshSubCopy = refreshSubject
             } else {
-                let newSubject = ReplaySubject<SyncResult>.createUnbounded()
+                let newSubject = ReplaySubject<RefreshResult>.createUnbounded()
                 self.refreshSubject = newSubject
                 refreshSubCopy = newSubject
 
@@ -79,7 +77,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
             }
         }
 
-        return refreshSubCopy.asSingle().debug("pubsub", trimOutput: false)
+        return refreshSubCopy.asSingle()
     }
 
     private func _runRefresh(task: Single<FetchResponse<FetchResponseData>>) {
@@ -89,16 +87,15 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
                     self?.delegate?.refreshBegin()
                 }
             })
-            .debug("_runrefresh", trimOutput: false)
             .subscribeOn(runRefreshScheduler)
             .subscribe(onSuccess: { [weak self] (fetchResponse) in
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.refreshComplete(fetchResponse)
 
                     if let fetchError = fetchResponse.failure {
-                        self?.doneRefresh(result: SyncResult.fail(fetchError), failure: nil)
+                        self?.doneRefresh(result: RefreshResult.fail(fetchError), failure: nil)
                     } else {
-                        self?.doneRefresh(result: SyncResult.success(), failure: nil)
+                        self?.doneRefresh(result: RefreshResult.success(), failure: nil)
                     }
                 }
             }) { [weak self] (error) in
@@ -106,7 +103,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
         }.disposed(by: refreshTaskDisposeBag)
     }
 
-    private func doneRefresh(result: SyncResult?, failure: Error?) {
+    private func doneRefresh(result: RefreshResult?, failure: Error?) {
         refreshSubjectQueue.async(flags: .barrier) { [weak self] in
             guard let self = self else { return }
 
@@ -118,6 +115,31 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
 
             self.refreshSubject?.onCompleted()
             self.refreshSubject = nil
+        }
+    }
+
+    // Cancel refresh. Start up another one by calling `refresh()`.
+    func cancelRefresh() {
+        _cancelRefresh(runInQueue: true)
+    }
+
+    private func _cancelRefresh(runInQueue: Bool) {
+        func runCancel() {
+            self.refreshTaskDisposeBag = DisposeBag()
+
+            self.refreshSubject?.onNext(RefreshResult.skipped(RefreshResult.SkippedReason.cancelled))
+            self.refreshSubject?.onCompleted()
+            self.refreshSubject = nil
+        }
+
+        if runInQueue {
+            refreshSubjectQueue.async(flags: .barrier) { [weak self] in
+                guard let _ = self else { return }
+
+                runCancel()
+            }
+        } else {
+            runCancel()
         }
     }
 
