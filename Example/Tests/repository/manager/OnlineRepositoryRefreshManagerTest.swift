@@ -33,87 +33,45 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable.dispose()
     }
 
-    func test_multipleRefreshRequests_shareSameRefreshObserver() {
-        let expectDelegateRefreshBegin = expectation(description: "Expect manager delegate refresh begin.")
-        let expectDelegateRefreshComplete = expectation(description: "Expect manager delegate refresh success after fetch response comes in.")
+    // Tests that the refresh() function that returns an Observer is thread safe in that only creates a new Observer and starts a new refresh task when another one is not running.
+    func test_multipleCallsToGetRefreshTask_resultInSameObserver() {
+        // If the refresh() function does share the same observer, only 1 of the refresh tasks passed in will be observed. Not both which means that each of the refresh fetch tasks passed in were started.
+        let expectOnlyOneRefreshTaskToBeObserved = expectation(description: "Expect one of the refresh tasks to be observed")
+        expectOnlyOneRefreshTaskToBeObserved.expectedFulfillmentCount = 1
+        expectOnlyOneRefreshTaskToBeObserved.assertForOverFulfill = true
 
-        let delegate = MockOnlineRepositoryRefreshManagerDelegate()
-        delegate.invokedRefreshBeginThen = {
-            expectDelegateRefreshBegin.fulfill()
-        }
-        delegate.invokedRefreshCompleteThen = {
-            expectDelegateRefreshComplete.fulfill()
-        }
-
-        self.refreshManager.delegate = delegate
-
-        let observer1RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
-
-        let ignoredFailedFetchResponseError = Fail()
-
-        let expectObserver1ToSubscribeToRefresh = expectation(description: "Expect observer1 to subscribe to refresh.")
-        let expectObserver1ToReceiveRefreshResultSuccessfulEvent = expectation(description: "Expect observer1 to receive successful sync result after fetch.")
-        let doNotExpectObserver1ReceiveRefreshResultFailedEvent = expectation(description: "Expect observer1 to *not* receive a failed sync result after fetch.")
-        doNotExpectObserver1ReceiveRefreshResultFailedEvent.isInverted = true
-        let expectObserver1ToComplete = expectation(description: "Expect observer1 to complete refresh after fetch response back.")
+        let observer1RefreshTask: Single<FetchResponse<String>> = ReplaySubject.createUnbounded()
+            .asSingle()
+            .do(onSubscribe: {
+                expectOnlyOneRefreshTaskToBeObserved.fulfill()
+            })
 
         let observer1 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observer1RefreshTask.asSingle())
-            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.success() {
-                    expectObserver1ToReceiveRefreshResultSuccessfulEvent.fulfill()
-                }
-                if refreshResult == RefreshResult.fail(ignoredFailedFetchResponseError) {
-                    doNotExpectObserver1ReceiveRefreshResultFailedEvent.fulfill()
-                }
-            }, onSubscribe: {
-                expectObserver1ToSubscribeToRefresh.fulfill()
-            }, onDispose: {
-                expectObserver1ToComplete.fulfill()
-            })
-            .asObservable()
-            .subscribe(observer1)
-
-        let observer2RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded() // Will get ignored.
-
-        let expectObserver2ToSubscribeToRefresh = expectation(description: "Expect observer2 to subscribe to refresh.")
-        let expectObserver2ToReceiveRefreshResultSuccessfulEvent = expectation(description: "Expect observer2 to receive successful sync result after fetch.")
-        let doNotExpectObserver2ReceiveRefreshResultFailedEvent = expectation(description: "Expect observer2 to *not* receive a failed sync result after fetch.")
-        doNotExpectObserver2ReceiveRefreshResultFailedEvent.isInverted = true
-        let expectObserver2ToComplete = expectation(description: "Expect observer2 to complete refresh after fetch response back.")
-
         let observer2 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observer2RefreshTask.asSingle())
-            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.success() {
-                    expectObserver2ToReceiveRefreshResultSuccessfulEvent.fulfill()
-                }
-                if refreshResult == RefreshResult.fail(ignoredFailedFetchResponseError) {
-                    doNotExpectObserver2ReceiveRefreshResultFailedEvent.fulfill()
-                }
-            }, onSubscribe: {
-                expectObserver2ToSubscribeToRefresh.fulfill()
-            }, onDispose: {
-                expectObserver2ToComplete.fulfill()
+
+        let observer2RefreshTask: Single<FetchResponse<String>> = ReplaySubject.createUnbounded()
+            .asSingle()
+            .do(onSubscribe: {
+                expectOnlyOneRefreshTaskToBeObserved.fulfill()
             })
-            .asObservable()
-            .subscribe(observer2)
 
-        wait(for: [expectDelegateRefreshBegin,
-                   expectObserver1ToSubscribeToRefresh,
-                   expectObserver2ToSubscribeToRefresh], timeout: 0.5) // Wait for refresh subscriptions.
+        // We do not know which of the 2 async background threads will be executed first. That's why we only have 1 expectation above shared between both of the `observerXrefreshTask`s because either one could be subscribed to depending on the order below.
+        DispatchQueue(label: "observer1").async {
+            let observer1RefreshManagerRefresh = self.refreshManager.refresh(task: observer1RefreshTask)
 
-        let fetchResponseData = "success"
-        observer1RefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
-        observer1RefreshTask.onCompleted()
+            self.compositeDisposable += observer1RefreshManagerRefresh
+                .asObservable()
+                .subscribe(observer1)
+        }
+        DispatchQueue(label: "observer2").async {
+            let observer2RefreshManagerRefresh = self.refreshManager.refresh(task: observer2RefreshTask)
 
-        // This will be ignored. The first refresh task will be the one used.
-        observer2RefreshTask.onNext(FetchResponse.fail(error: ignoredFailedFetchResponseError))
-        observer2RefreshTask.onCompleted()
+            self.compositeDisposable += observer2RefreshManagerRefresh
+                .asObservable()
+                .subscribe(observer2)
+        }
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: 0.5, handler: nil)
     }
 
     func test_newRefreshBeginsAfterPreviousOneComplete() {
