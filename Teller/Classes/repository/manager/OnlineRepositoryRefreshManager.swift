@@ -49,8 +49,8 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
 
     fileprivate var refreshTaskDisposeBag: DisposeBag = DisposeBag()
 
-    // Queue for reading and writing `refreshSubject` in a thread-safe way. Concurrent for reading, barrier (serial) for writing.
-    private let refreshSubjectQueue = DispatchQueue(label: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_refreshSubjectQueue", attributes: .concurrent)
+    // Queue for reading and writing `refreshSubject` in a thread-safe way. Serial queue to make sure that only 1 refresh can be started at one time.
+    private let refreshSubjectQueue = DispatchQueue(label: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_refreshSubjectQueue")
     // Serial queue to run refresh so only 1 refresh call is ever run at 1 time.
     private let runRefreshScheduler = SerialDispatchQueueScheduler(qos: DispatchQoS.userInitiated, internalSerialQueueName: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_runRefreshScheduler", leeway: DispatchTimeInterval.never)
 
@@ -58,8 +58,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
     }
 
     deinit {
-        // You don't use queues in deinit function, but we still need to cancel the refresh by sending an event to observers.
-        _cancelRefresh(runInQueue: false)
+        cancelRefresh()
     }
 
     func refresh(task: Single<FetchResponse<FetchResponseData>>) -> Single<RefreshResult> {
@@ -120,26 +119,12 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
 
     // Cancel refresh. Start up another one by calling `refresh()`.
     func cancelRefresh() {
-        _cancelRefresh(runInQueue: true)
-    }
-
-    private func _cancelRefresh(runInQueue: Bool) {
-        func runCancel() {
+        refreshSubjectQueue.sync {
             self.refreshTaskDisposeBag = DisposeBag()
 
             self.refreshSubject?.onNext(RefreshResult.skipped(RefreshResult.SkippedReason.cancelled))
             self.refreshSubject?.onCompleted()
             self.refreshSubject = nil
-        }
-
-        if runInQueue {
-            refreshSubjectQueue.async(flags: .barrier) { [weak self] in
-                guard let _ = self else { return }
-
-                runCancel()
-            }
-        } else {
-            runCancel()
         }
     }
 
