@@ -19,5 +19,9 @@ internal class TestsSchedulersProvider: SchedulersProvider {
 
     var ui: ImmediateSchedulerType = CurrentThreadScheduler.instance
     var background: ImmediateSchedulerType = CurrentThreadScheduler.instance
+
+    func backgroundWithQueue(_ dispatchQueue: DispatchQueue) -> ImmediateSchedulerType {
+        return background
+    }
     
 }

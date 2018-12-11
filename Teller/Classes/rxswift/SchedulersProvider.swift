@@ -14,6 +14,8 @@ import RxSwift
 internal protocol SchedulersProvider {
     var ui: ImmediateSchedulerType { get }
     var background: ImmediateSchedulerType { get }
+
+    func backgroundWithQueue(_ dispatchQueue: DispatchQueue) -> ImmediateSchedulerType
 }
 
 internal class AppSchedulersProvider: SchedulersProvider {
@@ -22,6 +24,10 @@ internal class AppSchedulersProvider: SchedulersProvider {
     internal var background: ImmediateSchedulerType = ConcurrentDispatchQueueScheduler(qos: .background)
     
     internal init() {
+    }
+
+    func backgroundWithQueue(_ dispatchQueue: DispatchQueue) -> ImmediateSchedulerType {
+        return ConcurrentDispatchQueueScheduler(queue: dispatchQueue)
     }
     
 }
