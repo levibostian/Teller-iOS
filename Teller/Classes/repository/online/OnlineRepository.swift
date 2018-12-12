@@ -125,6 +125,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         }
 
         observeCacheDisposeBag.dispose()
+        observeCacheDisposeBag = CompositeDisposable()
         // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.                        
         observeCacheDisposeBag += self.dataSource.observeCachedData(requirements: requirements)
             .subscribeOn(schedulersProvider.ui)
