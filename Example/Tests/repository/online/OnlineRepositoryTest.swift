@@ -127,7 +127,7 @@ class OnlineRepositoryTest: XCTestCase {
     }
     
     private func initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements?) {
-        self.repository = OnlineRepository(dataSource: self.dataSource, syncStateManager: self.syncStateManager, schedulersProvider: TestsSchedulersProvider(), refreshManager: self.refreshManager)
+        self.repository = OnlineRepository(dataSource: self.dataSource, syncStateManager: self.syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: self.refreshManager) // Use AppSchedulersProvider to test on read multi-threading. Bugs in Teller have been missed from using a single threaded environment. 
         self.repository.requirements = requirements
     }
     
@@ -148,8 +148,9 @@ class OnlineRepositoryTest: XCTestCase {
     func test_deinit_cancelExistingRefreshStopObserving() {
         let existingCache = "existing cache"
         let existingCacheFetched = Date()
-        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: existingCacheFetched))
-        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache), fetchFreshData: Single.never()))
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: existingCacheFetched))
+        let observeCache: Observable<String> = Observable.create({ $0.onNext(existingCache); return Disposables.create() }) // Make an Observable that does not complete on it's own like: Observable.just() to test that `deinit` completes for us.
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCache, fetchFreshData: Single.never()))
         initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
 
         let expectToBeginObserving = expectation(description: "Expect to begin observing cache")
@@ -173,6 +174,8 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
+        wait(for: [expectToBeginObserving, expectToReceiveExistingCache], timeout: 0.2)
+
         let expectCancelledRefreshResult = expectation(description: "Expect to receive cancelled sync result")
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin")
         let expectRefreshToDispose = expectation(description: "Expect refresh to dispose")
@@ -188,7 +191,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
         .subscribe()
 
-        wait(for: [expectToBeginObserving, expectToReceiveExistingCache], timeout: 0.2)
+        wait(for: [expectRefreshToBegin], timeout: 0.2)
 
         self.repository = nil
 
@@ -260,6 +263,51 @@ class OnlineRepositoryTest: XCTestCase {
 
         // This will cancel observing existing cache and go to none state.
         self.repository.requirements = nil
+
+        waitForExpectations(timeout: 0.2, handler: nil)
+    }
+
+    func test_setRequirementsNilThenNotNil_continueToObserveSequence() {
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        let existingCache = "existing cache"
+        let newCache = "new cache"
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.create({ $0.onNext(existingCache); return Disposables.create() }), fetchFreshData: Single.never()))
+        initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
+
+        let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
+        let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
+        let expectToReceiveNewCache = expectation(description: "Expect to receive new cache")
+        let expectToReceiveNoneDataState = expectation(description: "Expect to receive none data state")
+        let expectToNotDispose = expectation(description: "Expect to not stop observing")
+        expectToNotDispose.isInverted = true
+        compositeDisposable += self.repository.observe()
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+            .do(onNext: { (state) in
+                if state.cacheData == existingCache {
+                    expectToReceiveExistingCache.fulfill()
+                }
+                if state.cacheData == newCache {
+                    expectToReceiveNewCache.fulfill()
+                }
+                if state == OnlineDataState.none() {
+                    expectToReceiveNoneDataState.fulfill()
+                }
+            }, onSubscribe: {
+                expectToBeginObservingCache.fulfill()
+            }, onDispose: {
+                expectToNotDispose.fulfill()
+            })
+            .subscribe()
+
+        wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: 0.2)
+
+        // This will cancel observing existing cache and go to none state.
+        self.repository.requirements = nil
+
+        wait(for: [expectToReceiveNoneDataState], timeout: 0.2)
+
+        self.dataSource.fakeData.observeCachedData = Observable.create({ $0.onNext(newCache); return Disposables.create() })
+        self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
         waitForExpectations(timeout: 0.2, handler: nil)
     }
