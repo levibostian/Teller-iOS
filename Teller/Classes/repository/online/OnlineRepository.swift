@@ -124,29 +124,35 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             fatalError("You cannot begin observing cached data until after data has been successfully fetched at least once")
         }
 
-        observeCacheDisposeBag.dispose()
-        observeCacheDisposeBag = CompositeDisposable()
-        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.                        
-        observeCacheDisposeBag += self.dataSource.observeCachedData(requirements: requirements)
-            .subscribeOn(schedulersProvider.ui)
-            .observeOn(schedulersProvider.ui)
-            .subscribe(onNext: { [weak self, requirements] (cache: DataSource.Cache) in
-                guard let self = self else { return }
+        // We need to (1) get the Observable from the data source, (2) query the DB, and (3) perform actions on the queried DB results all in the main thread. So, we will queue up this work on the main thread.
+        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
 
-                let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
+            self.observeCacheDisposeBag.dispose()
+            self.observeCacheDisposeBag = CompositeDisposable()
 
-                if (self.dataSource.isDataEmpty(cache)) {
-                    self.currentStateOfData.changeState({ try! $0.cacheIsEmpty() })
-                } else {
-                    self.currentStateOfData.changeState({ try! $0.cachedData(cache) })
-                }
-                
-                if (needsToFetchFreshData) {
-                    _ = try! self.refresh(force: false)
-                        .subscribeOn(self.schedulersProvider.background)
-                        .subscribe()
-                }
-            })
+            self.observeCacheDisposeBag += self.dataSource.observeCachedData(requirements: requirements)
+                .subscribeOn(self.schedulersProvider.ui)
+                .observeOn(self.schedulersProvider.ui)
+                .subscribe(onNext: { [weak self, requirements] (cache: DataSource.Cache) in
+                    guard let self = self else { return }
+
+                    let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
+
+                    if (self.dataSource.isDataEmpty(cache)) {
+                        self.currentStateOfData.changeState({ try! $0.cacheIsEmpty() })
+                    } else {
+                        self.currentStateOfData.changeState({ try! $0.cachedData(cache) })
+                    }
+
+                    if (needsToFetchFreshData) {
+                        _ = try! self.refresh(force: false)
+                            .subscribeOn(self.schedulersProvider.background)
+                            .subscribe()
+                    }
+                })
+        }
     }
     
     /**

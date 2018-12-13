@@ -22,6 +22,7 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     var saveDataFetchedData: String? = nil
     var saveDataThen: ((String) -> Void)? = nil
     var observeCachedDataCount = 0
+    var observeCacheDataThenAnswer: ((MockGetDataRequirements) -> Observable<String>)? = nil
     var isDataEmptyCount = 0
     
     var maxAgeOfData: Period
@@ -46,7 +47,7 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     
     func observeCachedData(requirements: MockGetDataRequirements) -> Observable<String> {
         observeCachedDataCount += 1
-        return self.fakeData.observeCachedData
+        return observeCacheDataThenAnswer?(requirements) ?? self.fakeData.observeCachedData
     }
     
     func isDataEmpty(_ cache: String) -> Bool {

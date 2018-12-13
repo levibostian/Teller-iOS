@@ -145,6 +145,34 @@ class OnlineRepositoryTest: XCTestCase {
         XCTAssertNotNil(self.repository.refreshManager.delegate)
     }
 
+    func test_dataSourceGetObservableCacheData_calledOnMainThread() {
+        let expectToGetObservable = expectation(description: "Expect to get observable to observe cached data")
+        expectToGetObservable.expectedFulfillmentCount = 2 // 1. When setting requirements, OnlineRepository begins observing cache. 2. Refresh call when observing cache in OnlineRepository. 3. Refresh call when setting requirements.
+        expectToGetObservable.assertForOverFulfill = false // It might be fullfilled 3 times, or 2 times. This is hard to fix at this time until the test API for mocking it improved.
+
+        let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, fetchFreshData: fetchFreshData.asSingle()))
+        self.dataSource.observeCacheDataThenAnswer = { requirements in
+            XCTAssertTrue(Thread.isMainThread)
+            expectToGetObservable.fulfill()
+
+            return Observable.just("")
+        }
+
+        DispatchQueue.global(qos: .background).async {
+            XCTAssertFalse(Thread.isMainThread)
+            // Test when begin to observe cache on background thread
+            self.initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
+
+            // Test after a fetch result
+            fetchFreshData.onNext(FetchResponse<String>.success(data: "new data"))
+            fetchFreshData.onCompleted()
+        }
+
+        waitForExpectations(timeout: 0.2, handler: nil)
+    }
+
     func test_deinit_cancelExistingRefreshStopObserving() {
         let existingCache = "existing cache"
         let existingCacheFetched = Date()
