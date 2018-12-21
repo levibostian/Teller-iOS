@@ -71,7 +71,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
                 .subscribe(observer2)
         }
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_newRefreshBeginsAfterPreviousOneComplete() {
@@ -154,7 +154,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observer2RefreshTask.onNext(FetchResponse.fail(error: fetchResponseError))
         observer2RefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_cancel_refreshTaskGetsCancelled() {
@@ -208,7 +208,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
         observerRefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_deinit_refreshTaskGetsCancelled() {
@@ -264,7 +264,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
         observerRefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_refresh_delegateCallsInCorrectOrder_andMainThread() {
@@ -322,7 +322,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         wait(for: [expectObserverToSubscribeToRefresh,
                    expectObserverToReceiveResultSuccessful,
-                   expectObserverToComplete], timeout: 0.5, enforceOrder: true)
+                   expectObserverToComplete], timeout: 0.2, enforceOrder: true)
     }
 
     func test_refresh_failureGetsPassedOn() {
@@ -348,7 +348,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         refreshTask.onError(fetchFail)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     class Fail: Error {

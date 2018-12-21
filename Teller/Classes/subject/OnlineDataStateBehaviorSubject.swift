@@ -30,6 +30,10 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         }
     }
     internal let subject: BehaviorSubject<OnlineDataState<DataType>>
+
+    var currentState: OnlineDataState<DataType> {
+        return try! subject.value()
+    }
     
     init() {
         let initialDataState = OnlineDataState<DataType>.none()
