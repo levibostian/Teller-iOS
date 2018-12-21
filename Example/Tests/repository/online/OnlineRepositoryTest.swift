@@ -414,7 +414,7 @@ class OnlineRepositoryTest: XCTestCase {
         // Set requirements for first time starts the first refresh
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_cacheExistsButIsTooOld_observeNewCacheAfterSuccessfulFetch() {
@@ -551,7 +551,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshData.onNext(FetchResponse<String>.success(data: "new data"))
         fetchFreshData.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_refresh_dataNotTooOld_skipsRefresh() {
@@ -571,7 +571,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_failedFirstFetchDoesNotBeginObservingCache() {
@@ -609,7 +609,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: firstFetchFail))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_failUpdateExistingCache_continueToReceiveCacheUpdates() {
@@ -656,7 +656,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: fetchFail))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     func test_successfulFirstFetch_beginObservingCache() {
@@ -713,7 +713,85 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 0.2, handler: nil)
+    }
+
+    // https://github.com/levibostian/Teller-iOS/issues/32
+    func test_multipleRepositoryInstances_firstFetch() {
+        let firstFetchTime = Date()
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: firstFetchTime))
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let firstDataSource = MockOnlineRepositoryDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let firstRefreshManager: AnyOnlineRepositoryRefreshManager<String> = AnyOnlineRepositoryRefreshManager(AppOnlineRepositoryRefreshManager())
+
+        let firstRepo: OnlineRepository<MockOnlineRepositoryDataSource> = OnlineRepository(dataSource: firstDataSource, syncStateManager: self.syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: firstRefreshManager)
+
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        firstRepo.requirements = requirements
+
+        let firstFetchState = try! OnlineDataStateStateMachine<String>
+            .noCacheExists(requirements: requirements).change()
+            .firstFetch()
+        let successfulFirstFetchState = try! OnlineDataStateStateMachine<String>
+            .noCacheExists(requirements: requirements).change()
+            .firstFetch().change()
+            .successfulFirstFetch(timeFetched: firstFetchTime)
+
+        let expectFirstRepoToBeginFirstFetch = expectation(description: "Expect first repo to begin first fetch of data.")
+        let expectFirstRepoToSuccessfullyFinishFirstFetch = expectation(description: "Expect first repo to have a successful first fetch")
+
+        compositeDisposable += firstRepo.observe()
+            .debug("first", trimOutput: false)
+            .do(onNext: { (state) in
+                if state == firstFetchState {
+                    expectFirstRepoToBeginFirstFetch.fulfill()
+                }
+                if state == successfulFirstFetchState {
+                    expectFirstRepoToSuccessfullyFinishFirstFetch.fulfill()
+                }
+            })
+            .subscribe()
+
+        wait(for: [expectFirstRepoToBeginFirstFetch], timeout: 0.2)
+
+        let secondFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let secondDataSource = MockOnlineRepositoryDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let secondRefreshManager: AnyOnlineRepositoryRefreshManager<String> = AnyOnlineRepositoryRefreshManager(AppOnlineRepositoryRefreshManager())
+
+        let secondRepo: OnlineRepository<MockOnlineRepositoryDataSource> = OnlineRepository(dataSource: secondDataSource, syncStateManager: self.syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: secondRefreshManager)
+        secondRepo.requirements = requirements
+
+        let expectSecondRepoToBeginFirstFetch = expectation(description: "Expect second repo to begin first fetch of data.")
+        let expectSecondRepoToSuccessfullyFinishFirstFetch = expectation(description: "Expect second repo to have a successful first fetch")
+
+        compositeDisposable += secondRepo.observe()
+            .debug("second", trimOutput: false)
+            .do(onNext: { (state) in
+                if state == firstFetchState {
+                    expectSecondRepoToBeginFirstFetch.fulfill()
+                }
+                if state == successfulFirstFetchState {
+                    expectSecondRepoToSuccessfullyFinishFirstFetch.fulfill()
+                }
+            })
+            .subscribe()
+
+        wait(for: [expectSecondRepoToBeginFirstFetch], timeout: 0.2)
+
+        self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
+            return true
+        }
+        let firstFetchData = "first fetch"
+        fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
+        fetchFreshDataSubject.onCompleted()
+
+        wait(for: [expectFirstRepoToSuccessfullyFinishFirstFetch], timeout: 0.2)
+
+        let secondFetchData = "second fetch"
+        secondFreshDataSubject.onNext(FetchResponse<String>.success(data: secondFetchData))
+        secondFreshDataSubject.onCompleted()
+
+        waitForExpectations(timeout: 0.2, handler: nil)
     }
 
     private class Fail: Error {
