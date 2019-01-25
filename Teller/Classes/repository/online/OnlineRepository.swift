@@ -192,9 +192,11 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
     func refreshComplete<FetchResponseData>(_ response: FetchResponse<FetchResponseData>) {
         guard let requirements = self.requirements else { return }
 
+        let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
+
         if let fetchError = response.failure {
             // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
-            if !self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
+            if !hasEverFetchedDataBefore {
                 self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: fetchError) })
             } else {
                 self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(fetchError) })
@@ -213,7 +215,6 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
                 self.dataSource.saveData(newCache)
 
-                let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
                 self.syncStateManager.updateAgeOfData(tag: requirements.tag)
 
                 if !hasEverFetchedDataBefore {
