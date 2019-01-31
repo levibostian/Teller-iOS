@@ -140,7 +140,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
 
                     let needsToFetchFreshData = self.syncStateManager.isDataTooOld(tag: requirements.tag, maxAgeOfData: self.dataSource.maxAgeOfData)
 
-                    if (self.dataSource.isDataEmpty(cache)) {
+                    if (self.dataSource.isDataEmpty(cache, requirements: requirements)) {
                         self.currentStateOfData.changeState({ try! $0.cacheIsEmpty() })
                     } else {
                         self.currentStateOfData.changeState({ try! $0.cachedData(cache) })
@@ -213,7 +213,7 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
                 self.observeCacheDisposeBag.dispose() // Avoid Observable trigger from cached data if it decides to happen.
                 let newCache: DataSource.FetchResult = response.data as! DataSource.FetchResult
 
-                self.dataSource.saveData(newCache)
+                self.dataSource.saveData(newCache, requirements: requirements)
 
                 self.syncStateManager.updateAgeOfData(tag: requirements.tag)
 
