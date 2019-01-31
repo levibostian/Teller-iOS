@@ -35,7 +35,7 @@ public protocol OnlineRepositoryDataSource {
      *
      * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
-    func saveData(_ fetchedData: FetchResult)
+    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements)
     
     /**
      Get existing cached cacheData saved to the device if it exists. If no data exists, return an empty data set. **Do not** return nil or an Observable with nil as a value.
@@ -49,6 +49,6 @@ public protocol OnlineRepositoryDataSource {
     /**
      * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
      */
-    func isDataEmpty(_ cache: Cache) -> Bool
+    func isDataEmpty(_ cache: Cache, requirements: GetDataRequirements) -> Bool
 
 }

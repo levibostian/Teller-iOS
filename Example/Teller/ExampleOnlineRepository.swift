@@ -56,8 +56,8 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
             })
     }
     
-    // Note: Teller runs this function from a background thread. 
-    func saveData(_ fetchedData: [Repo]) {
+    // Note: Teller runs this function from a background thread.
+    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
     }
     
@@ -70,8 +70,8 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
         
         return Observable.just([])
     }
-    
-    func isDataEmpty(_ cache: [Repo]) -> Bool {
+
+    func isDataEmpty(_ cache: [Repo], requirements: ReposRepositoryGetDataRequirements) -> Bool {
         return cache.isEmpty
     }
     

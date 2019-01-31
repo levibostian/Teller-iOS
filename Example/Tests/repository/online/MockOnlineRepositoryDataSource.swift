@@ -38,8 +38,8 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         fetchFreshDataRequirements = requirements
         return self.fakeData.fetchFreshData
     }
-    
-    func saveData(_ fetchedData: String) {
+
+    func saveData(_ fetchedData: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) {
         saveDataCount += 1
         saveDataFetchedData = fetchedData
         saveDataThen?(fetchedData)
@@ -49,8 +49,8 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         observeCachedDataCount += 1
         return observeCacheDataThenAnswer?(requirements) ?? self.fakeData.observeCachedData
     }
-    
-    func isDataEmpty(_ cache: String) -> Bool {
+
+    func isDataEmpty(_ cache: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) -> Bool {
         isDataEmptyCount += 1
         return self.fakeData.isDataEmpty
     }    
