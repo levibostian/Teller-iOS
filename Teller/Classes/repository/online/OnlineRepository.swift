@@ -217,14 +217,14 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
                 self.syncStateManager.updateAgeOfData(tag: requirements.tag)
 
-                if !hasEverFetchedDataBefore {
-                    self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched:     self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)!) })
-                } else {
-                    self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: Date()) })
-                }
-
                 // Must do after changing the state of data or else it will fail from not being in a "has cache" state.
                 self.beginObservingCachedData(requirements: requirements)
+            }
+
+            if !hasEverFetchedDataBefore {
+                self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched:     self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)!) })
+            } else {
+                self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: Date()) })
             }
         }
     }
