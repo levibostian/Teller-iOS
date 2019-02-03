@@ -14,6 +14,8 @@ import RxSwift
  1. Initialize an instance of OnlineRepository
  2. Set the `dataSource` property with an instance of OnlineRepositoryDataSource
  3. Call any of the functions below to sync or observe data.
+
+ OnlineRepository is thread safe. Actions called upon for OnlineRepository can be performed on any thread. 
  */
 open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     

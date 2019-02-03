@@ -36,10 +36,11 @@ For example: If you are building a Twitter client app that is offline-first, whe
 
 Here are the added benefits of Teller:
 
-* Small. The only dependency at this time is RxSwift ([follow this issue as I work to remove this 1 dependency and make it optional](https://github.com/levibostian/Teller-iOS/issues/6))
+* Small. The only dependency at this time is RxSwift ([follow this issue as I work to remove this 1 dependency and make it optional](https://github.com/levibostian/Teller-iOS/issues/6)). Teller is made to do 1 job and do it well. 
 * Built for Swift, by Swift. Teller is written in Swift which means you can expect a nice to use API.
 * Not opinionated. Teller does not care where your data is stored or how it is queried. You simply tell Teller when you're done fetching, saving, and querying and Teller takes care of delivering it to the listeners.
 * Teller works very well with MVVM and MVI design patterns (note the use of `Repository` subclasses in the library). However, you do not need to use these design patterns to use it.
+* Well tested. Currently running in production apps. 
 
 ## Installation
 
@@ -74,7 +75,7 @@ Beta:
 
 Stable:
 
-- [ ] Library has been running in many production apps, developers have tried it and given feedback on it.
+- [ ] Library has been running in many production apps. Library has proven to cover most appropriate use cases and issues have been resolved to the point library is considered stable. 
 
 # Getting started
 

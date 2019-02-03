@@ -1,14 +1,20 @@
-# references:
-# * https://www.objc.io/issues/6-build-tools/travis-ci/
-# * https://github.com/supermarin/xcpretty#usage
-
-osx_image: xcode7.3
-language: objective-c
-# cache: cocoapods
-# podfile: Example/Podfile
-# before_install:
-# - gem install cocoapods # Since Travis is not always on latest version
-# - pod install --project-directory=Example
-script:
-- set -o pipefail && xcodebuild test -enableCodeCoverage YES -workspace Example/Teller.xcworkspace -scheme Teller-Example -sdk iphonesimulator9.3 ONLY_ACTIVE_ARCH=NO | xcpretty
-- pod lib lint
+os: osx
+osx_image: xcode10.1
+language: swift
+before_install:
+- gem install cocoapods --pre # update cocoapods to newest version.
+install:
+- bundle install
+- cd Teller/Example; bundle exec pod check || (bundle exec pod install --repo-update) # use () to group commands together to run if `pod check` returns false
+cache:
+  directories:
+    - $HOME/.rvm/gems
+    - $HOME/.cocoapods
+jobs:
+  include:
+  - stage: pull-request
+    script: ruby bin/run_unit_tests.rb
+    
+stages:
+- name: pull-request
+  if: type IN (pull_request) 
