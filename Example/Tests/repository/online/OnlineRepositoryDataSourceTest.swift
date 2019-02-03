@@ -19,7 +19,7 @@ class OnlineRepositoryDataSourceTest: XCTestCase {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         self.userDefaults = TellerConstants.userDefaults
     }
     

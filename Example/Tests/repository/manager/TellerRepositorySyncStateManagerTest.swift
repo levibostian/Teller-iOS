@@ -19,12 +19,12 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         userDefaults = TellerConstants.userDefaults
     }
     
     override func tearDown() {
-        UserDefaultsUtil.clear()
+        TellerUserDefaultsUtil.shared.clear()
         
         super.tearDown()
     }
@@ -72,7 +72,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     func test_hasEverFetchedData_true() {
         initManager()
         
-        tellerRepositorySyncStateManager.updateLastTimeFreshDataFetched(tag: tag)
+        tellerRepositorySyncStateManager.updateAgeOfData(tag: tag)
         XCTAssertTrue(tellerRepositorySyncStateManager.hasEverFetchedData(tag: tag))
     }
     
@@ -81,7 +81,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
         
         XCTAssertEqual(userDefaults.double(forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)"), 0) // 0 means it has never been set.
         
-        tellerRepositorySyncStateManager.updateLastTimeFreshDataFetched(tag: tag)
+        tellerRepositorySyncStateManager.updateAgeOfData(tag: tag)
         
         let dateLastUpdatedMinusOneSecond = Date().addingTimeInterval(TimeInterval(-1))
         XCTAssertGreaterThan(userDefaults.double(forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)"), dateLastUpdatedMinusOneSecond.timeIntervalSince1970)

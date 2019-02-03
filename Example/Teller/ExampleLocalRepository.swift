@@ -11,17 +11,26 @@ import Teller
 import RxSwift
 import RxCocoa
 
+// Determine what you want to observe locally using the `LocalRepositoryGetDataRequirements`. In this example, we are only going to watch 1 `UserDefaults` key but if you were watching multiple users in 1 app, for example, you could pass in the username of the user to observe and use that username in the `LocalRepositoryDataSource` below.
+struct GitHubUsernameDataSourceGetDataRequirements: LocalRepositoryGetDataRequirements {
+}
+
 class GitHubUsernameDataSource: LocalRepositoryDataSource {
+    
+    typealias Cache = String
+    typealias GetDataRequirements = GitHubUsernameDataSourceGetDataRequirements
     
     fileprivate let userDefaultsKey = "githubuserdatasource"
     
     typealias DataType = String
     
+    // This function gets called from whatever thread you call it from.
     func saveData(data: String) {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
-    func observeData() -> Observable<String> {
+    // Note: Teller calls this function from the UI thread.
+    func observeCachedData() -> Observable<String> {
         return UserDefaults.standard.rx.observe(String.self, userDefaultsKey)
             .map({ (value) -> String in return value! })
     }
@@ -40,17 +49,17 @@ class GitHubUsernameRepository: LocalRepository<GitHubUsernameDataSource> {
     
 }
 
-
 class ExampleUsingLocalRepository {
     
     func observe() {
         let disposeBag = DisposeBag()
         let repository: GitHubUsernameRepository = GitHubUsernameRepository()
+        repository.requirements = GitHubUsernameDataSourceGetDataRequirements()
         
         repository
             .observe()
-            .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribeOn(MainScheduler.instance)
+            .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
                 switch dataState.state() {
                 case .isEmpty:
@@ -62,8 +71,7 @@ class ExampleUsingLocalRepository {
                 }
             }).disposed(by: disposeBag)
         
-        // Now let's say that you want to *update* the GitHub username. Anywhere in your code, you can create an instance of a GitHubUsernameRepository and save data to it. All of your observables will be notified of this change.
-        
+        // Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
          repository.dataSource.saveData(data: "new username")
     }
     

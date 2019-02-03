@@ -14,7 +14,8 @@ extension OnlineDataState {
         case cacheData(data: DataType, fetched: Date)
     }
     
-    public enum FirstFetchState {
+    public enum NoCacheState {
+        case noCache
         case firstFetchOfData
         /**
          * @param errorDuringFetch Error that occurred during the fetch of getting first set of cacheData. It is up to you to capture this error and determine how to show it to the user. It's best practice that when there is an error here, you will dismiss a loading UI if you are showing one since [firstFetchOfData] was called before.
@@ -42,11 +43,12 @@ extension OnlineDataState {
      * Use a switch statement to get the states that you care about.
      */
     public func cacheState() -> CacheState? {
-        if (self.isEmpty) {
-            return CacheState.cacheEmpty(fetched: dataFetched!)
-        }
-        if let data = data {
-            return CacheState.cacheData(data: data, fetched: dataFetched!)
+        if !self.noCacheExists {
+            if let data = self.cacheData {
+                return CacheState.cacheData(data: data, fetched: self.lastTimeFetched!)
+            } else {
+                return CacheState.cacheEmpty(fetched: self.lastTimeFetched!)
+            }
         }
         return nil
     }
@@ -58,12 +60,18 @@ extension OnlineDataState {
      *
      * Use a switch statement to get the states that you care about.
      */
-    public func firstFetchState() -> FirstFetchState? {
-        if (self.firstFetchOfData) {
-            return FirstFetchState.firstFetchOfData
+    public func noCacheState() -> NoCacheState? {
+        if self.justCompletedSuccessfulFirstFetch {
+            return NoCacheState.finishedFirstFetchOfData(errorDuringFetch: nil)
         }
-        if (self.doneFirstFetchOfData) {
-            return FirstFetchState.finishedFirstFetchOfData(errorDuringFetch: self.errorDuringFirstFetch)
+        if self.fetchingForFirstTime {
+            return NoCacheState.firstFetchOfData
+        }
+        if let errorDuringFetch = self.errorDuringFirstFetch {
+            return NoCacheState.finishedFirstFetchOfData(errorDuringFetch: errorDuringFetch)
+        }
+        if self.noCacheExists {
+            return NoCacheState.noCache
         }
         return nil 
     }
@@ -76,10 +84,10 @@ extension OnlineDataState {
      * Use a switch statement to get the states that you care about.
      */
     public func fetchingFreshDataState() -> FetchingFreshDataState? {
-        if (self.isFetchingFreshData) {
+        if self.isFetchingFreshData {
             return FetchingFreshDataState.fetchingFreshCacheData
         }
-        if (self.doneFetchingFreshData) {
+        if self.justCompletedSuccessfullyFetchingFreshData {
             return FetchingFreshDataState.finishedFetchingFreshCacheData(errorDuringFetch: self.errorDuringFetch)
         }
         return nil
@@ -102,11 +110,11 @@ extension OnlineDataState.CacheState: Equatable where DataType: Equatable {
     
 }
 
-extension OnlineDataState.FirstFetchState: Equatable where DataType: Equatable {
+extension OnlineDataState.NoCacheState: Equatable where DataType: Equatable {
     
-    public static func == (lhs: OnlineDataState<DataType>.FirstFetchState, rhs: OnlineDataState<DataType>.FirstFetchState) -> Bool {
+    public static func == (lhs: OnlineDataState<DataType>.NoCacheState, rhs: OnlineDataState<DataType>.NoCacheState) -> Bool {
         switch (lhs, rhs) {
-        case (.firstFetchOfData, .firstFetchOfData):
+        case (.firstFetchOfData, .firstFetchOfData), (.noCache, .noCache):
             return true
         case (let .finishedFirstFetchOfData(error1), let .finishedFirstFetchOfData(error2)):
             return ErrorsUtil.areErrorsEqual(lhs: error1, rhs: error2)

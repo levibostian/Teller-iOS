@@ -30,7 +30,6 @@ class ReposRepositoryGetDataRequirements: OnlineRepositoryGetDataRequirements {
 }
 
 // Struct used to represent the JSON data pulled from the GitHub API.
-// ObjectMapper is used here to map the JSON to the struct.
 struct Repo: Codable {
     var id: Int!
     var name: String!
@@ -41,8 +40,6 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     typealias Cache = [Repo]
     typealias GetDataRequirements = ReposRepositoryGetDataRequirements
     typealias FetchResult = [Repo]
-    
-    fileprivate let cachedDataObservable: PublishSubject<[Repo]> = PublishSubject()
     
     var maxAgeOfData: Period = Period(unit: 5, component: .hour)
     
@@ -59,21 +56,22 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
             })
     }
     
-    func saveData(_ fetchedData: [Repo]) {
+    // Note: Teller runs this function from a background thread.
+    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
-        
-        // Then, we will trigger an update to the observeCachedData subject so that anyone observing that observable can be updated with the new repos.
-        cachedDataObservable.on(Event<[Repo]>.next(fetchedData))
     }
     
+    // Note: Teller runs this function from the UI thread
     func observeCachedData(requirements: ReposRepositoryGetDataRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
-        // Anytime that the repos model has been updated, send an update to the Observable.
+        //
+        // When any of the repos in the database have been changed, we want to trigger an Observable update.
+        // Teller may call `observeCachedData` regularly to keep data fresh.
         
-        return cachedDataObservable.asObservable()
+        return Observable.just([])
     }
-    
-    func isDataEmpty(_ cache: [Repo]) -> Bool {
+
+    func isDataEmpty(_ cache: [Repo], requirements: ReposRepositoryGetDataRequirements) -> Bool {
         return cache.isEmpty
     }
     
@@ -94,9 +92,9 @@ class ExampleUsingOnlineRepository {
         let repository: ReposRepository = ReposRepository()
         
         let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
-        
+        repository.requirements = reposGetDataRequirements        
         repository
-            .observe(loadDataRequirements: reposGetDataRequirements)
+            .observe()
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribeOn(MainScheduler.instance)
             .subscribe(onNext: { (dataState: OnlineDataState<[Repo]>) in
@@ -110,9 +108,13 @@ class ExampleUsingOnlineRepository {
                     break
                 case .none:
                     // the dataState has no cached state yet. This probably means that repos have never been fetched for this specific username before.
+                    // Use the `noCacheState` to get more details on the state on not having a cache.
                     break
                 }
-                switch dataState.firstFetchState() {
+                switch dataState.noCacheState() {
+                case .noCache?:
+                    // Repos have never been fetched before for the specific user. Cache data is not beging fetched at this time.
+                    break
                 case .firstFetchOfData?:
                     // Repos have never been fetched before for the specific user. So, this state means that repos are being fetched for the very first time for this user.
                     break
@@ -120,6 +122,8 @@ class ExampleUsingOnlineRepository {
                     // Repos have been fetched for the very first time for this specific user. A `cacheState()` will also be sent to the dataState. This state does *not* mean that the fetch was successful. It simply means that it is done.
                     
                     // If there was an error that happened during the fetch, errorDuringFetch will be populated.
+                    
+                    // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `OnlineRepository` to try again. It is your responsibility to manually try the first fetch again.
                     break
                 case .none:
                     // The dataState has no first fetch state. This means that repos have been fetched before for this specific user so no first fetch is required.

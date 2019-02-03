@@ -17,12 +17,16 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     typealias FetchResult = String
     
     var fetchFreshDataCount = 0
+    var fetchFreshDataRequirements: MockGetDataRequirements? = nil
     var saveDataCount = 0
+    var saveDataFetchedData: String? = nil
+    var saveDataThen: ((String) -> Void)? = nil
     var observeCachedDataCount = 0
+    var observeCacheDataThenAnswer: ((MockGetDataRequirements) -> Observable<String>)? = nil
     var isDataEmptyCount = 0
     
     var maxAgeOfData: Period
-    private let fakeData: FakeData
+    var fakeData: FakeData
     
     init(fakeData: FakeData, maxAgeOfData: Period) {
         self.fakeData = fakeData
@@ -31,34 +35,43 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     
     func fetchFreshData(requirements: MockGetDataRequirements) -> Single<FetchResponse<String>> {
         fetchFreshDataCount += 1
+        fetchFreshDataRequirements = requirements
         return self.fakeData.fetchFreshData
     }
-    
-    func saveData(_ fetchedData: String) {
+
+    func saveData(_ fetchedData: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) {
         saveDataCount += 1
+        saveDataFetchedData = fetchedData
+        saveDataThen?(fetchedData)
     }
     
     func observeCachedData(requirements: MockGetDataRequirements) -> Observable<String> {
         observeCachedDataCount += 1
-        return self.fakeData.observeCachedData
+        return observeCacheDataThenAnswer?(requirements) ?? self.fakeData.observeCachedData
     }
-    
-    func isDataEmpty(_ cache: String) -> Bool {
+
+    func isDataEmpty(_ cache: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) -> Bool {
         isDataEmptyCount += 1
         return self.fakeData.isDataEmpty
     }    
     
     struct FakeData {
-        let isDataEmpty: Bool
-        let observeCachedData: Observable<String>
-        let fetchFreshData: Single<FetchResponse<String>>
+        var isDataEmpty: Bool
+        var observeCachedData: Observable<String>
+        var fetchFreshData: Single<FetchResponse<String>>
     }
     
     struct MockGetDataRequirements: OnlineRepositoryGetDataRequirements, Equatable {
         var tag: OnlineRepositoryGetDataRequirements.Tag = "MockGetDataRequirements"
         
+        let randomString: String?
+        
+        init(randomString: String?) {
+            self.randomString = randomString
+        }
+        
         static func == (lhs: MockGetDataRequirements, rhs: MockGetDataRequirements) -> Bool {
-            return lhs.tag == rhs.tag
+            return lhs.tag == rhs.tag && lhs.randomString == rhs.randomString
         }
     }
 }

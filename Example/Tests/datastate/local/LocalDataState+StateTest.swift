@@ -35,5 +35,10 @@ class LocalDataState_StateTest: XCTestCase {
         dataState = LocalDataState.data(data: data)
         XCTAssertEqual(dataState.state(), LocalDataState.State.data(data: data))
     }
+
+    func test_notEqual() {
+        dataState = LocalDataState.data(data: "foo")
+        XCTAssertNotEqual(dataState.state(), LocalDataState<String>.State.isEmpty)
+    }
     
 }

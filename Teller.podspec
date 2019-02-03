@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Teller'
-  s.version          = '0.1.0-alpha'
+  s.version          = '0.2.0-alpha'
   s.summary          = "iOS library that manages your app's cached data with ease."
 
 # This description is used to generate tags and improve search results.
@@ -46,5 +46,5 @@ Determining what state your data is in and managing it can be a big pain. That i
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'  
-  s.dependency 'RxSwift', '~> 4.0'
+  s.dependency 'RxSwift', '~> 4.4.0'
 end

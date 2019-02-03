@@ -24,6 +24,13 @@ class LocalDataStateTest: XCTestCase {
         super.tearDown()
     }
     
+    func testNone_setsPropertiesCorrectly() {
+        dataState = LocalDataState.none()
+        
+        XCTAssertFalse(dataState.isEmpty)
+        XCTAssertNil(dataState.data)
+    }
+    
     func testIsEmpty_setsPropertiesCorrectly() {
         dataState = LocalDataState.isEmpty()
         
@@ -37,6 +44,6 @@ class LocalDataStateTest: XCTestCase {
         
         XCTAssertFalse(dataState.isEmpty)
         XCTAssertEqual(dataState.data, data)
-    }
+    }    
     
 }

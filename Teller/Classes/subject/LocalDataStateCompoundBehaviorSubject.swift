@@ -28,12 +28,17 @@ internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
             subject.onNext(dataState)
         }
     }
-    private let subject: BehaviorSubject<LocalDataState<DataType>>
+    internal let subject: BehaviorSubject<LocalDataState<DataType>>
     
     init() {
-        self.dataState = LocalDataState.isEmpty()
-        self.subject = BehaviorSubject(value: self.dataState)
-    }    
+        let initialDataState = LocalDataState<DataType>.none()
+        self.subject = BehaviorSubject<LocalDataState<DataType>>(value: initialDataState)
+        self.dataState = initialDataState
+    }
+    
+    func resetStateToNone() {
+        self.dataState = LocalDataState<DataType>.none()
+    }
     
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
@@ -47,13 +52,6 @@ internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
      */
     func onNextData(data: DataType) {
         dataState = LocalDataState.data(data: data)
-    }
-    
-    /**
-     * Get a [BehaviorSubject] as an [Observable]. Convenient as you more then likely do not need to care about the extra functionality of [BehaviorSubject] when you simply want to observe cacheData changes.
-     */
-    func asObservable() -> Observable<LocalDataState<DataType>> {
-        return subject
-    }
+    }    
     
 }
