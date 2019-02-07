@@ -1,3 +1,10 @@
+## [0.2.1-alpha] - 2-7-2019
+
+Fixed crash in OnlineRepository after first fetch is completed successfully. Do not use 0.2.0-alpha, use this release instead. 
+
+### Fixed 
+- Fixed https://github.com/levibostian/Teller-iOS/issues/45
+
 ## [0.2.0-alpha] - 2-3-2019
 
 Changes to the API. Thread safety and bug fixes. 
