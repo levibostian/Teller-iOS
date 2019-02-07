@@ -204,8 +204,9 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
                 self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(fetchError) })
             }
         } else {
+            let timeFetched = Date()
             // Must run async because delegate functions get called on main thread and we do not (and cannot) run background sync functions from background thread.
-            self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, response] in
+            self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, response, timeFetched] in
                 guard let self = self else { return }
 
                 // Below is some interesting code I need to explain.
@@ -217,16 +218,16 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
                 self.dataSource.saveData(newCache, requirements: requirements)
 
-                self.syncStateManager.updateAgeOfData(tag: requirements.tag)
+                self.syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
 
                 // Must do after changing the state of data or else it will fail from not being in a "has cache" state.
                 self.beginObservingCachedData(requirements: requirements)
             }
 
             if !hasEverFetchedDataBefore {
-                self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched:     self.syncStateManager.lastTimeFetchedData(tag: requirements.tag)!) })
+                self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched: timeFetched) })
             } else {
-                self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: Date()) })
+                self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) })
             }
         }
     }
