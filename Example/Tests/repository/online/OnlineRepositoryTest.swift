@@ -66,13 +66,6 @@ class OnlineRepositoryTest: XCTestCase {
             .firstFetch()
     }
 
-    private func getSuccessfulFirstFetchEvent(timeFetched: Date) -> OnlineDataState<String> {
-        return try! OnlineDataStateStateMachine
-            .noCacheExists(requirements: self.repository.requirements!).change()
-            .firstFetch().change()
-            .successfulFirstFetch(timeFetched: timeFetched)
-    }
-
     private func getCacheEmptyEvent(lastTimeFetched: Date) -> OnlineDataState<String> {
         return try! OnlineDataStateStateMachine
             .cacheExists(requirements: self.repository.requirements!, lastTimeFetched: lastTimeFetched).change()
@@ -679,23 +672,25 @@ class OnlineRepositoryTest: XCTestCase {
         let firstFetchState = try! OnlineDataStateStateMachine<String>
             .noCacheExists(requirements: requirements).change()
             .firstFetch()
-        let successfulFirstFetchState = try! OnlineDataStateStateMachine<String>
-            .noCacheExists(requirements: requirements).change()
-            .firstFetch().change()
-            .successfulFirstFetch(timeFetched: firstFetchTime)
-        let firstCacheEvent = try! OnlineDataStateStateMachine
-            .cacheExists(requirements: requirements, lastTimeFetched: firstFetchTime).change()
-            .cachedData(firstFetchData)
+
+        func getFirstCacheEvent() -> OnlineDataState<String>? {
+            guard let timeFetched = self.syncStateManager.updateAgeOfData_age else {
+                return nil
+            }
+            return try! OnlineDataStateStateMachine
+                .cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
+                .cachedData(firstFetchData)
+        }
 
         compositeDisposable += self.repository.observe()
             .do(onNext: { (state) in
                 if state == firstFetchState {
                     expectFirstFetchEvent.fulfill()
                 }
-                if state == successfulFirstFetchState {
+                if state.justCompletedSuccessfulFirstFetch {
                     expectSuccessfulFirstFetchEvent.fulfill()
                 }
-                if state == firstCacheEvent {
+                if let firstCacheEvent = getFirstCacheEvent(), state == firstCacheEvent {
                     expectFirstCacheEvent.fulfill()
                 }
             }, onSubscribe: {
@@ -732,10 +727,6 @@ class OnlineRepositoryTest: XCTestCase {
         let firstFetchState = try! OnlineDataStateStateMachine<String>
             .noCacheExists(requirements: requirements).change()
             .firstFetch()
-        let successfulFirstFetchState = try! OnlineDataStateStateMachine<String>
-            .noCacheExists(requirements: requirements).change()
-            .firstFetch().change()
-            .successfulFirstFetch(timeFetched: firstFetchTime)
 
         let expectFirstRepoToBeginFirstFetch = expectation(description: "Expect first repo to begin first fetch of data.")
         let expectFirstRepoToSuccessfullyFinishFirstFetch = expectation(description: "Expect first repo to have a successful first fetch")
@@ -746,7 +737,7 @@ class OnlineRepositoryTest: XCTestCase {
                 if state == firstFetchState {
                     expectFirstRepoToBeginFirstFetch.fulfill()
                 }
-                if state == successfulFirstFetchState {
+                if state.justCompletedSuccessfulFirstFetch {
                     expectFirstRepoToSuccessfullyFinishFirstFetch.fulfill()
                 }
             })
@@ -770,7 +761,7 @@ class OnlineRepositoryTest: XCTestCase {
                 if state == firstFetchState {
                     expectSecondRepoToBeginFirstFetch.fulfill()
                 }
-                if state == successfulFirstFetchState {
+                if state.justCompletedSuccessfulFirstFetch {
                     expectSecondRepoToSuccessfullyFinishFirstFetch.fulfill()
                 }
             })

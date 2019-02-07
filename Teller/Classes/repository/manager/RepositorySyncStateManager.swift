@@ -9,7 +9,7 @@ import Foundation
 
 internal protocol RepositorySyncStateManager {
     func isDataTooOld(tag: OnlineRepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool
-    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag)
+    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag, age: Date)
     func hasEverFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Bool
     func lastTimeFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Date?
 }
@@ -37,8 +37,8 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
         return lastTimeFetchedData(tag: tag) != nil
     }
     
-    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag) {
-        userDefaults.set(Date().timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
+    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag, age: Date) {
+        userDefaults.set(age.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
     }
     
     func lastTimeFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Date? {
