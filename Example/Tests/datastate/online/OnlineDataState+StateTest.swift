@@ -30,6 +30,11 @@ class OnlineDataState_StateTest: XCTestCase {
 
      1. Equatable protocols for each of the states.
      */
+    func test_cacheState_cacheStateNone() {
+        dataState = OnlineDataState<String>.none()
+        XCTAssertNil(dataState.cacheState())
+    }
+
     func test_cacheState_cacheEmpty() {
         let fetched = Date()
         dataState = try! OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: fetched).change().cacheIsEmpty()
@@ -46,6 +51,11 @@ class OnlineDataState_StateTest: XCTestCase {
     func test_cacheState_nil() {
         dataState = try! OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements).change().firstFetch()
         XCTAssertNil(dataState.cacheState())
+    }
+
+    func test_noCacheState_cacheStateNone() {
+        dataState = OnlineDataState<String>.none()
+        XCTAssertNil(dataState.noCacheState())
     }
 
     func test_noCacheState_noCache() {
@@ -73,6 +83,11 @@ class OnlineDataState_StateTest: XCTestCase {
     func test_firstFetchState_nil() {
         dataState = try! OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date()).change().cacheIsEmpty()
         XCTAssertNil(dataState.noCacheState())
+    }
+
+    func test_fetchingFreshDataState_cacheStateNone() {
+        dataState = OnlineDataState<String>.none()
+        XCTAssertNil(dataState.fetchingFreshDataState())
     }
 
     func test_fetchingFreshDataState_fetchingFreshData() {
