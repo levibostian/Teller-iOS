@@ -1,3 +1,10 @@
+## [0.2.2-alpha] - 3-19-2019
+
+Fixed crash when delivering the OnlineCacheState when state of cache is none.
+
+### Fixed 
+- Fixed crash when calling `OnlineCacheState.cacheState()` when cache state is none. 
+
 ## [0.2.1-alpha] - 2-7-2019
 
 Fixed crash in OnlineRepository after first fetch is completed successfully. Do not use 0.2.0-alpha, use this release instead. 
