@@ -43,14 +43,16 @@ extension OnlineDataState {
      * Use a switch statement to get the states that you care about.
      */
     public func cacheState() -> CacheState? {
-        if !self.noCacheExists {
-            if let data = self.cacheData {
-                return CacheState.cacheData(data: data, fetched: self.lastTimeFetched!)
-            } else {
-                return CacheState.cacheEmpty(fetched: self.lastTimeFetched!)
-            }
+        // state of cache could be none() which is represented as cache exists. Therefore, make sure that last time fetched is not null before moving forward to indicate state is not none.
+        guard !self.noCacheExists, let lastTimeFetched = self.lastTimeFetched else {
+            return nil
         }
-        return nil
+
+        if let data = self.cacheData {
+            return CacheState.cacheData(data: data, fetched: lastTimeFetched)
+        } else {
+            return CacheState.cacheEmpty(fetched: lastTimeFetched)
+        }
     }
     
     /**
