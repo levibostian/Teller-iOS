@@ -19,7 +19,7 @@ public struct Period {
 
 public extension Period {
     
-    public func toDate() -> Date {
+    func toDate() -> Date {
         return Calendar(identifier: Calendar.Identifier.gregorian).date(byAdding: self.component, value: -self.unit, to: Date())!
     }
     

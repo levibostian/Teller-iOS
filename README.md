@@ -1,7 +1,7 @@
 [![Version](https://img.shields.io/cocoapods/v/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
 [![License](https://img.shields.io/cocoapods/l/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
 [![Platform](https://img.shields.io/cocoapods/p/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
-![Swift 4.2.x](https://img.shields.io/badge/Swift-4.2.x-orange.svg)
+![Swift 5.0.x](https://img.shields.io/badge/Swift-5.0.x-orange.svg)
 
 # Teller
 
