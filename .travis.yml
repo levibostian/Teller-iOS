@@ -1,20 +1,23 @@
 os: osx
-osx_image: xcode10.1
+osx_image: xcode10.2
 language: swift
-before_install:
-- gem install cocoapods --pre # update cocoapods to newest version.
-install:
-- bundle install
-- cd Teller/Example; bundle exec pod check || (bundle exec pod install --repo-update) # use () to group commands together to run if `pod check` returns false
+
+before_cache:
+  - cocoacache save --podfile Example/Podfile.lock 
 cache:
-  directories:
-    - $HOME/.rvm/gems
-    - $HOME/.cocoapods
+  bundler: true 
+  directories:    
+    - Specs
+install:  
+  - bundle install
+  - cocoacache restore --podfile Example/Podfile.lock
+  - cd Example; pod install --repo-update; cd ..
+
 jobs:
   include:
-  - stage: pull-request
+  - stage: tests
     script: ruby bin/run_unit_tests.rb
-    
+
 stages:
-- name: pull-request
-  if: type IN (pull_request) 
+- name: tests
+  if: type IN (pull_request, push) AND tag IS blank

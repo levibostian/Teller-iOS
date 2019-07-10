@@ -140,30 +140,27 @@ class OnlineRepositoryTest: XCTestCase {
 
     func test_dataSourceGetObservableCacheData_calledOnMainThread() {
         let expectToGetObservable = expectation(description: "Expect to get observable to observe cached data")
-        expectToGetObservable.expectedFulfillmentCount = 2 // 1. When setting requirements, OnlineRepository begins observing cache. 2. Refresh call when observing cache in OnlineRepository. 3. Refresh call when setting requirements.
+        expectToGetObservable.expectedFulfillmentCount = 1 // 1. When setting requirements, OnlineRepository begins observing cache. 2. Refresh call when observing cache in OnlineRepository. 3. Refresh call when setting requirements.
         expectToGetObservable.assertForOverFulfill = false // It might be fullfilled 3 times, or 2 times. This is hard to fix at this time until the test API for mocking it improved.
 
-        let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
-        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: Date()))
-        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, fetchFreshData: fetchFreshData.asSingle()))
-        self.dataSource.observeCacheDataThenAnswer = { requirements in
-            XCTAssertTrue(Thread.isMainThread)
-            expectToGetObservable.fulfill()
-
-            return Observable.just("")
-        }
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false))
 
         DispatchQueue.global(qos: .background).async {
             XCTAssertFalse(Thread.isMainThread)
+
+            self.dataSource.observeCacheDataThenAnswer = { requirements in
+                XCTAssertTrue(Thread.isMainThread)
+                expectToGetObservable.fulfill()
+
+                return Observable.just("")
+            }
+
             // Test when begin to observe cache on background thread
             self.initRepository(requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil))
-
-            // Test after a fetch result
-            fetchFreshData.onNext(FetchResponse<String>.success(data: "new data"))
-            fetchFreshData.onCompleted()
         }
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_deinit_cancelExistingRefreshStopObserving() {
@@ -195,7 +192,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectToBeginObserving, expectToReceiveExistingCache], timeout: 0.2)
+        wait(for: [expectToBeginObserving, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
         let expectCancelledRefreshResult = expectation(description: "Expect to receive cancelled sync result")
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin")
@@ -212,11 +209,11 @@ class OnlineRepositoryTest: XCTestCase {
             })
         .subscribe()
 
-        wait(for: [expectRefreshToBegin], timeout: 0.2)
+        wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
 
         self.repository = nil
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_setNewRequirements_refreshGetsCancelled() {
@@ -244,7 +241,7 @@ class OnlineRepositoryTest: XCTestCase {
         // Set requirements for first time starts the first refresh
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        wait(for: [expectRefreshToBegin], timeout: 0.2)
+        wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
 
         XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 2)
 
@@ -280,12 +277,12 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: 0.2)
+        wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
         // This will cancel observing existing cache and go to none state.
         self.repository.requirements = nil
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_setRequirementsNilThenNotNil_continueToObserveSequence() {
@@ -320,17 +317,17 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: 0.2)
+        wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
         // This will cancel observing existing cache and go to none state.
         self.repository.requirements = nil
 
-        wait(for: [expectToReceiveNoneDataState], timeout: 0.2)
+        wait(for: [expectToReceiveNoneDataState], timeout: TestConstants.AWAIT_DURATION)
 
         self.dataSource.fakeData.observeCachedData = Observable.create({ $0.onNext(newCache); return Disposables.create() })
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_saveCacheDataIsCalledOnBackgroundThread() {
@@ -356,7 +353,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse.success(data: fetchedData))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_neverFetchedData_setRequirements_refreshGetsTriggered() {
@@ -382,7 +379,7 @@ class OnlineRepositoryTest: XCTestCase {
         // Set requirements for first time starts the first refresh
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        wait(for: [expectRefreshToBegin], timeout: 0.2)
+        wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
     }
 
     func test_cacheExistsButIsTooOld_setRequirementsBeginsFetch() {
@@ -407,7 +404,7 @@ class OnlineRepositoryTest: XCTestCase {
         // Set requirements for first time starts the first refresh
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_cacheExistsButIsTooOld_observeNewCacheAfterSuccessfulFetch() {
@@ -448,13 +445,13 @@ class OnlineRepositoryTest: XCTestCase {
         // Set requirements for first time starts the first refresh
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        wait(for: [expectStartObserving, expectToReceiveOldCache], timeout: 0.2)
+        wait(for: [expectStartObserving, expectToReceiveOldCache], timeout: TestConstants.AWAIT_DURATION)
 
         self.dataSource.fakeData.observeCachedData = Observable.just(newlyFetchedCache)
         fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: newlyFetchedCache))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_canObserveWithoutSettingRequirements() {
@@ -488,11 +485,11 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectStartObserving, expectToReceiveANoneStateFirst], timeout: 0.2)
+        wait(for: [expectStartObserving, expectToReceiveANoneStateFirst], timeout: TestConstants.AWAIT_DURATION)
 
         self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_cacheExistsNotTooOld_skipRefresh() {
@@ -520,7 +517,7 @@ class OnlineRepositoryTest: XCTestCase {
         // Trigger observe to test fetch does not happen here as well.
         compositeDisposable += self.repository.observe().subscribe()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_forceRefreshStartsRefreshEvenIfDataNotTooOld() {
@@ -544,7 +541,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshData.onNext(FetchResponse<String>.success(data: "new data"))
         fetchFreshData.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_refresh_dataNotTooOld_skipsRefresh() {
@@ -564,7 +561,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_failedFirstFetchDoesNotBeginObservingCache() {
@@ -602,7 +599,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: firstFetchFail))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_failUpdateExistingCache_continueToReceiveCacheUpdates() {
@@ -649,7 +646,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: fetchFail))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_successfulFirstFetch_beginObservingCache() {
@@ -708,7 +705,7 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     // https://github.com/levibostian/Teller-iOS/issues/32
@@ -743,7 +740,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectFirstRepoToBeginFirstFetch], timeout: 0.2)
+        wait(for: [expectFirstRepoToBeginFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         let secondFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         let secondDataSource = MockOnlineRepositoryDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
@@ -767,7 +764,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectSecondRepoToBeginFirstFetch], timeout: 0.2)
+        wait(for: [expectSecondRepoToBeginFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
             return true
@@ -776,13 +773,13 @@ class OnlineRepositoryTest: XCTestCase {
         fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
-        wait(for: [expectFirstRepoToSuccessfullyFinishFirstFetch], timeout: 0.2)
+        wait(for: [expectFirstRepoToSuccessfullyFinishFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         let secondFetchData = "second fetch"
         secondFreshDataSubject.onNext(FetchResponse<String>.success(data: secondFetchData))
         secondFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     private class Fail: Error {
