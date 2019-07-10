@@ -35,6 +35,7 @@
 		F7AFBDF521505D03008ECB51 /* LocalRepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDF421505D03008ECB51 /* LocalRepositoryTest.swift */; };
 		F7B5CD04216680B600EDC914 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7B5CD03216680B600EDC914 /* RxCocoa.framework */; };
 		F7B5CD06216682C900EDC914 /* ExampleOnlineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */; };
+		F7B66A6522D66AF60077CF50 /* TestConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B66A6422D66AF60077CF50 /* TestConstants.swift */; };
 		F7BE7234216677E800D0F288 /* ExampleLocalRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */; };
 		F7BE7236216677FA00D0F288 /* Teller.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE7235216677FA00D0F288 /* Teller.framework */; };
 		F7BE723821667EDA00D0F288 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7BE723721667EDA00D0F288 /* RxSwift.framework */; };
@@ -100,6 +101,7 @@
 		F7AFBDF421505D03008ECB51 /* LocalRepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRepositoryTest.swift; sourceTree = "<group>"; };
 		F7B5CD03216680B600EDC914 /* RxCocoa.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RxCocoa.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleOnlineRepository.swift; sourceTree = "<group>"; };
+		F7B66A6422D66AF60077CF50 /* TestConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestConstants.swift; sourceTree = "<group>"; };
 		F7BAA9C621668A9E00C32491 /* ObjectMapper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ObjectMapper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleLocalRepository.swift; sourceTree = "<group>"; };
 		F7BE7235216677FA00D0F288 /* Teller.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Teller.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -209,6 +211,7 @@
 				F7AFBDE821505109008ECB51 /* datastate */,
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 				F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */,
+				F7B66A6422D66AF60077CF50 /* TestConstants.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -417,23 +420,25 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = CocoaPods;
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 1000;
+						DevelopmentTeam = 552H65R858;
+						LastSwiftMigration = 1020;
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						LastSwiftMigration = 1000;
+						DevelopmentTeam = 552H65R858;
+						LastSwiftMigration = 1020;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
 				};
 			};
 			buildConfigurationList = 607FACCB1AFB9204008FA782 /* Build configuration list for PBXProject "Teller" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -478,7 +483,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework",
 				"${BUILT_PRODUCTS_DIR}/RxTest/RxTest.framework",
@@ -491,7 +496,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		2B6C99DC536560365BC9B0DE /* [CP] Check Pods Manifest.lock */ = {
@@ -536,11 +541,12 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/Moya/Moya.framework",
 				"${BUILT_PRODUCTS_DIR}/Result/Result.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
+				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/Teller/Teller.framework",
 			);
@@ -550,12 +556,13 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Moya.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Result.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Teller.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -590,6 +597,7 @@
 				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */,
+				F7B66A6522D66AF60077CF50 /* TestConstants.swift in Sources */,
 				F7AFBDF0215059CC008ECB51 /* FetchResponseTest.swift in Sources */,
 				F7818C5B21514C490050607E /* LocalDataStateCompoundBehaviorSubjectTest.swift in Sources */,
 				F7818C912152CE440050607E /* OnlineDataState+StateTest.swift in Sources */,
@@ -640,6 +648,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -695,6 +704,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -744,12 +754,13 @@
 			baseConfigurationReference = 7755B3E7D4E28EE0C921E9B6 /* Pods-Teller_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 552H65R858;
 				INFOPLIST_FILE = Teller/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -758,12 +769,13 @@
 			baseConfigurationReference = 2A3E4A6C0838D38DF48D3140 /* Pods-Teller_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 552H65R858;
 				INFOPLIST_FILE = Teller/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -771,6 +783,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EDF3627C0E4FA9CEE926B448 /* Pods-Teller_Tests.debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 552H65R858;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -780,7 +793,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Teller_Example.app/Teller_Example";
 			};
 			name = Debug;
@@ -789,12 +802,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = BDBCD57E9AF937C1B30D8306 /* Pods-Teller_Tests.release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 552H65R858;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Teller_Example.app/Teller_Example";
 			};
 			name = Release;

@@ -71,7 +71,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
                 .subscribe(observer2)
         }
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_newRefreshBeginsAfterPreviousOneComplete() {
@@ -121,7 +121,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         wait(for: [expectObserver1ToSubscribeToRefresh,
                    expectObserver1ToReceiveRefreshResultSuccessfulEvent,
-                   expectObserver1ToComplete], timeout: 0.2)
+                   expectObserver1ToComplete], timeout: TestConstants.AWAIT_DURATION)
 
         let observer2RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
@@ -154,7 +154,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observer2RefreshTask.onNext(FetchResponse.fail(error: fetchResponseError))
         observer2RefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_cancel_refreshTaskGetsCancelled() {
@@ -198,17 +198,17 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             .subscribe(observer)
 
         wait(for: [expectDelegateRefreshBegin,
-                   expectObserverToSubscribeToRefresh], timeout: 0.2)
+                   expectObserverToSubscribeToRefresh], timeout: TestConstants.AWAIT_DURATION)
 
         self.refreshManager.cancelRefresh()
-        wait(for: [expectObserverToReceiveRefreshResultSkippedEvent], timeout: 0.2) // Because cancelRefresh() call is running async, we need to wait for that event to happen.
+        wait(for: [expectObserverToReceiveRefreshResultSkippedEvent], timeout: TestConstants.AWAIT_DURATION) // Because cancelRefresh() call is running async, we need to wait for that event to happen.
 
         // These should be ignored
         let fetchResponseData = "success"
         observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
         observerRefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_deinit_refreshTaskGetsCancelled() {
@@ -252,7 +252,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             .subscribe(observer)
 
         wait(for: [expectDelegateRefreshBegin,
-                   expectObserverToSubscribeToRefresh], timeout: 0.2)
+                   expectObserverToSubscribeToRefresh], timeout: TestConstants.AWAIT_DURATION)
 
         // Cancel refresh manager from a unique thread to test that we can cancel from any thread and it's still safe.
         DispatchQueue(label: "random", qos: .background).sync {
@@ -264,7 +264,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
         observerRefreshTask.onCompleted()
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_refresh_delegateCallsInCorrectOrder_andMainThread() {
@@ -293,7 +293,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         observerRefreshTask.onCompleted()
 
         wait(for: [expectDelegateRefreshBegin,
-                   expectDelegateRefreshComplete], timeout: 0.2, enforceOrder: true)
+                   expectDelegateRefreshComplete], timeout: TestConstants.AWAIT_DURATION, enforceOrder: true)
     }
 
     func test_refresh_observerCallsInCorrectOrder() {
@@ -322,7 +322,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         wait(for: [expectObserverToSubscribeToRefresh,
                    expectObserverToReceiveResultSuccessful,
-                   expectObserverToComplete], timeout: 0.2, enforceOrder: true)
+                   expectObserverToComplete], timeout: TestConstants.AWAIT_DURATION, enforceOrder: true)
     }
 
     func test_refresh_failureGetsPassedOn() {
@@ -348,7 +348,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         refreshTask.onError(fetchFail)
 
-        waitForExpectations(timeout: 0.2, handler: nil)
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     class Fail: Error {

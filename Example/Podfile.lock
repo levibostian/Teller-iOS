@@ -1,27 +1,30 @@
 PODS:
-  - Alamofire (4.7.3)
-  - Moya/Core (11.0.2):
+  - Alamofire (4.8.2)
+  - Moya/Core (14.0.0-alpha.1):
     - Alamofire (~> 4.1)
-    - Result (~> 3.0)
-  - Moya/RxSwift (11.0.2):
+    - Result (~> 4.1)
+  - Moya/RxSwift (14.0.0-alpha.1):
     - Moya/Core
-    - RxSwift (~> 4.0)
-  - Result (3.2.4)
-  - RxBlocking (4.3.0):
-    - RxSwift (~> 4.0)
-  - RxCocoa (4.3.1):
-    - RxSwift (~> 4.0)
-  - RxSwift (4.2.0)
-  - RxTest (4.3.0):
-    - RxSwift (~> 4.0)
-  - Teller (0.1.0-alpha):
-    - RxSwift (~> 4.0)
+    - RxSwift (~> 5.0)
+  - Result (4.1.0)
+  - RxBlocking (5.0.0):
+    - RxSwift (~> 5)
+  - RxCocoa (5.0.0):
+    - RxRelay (~> 5)
+    - RxSwift (~> 5)
+  - RxRelay (5.0.0):
+    - RxSwift (~> 5)
+  - RxSwift (5.0.0)
+  - RxTest (5.0.0):
+    - RxSwift (~> 5)
+  - Teller (0.3.0-alpha):
+    - RxSwift (~> 5.0)
 
 DEPENDENCIES:
-  - Moya/RxSwift (~> 11.0)
-  - RxBlocking (~> 4.3)
-  - RxCocoa (~> 4.3.1)
-  - RxTest (~> 4.3)
+  - Moya/RxSwift (~> 14.0.0-alpha.1)
+  - RxBlocking (~> 5.0)
+  - RxCocoa (~> 5.0)
+  - RxTest (~> 5.0)
   - Teller (from `../`)
 
 SPEC REPOS:
@@ -31,6 +34,7 @@ SPEC REPOS:
     - Result
     - RxBlocking
     - RxCocoa
+    - RxRelay
     - RxSwift
     - RxTest
 
@@ -39,15 +43,16 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
-  Moya: a725035953bc1c0eb1be505ab903984501d82440
-  Result: d2d07204ce72856f1fd9130bbe42c35a7b0fea10
-  RxBlocking: ab8b3ac2aa5d030146fe3a3e7916d8efa202beae
-  RxCocoa: 78763c7b07d02455598d9fc3c1ad091a28b73635
-  RxSwift: 99e10317ddfcc7fbe01356aafd118fde4a0be104
-  RxTest: 831444848ac3c5efdd7d80ff5dc4b50ba08877a9
-  Teller: 38793db6d82e18eb291c33c312f6af8812657101
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  Moya: 65485239114b3b327a17dc2e839f6c8b7143aae9
+  Result: bd966fac789cc6c1563440b348ab2598cc24d5c7
+  RxBlocking: c67185d26498ea3cbe3e121917c3c16739e43123
+  RxCocoa: fcf32050ac00d801f34a7f71d5e8e7f23026dcd8
+  RxRelay: 4f7409406a51a55cd88483f21ed898c234d60f18
+  RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
+  RxTest: 4349afe98f564e0a9bc19063368904622d17d49a
+  Teller: 6366057ac56e9b7a720361474f4dfc4dbf00d7f8
 
-PODFILE CHECKSUM: 9c8b91a084bd21c7084bebc2191ace7a87dc3674
+PODFILE CHECKSUM: 3fc2f72a3ccc77148842d7911df1e2f487d56bc7
 
-COCOAPODS: 1.5.3
+COCOAPODS: 1.6.1

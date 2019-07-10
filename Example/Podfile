@@ -2,13 +2,13 @@ use_frameworks!
 
 target 'Teller_Example' do
   pod 'Teller', :path => '../'
-  pod 'RxCocoa', '~> 4.3.1'
-  pod 'Moya/RxSwift', '~> 11.0'
+  pod 'RxCocoa', '~> 5.0'
+  pod 'Moya/RxSwift', '~> 14.0.0-alpha.1'
 
   target 'Teller_Tests' do
     inherit! :search_paths
 
-    pod 'RxBlocking', '~> 4.3'
-    pod 'RxTest',     '~> 4.3'    
+    pod 'RxBlocking', '~> 5.0'
+    pod 'RxTest',     '~> 5.0'    
   end
 end
