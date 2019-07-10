@@ -1,6 +1,0 @@
-framework module Teller {
-  umbrella header "Teller-umbrella.h"
-
-  export *
-  module * { export * }
-}
