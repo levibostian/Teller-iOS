@@ -62,11 +62,14 @@ class ExampleUsingLocalRepository {
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
                 switch dataState.state() {
-                case .isEmpty:
+                case .isEmpty?:
                     // The GitHub username is empty. It has never been set before.
                     break
-                case .data(let username):
+                case .data(let username)?:
                     // `username` is the GitHub username that has been set last.
+                    break
+                case .none:
+                    // There is no state yet. This is probably because you have not yet set the requirements on the repository yet.
                     break
                 }
             }).disposed(by: disposeBag)
