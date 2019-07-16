@@ -33,21 +33,23 @@ class LocalRepositoryTest: XCTestCase {
         compositeDisposable = nil
     }
     
-    private func initRepository(dataSource: FakeLocalRepositoryDataSource = FakeLocalRepositoryDataSource(fakeData: LocalRepositoryTest.FakeLocalRepositoryDataSource.FakeData())) {
+    private func initRepository(dataSource: FakeLocalRepositoryDataSource = FakeLocalRepositoryDataSource(fakeData: LocalRepositoryTest.FakeLocalRepositoryDataSource.FakeData()), requirements: FakeLocalGetDataRequirements? = FakeLocalGetDataRequirements(), setRequirements: Bool = true) {
         self.dataSource = dataSource
         
         self.localRepository = LocalRepository(dataSource: self.dataSource, schedulersProvider: TestsSchedulersProvider())
-        self.localRepository.requirements = FakeLocalGetDataRequirements()
+
+        if setRequirements {
+            self.localRepository.requirements = requirements
+        }
     }
     
     func test_observe_requirementsNotSet_willReceiveEventsOnceRequirementsSet() {
         let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: true, observeData: Observable.just(""))
-        initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData))
-        self.localRepository.requirements = nil
+        initRepository(dataSource: LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData), requirements: nil, setRequirements: false)
         
         let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
         compositeDisposable += self.localRepository.observe().subscribe(observer)
-        
+
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.none()])
         
         self.localRepository.requirements = FakeLocalGetDataRequirements()

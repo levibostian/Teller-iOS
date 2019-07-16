@@ -18,14 +18,14 @@ extension LocalDataState {
      * This is usually used in the UI of an app to display data to a user.
      * Use a switch statement to view each of the following states.
      */
-    public func state() -> State {
+    public func state() -> State? {
         if (isEmpty) {
             return State.isEmpty
         }
         if let data = self.data {
             return State.data(data: data)
         }
-        fatalError("Unknown state") // Because I am using the Factory design pattern with static constructors, you will never have a situation where state is not empty and nil data.
+        return nil
     }
     
 }

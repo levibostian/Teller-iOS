@@ -24,6 +24,11 @@ class LocalDataState_StateTest: XCTestCase {
         // Put teardown code here.
         super.tearDown()
     }
+
+    func test_state_none() {
+        dataState = LocalDataState.none()
+        XCTAssertNil(dataState.state())
+    }
     
     func test_state_empty() {
         dataState = LocalDataState.isEmpty()
