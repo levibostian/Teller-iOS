@@ -1,3 +1,13 @@
+## [0.3.1-alpha] - 7-19-19
+
+### Fixed 
+- Fix crash when localdatastate none [#55](https://github.com/levibostian/Teller-iOS/issues/55)
+
+## [0.3.0-alpha] - 7-5-19
+
+### Changed
+- Compile Teller with Swift5 and XCode 10.2
+
 ## [0.2.2-alpha] - 3-19-2019
 
 Fixed crash when delivering the OnlineCacheState when state of cache is none.
