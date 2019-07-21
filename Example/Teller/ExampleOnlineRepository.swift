@@ -52,7 +52,7 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
             .map({ (response) -> FetchResponse<[Repo]> in
                 let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
                 
-                return FetchResponse.success(data: repos)
+                return FetchResponse.success(repos)
             })
     }
     

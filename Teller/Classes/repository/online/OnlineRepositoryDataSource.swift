@@ -29,7 +29,7 @@ public protocol OnlineRepositoryDataSource {
      **Called on a background thread.**
      */
     func fetchFreshData(requirements: GetDataRequirements) -> Single<FetchResponse<FetchResult>>
-    
+
     /**
      * Save the cacheData to whatever storage method Repository chooses.
      *
