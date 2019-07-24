@@ -1,3 +1,8 @@
+## [0.4.0-alpha] - 7-24-19
+
+### Changed 
+- **Breaking Change** Switch to using Swift5's Result object in API. This (hopefully) concludes the Swift5 conversion. 
+
 ## [0.3.1-alpha] - 7-19-19
 
 ### Fixed 
