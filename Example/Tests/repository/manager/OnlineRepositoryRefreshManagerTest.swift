@@ -116,7 +116,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             .subscribe(observer1)
 
         let fetchResponseData = "success"
-        observer1RefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
+        observer1RefreshTask.onNext(FetchResponse.success(fetchResponseData))
         observer1RefreshTask.onCompleted()
 
         wait(for: [expectObserver1ToSubscribeToRefresh,
@@ -151,7 +151,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             .asObservable()
             .subscribe(observer2)
 
-        observer2RefreshTask.onNext(FetchResponse.fail(error: fetchResponseError))
+        observer2RefreshTask.onNext(FetchResponse.failure(fetchResponseError))
         observer2RefreshTask.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -205,7 +205,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         // These should be ignored
         let fetchResponseData = "success"
-        observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
+        observerRefreshTask.onNext(FetchResponse.success(fetchResponseData))
         observerRefreshTask.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -261,7 +261,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
 
         // These should be ignored
         let fetchResponseData = "success"
-        observerRefreshTask.onNext(FetchResponse.success(data: fetchResponseData))
+        observerRefreshTask.onNext(FetchResponse.success(fetchResponseData))
         observerRefreshTask.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -289,7 +289,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             .asObservable()
             .subscribe(observer)
 
-        observerRefreshTask.onNext(FetchResponse<String>.success(data: "cache"))
+        observerRefreshTask.onNext(FetchResponse<String>.success("cache"))
         observerRefreshTask.onCompleted()
 
         wait(for: [expectDelegateRefreshBegin,
@@ -317,7 +317,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             })
             .subscribe(observer)
 
-        observerRefreshTask.onNext(FetchResponse<String>.success(data: "cache"))
+        observerRefreshTask.onNext(FetchResponse<String>.success("cache"))
         observerRefreshTask.onCompleted()
 
         wait(for: [expectObserverToSubscribeToRefresh,

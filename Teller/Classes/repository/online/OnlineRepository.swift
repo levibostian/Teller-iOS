@@ -196,17 +196,11 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
         let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
-        if let fetchError = response.failure {
-            // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
-            if !hasEverFetchedDataBefore {
-                self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: fetchError) })
-            } else {
-                self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(fetchError) })
-            }
-        } else {
+        switch response {
+        case .success(let success):
             let timeFetched = Date()
             // Must run async because delegate functions get called on main thread and we do not (and cannot) run background sync functions from background thread.
-            self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, response, timeFetched] in
+            self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, success, timeFetched] in
                 guard let self = self else { return }
 
                 // Below is some interesting code I need to explain.
@@ -214,7 +208,7 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
                 // To be more universal, I am triggering an Observable onNext() update for the developer myself by disposing of     the previous `cachedData` `Observable` before saving data, saving data, and then starting up the `Observable` again. This way, we always get the newest cached data triggered no matter what the dev is using.
                 // Also, `refresh` is called if data has been fetched before or has never been called before. After the first fetch is ever successful, we need to begin observing cached data for the first time anyway. So call it here.
                 self.observeCacheDisposeBag.dispose() // Avoid Observable trigger from cached data if it decides to happen.
-                let newCache: DataSource.FetchResult = response.data as! DataSource.FetchResult
+                let newCache: DataSource.FetchResult = success as! DataSource.FetchResult
 
                 self.dataSource.saveData(newCache, requirements: requirements)
 
@@ -229,6 +223,13 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
             } else {
                 self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) })
             }
+            case .failure(let fetchError):
+                // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
+                if !hasEverFetchedDataBefore {
+                    self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: fetchError) })
+                } else {
+                    self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(fetchError) })
+                }
         }
     }
 

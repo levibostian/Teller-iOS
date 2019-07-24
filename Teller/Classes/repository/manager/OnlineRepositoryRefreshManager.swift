@@ -91,10 +91,11 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.refreshComplete(fetchResponse)
 
-                    if let fetchError = fetchResponse.failure {
-                        self?.doneRefresh(result: RefreshResult.fail(fetchError), failure: nil)
-                    } else {
+                    switch fetchResponse {
+                    case .success:
                         self?.doneRefresh(result: RefreshResult.success(), failure: nil)
+                    case .failure(let fetchError):
+                        self?.doneRefresh(result: RefreshResult.fail(fetchError), failure: nil)
                     }
                 }
             }) { [weak self] (error) in

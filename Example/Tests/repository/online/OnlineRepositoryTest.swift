@@ -353,7 +353,7 @@ class OnlineRepositoryTest: XCTestCase {
         self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
             return true
         }
-        fetchFreshDataSubject.onNext(FetchResponse.success(data: fetchedData))
+        fetchFreshDataSubject.onNext(FetchResponse.success(fetchedData))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -451,7 +451,7 @@ class OnlineRepositoryTest: XCTestCase {
         wait(for: [expectStartObserving, expectToReceiveOldCache], timeout: TestConstants.AWAIT_DURATION)
 
         self.dataSource.fakeData.observeCachedData = Observable.just(newlyFetchedCache)
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: newlyFetchedCache))
+        fetchFreshDataSubject.onNext(FetchResponse<String>.success(newlyFetchedCache))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -542,7 +542,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshData.onNext(FetchResponse<String>.success(data: "new data"))
+        fetchFreshData.onNext(FetchResponse<String>.success("new data"))
         fetchFreshData.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -602,7 +602,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: firstFetchFail))
+        fetchFreshDataSubject.onNext(FetchResponse<String>.failure(firstFetchFail))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -650,7 +650,7 @@ class OnlineRepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.fail(error: fetchFail))
+        fetchFreshDataSubject.onNext(FetchResponse<String>.failure(fetchFail))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -710,7 +710,7 @@ class OnlineRepositoryTest: XCTestCase {
 
         self.repository.requirements = requirements
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
+        fetchFreshDataSubject.onNext(FetchResponse<String>.success(firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -778,13 +778,13 @@ class OnlineRepositoryTest: XCTestCase {
             return true
         }
         let firstFetchData = "first fetch"
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(data: firstFetchData))
+        fetchFreshDataSubject.onNext(FetchResponse<String>.success(firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
         wait(for: [expectFirstRepoToSuccessfullyFinishFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         let secondFetchData = "second fetch"
-        secondFreshDataSubject.onNext(FetchResponse<String>.success(data: secondFetchData))
+        secondFreshDataSubject.onNext(FetchResponse<String>.success(secondFetchData))
         secondFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
