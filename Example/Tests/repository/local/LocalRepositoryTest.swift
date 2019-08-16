@@ -79,6 +79,45 @@ class LocalRepositoryTest: XCTestCase {
         
         XCTAssertRecordedElements(observer.events, [LocalDataState<String>.data(data: data)])
     }
+
+    func test_newCache_callsDataSource() {
+        let data: String = "data here"
+        let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: false, observeData: Observable.just(data))
+        let dataSource = LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData)
+        initRepository(dataSource: dataSource)
+
+        let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
+        self.localRepository.observe().subscribe(observer).dispose()
+
+        let saveCacheExpectation = expectation(description: "Expect to save cache")
+        dataSource.saveCacheThen = { cache in
+            saveCacheExpectation.fulfill()
+        }
+
+        self.localRepository.newCache(data)
+
+        wait(for: [saveCacheExpectation], timeout: TestConstants.AWAIT_DURATION)
+        XCTAssertRecordedElements(observer.events, [LocalDataState<String>.data(data: data)])
+    }
+
+    func test_newCache_callsDataSource_failSaving() {
+        let data: String = "data here"
+        let fakeData = FakeLocalRepositoryDataSource.FakeData(isDataEmpty: false, observeData: Observable.just(data))
+        let dataSource = LocalRepositoryTest.FakeLocalRepositoryDataSource(fakeData: fakeData)
+        initRepository(dataSource: dataSource)
+
+        let observer = TestScheduler(initialClock: 0).createObserver(LocalDataState<String>.self)
+        self.localRepository.observe().subscribe(observer).dispose()
+
+        let saveCacheError = Fail()
+        dataSource.saveCacheThen = { cache in
+            throw saveCacheError
+        }
+
+        self.localRepository.newCache(data)
+
+        XCTAssertRecordedElements(observer.events, [LocalDataState<String>.data(data: data).errorOccurred(saveCacheError)])
+    }
     
     func test_disposeRepository_disposesObservers() {
         let data: String = "data here"
@@ -135,6 +174,8 @@ class LocalRepositoryTest: XCTestCase {
         var saveDataCount = 0
         var observeDataCount = 0
         var isDataEmptyCount = 0
+
+        var saveCacheThen: ((String) throws -> Void)? = nil
         
         struct FakeData {
             var isDataEmpty: Bool
@@ -154,7 +195,8 @@ class LocalRepositoryTest: XCTestCase {
         
         typealias DataType = String
         
-        func saveData(data: String) {
+        func saveData(data: String) throws {
+            try saveCacheThen?(data)
             saveDataCount += 1
         }
         func observeCachedData() -> Observable<String> {
@@ -165,6 +207,9 @@ class LocalRepositoryTest: XCTestCase {
             isDataEmptyCount += 1
             return fakeData.isDataEmpty
         }
+    }
+
+    private class Fail: Error {
     }
     
 }

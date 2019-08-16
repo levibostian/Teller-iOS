@@ -43,7 +43,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
             // 4. Start everything up again.
 
             self.refreshManager.cancelRefresh()
-            self.observeCacheDisposeBag.dispose()
+            self.stopObservingCache()
 
             if let requirements = requirements {
                 if self.syncStateManager.hasEverFetchedData(tag: requirements.tag) {
@@ -92,7 +92,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         currentStateOfData.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
         currentStateOfData.subject.dispose()
 
-        observeCacheDisposeBag.dispose()
+        stopObservingCache()
     }
     
     /**
@@ -131,8 +131,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
-            self.observeCacheDisposeBag.dispose()
-            self.observeCacheDisposeBag = CompositeDisposable()
+            self.stopObservingCache()
 
             self.observeCacheDisposeBag += self.dataSource.observeCachedData(requirements: requirements)
                 .subscribeOn(self.schedulersProvider.ui)
@@ -176,12 +175,17 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
 
         return self.currentStateOfData.subject
     }
+
+    private func stopObservingCache() {
+        self.observeCacheDisposeBag.dispose()
+        self.observeCacheDisposeBag = CompositeDisposable()
+    }
     
 }
 
 extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
-    func refreshBegin() {
+    internal func refreshBegin() {
         let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
         if !hasEverFetchedDataBefore {
@@ -191,10 +195,8 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
         }
     }
 
-    func refreshComplete<FetchResponseData>(_ response: FetchResponse<FetchResponseData>) {
+    internal func refreshComplete<FetchResponseData>(_ response: FetchResponse<FetchResponseData>) {
         guard let requirements = self.requirements else { return }
-
-        let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
         switch response {
         case .success(let success):
@@ -202,28 +204,42 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
             // Must run async because delegate functions get called on main thread and we do not (and cannot) run background sync functions from background thread.
             self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, success, timeFetched] in
                 guard let self = self else { return }
+                let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
-                // Below is some interesting code I need to explain.
-                // In iOS, CoreData is not Observable (that I know of) by RxSwift but other DBs like Realm are.
-                // To be more universal, I am triggering an Observable onNext() update for the developer myself by disposing of     the previous `cachedData` `Observable` before saving data, saving data, and then starting up the `Observable` again. This way, we always get the newest cached data triggered no matter what the dev is using.
-                // Also, `refresh` is called if data has been fetched before or has never been called before. After the first fetch is ever successful, we need to begin observing cached data for the first time anyway. So call it here.
-                self.observeCacheDisposeBag.dispose() // Avoid Observable trigger from cached data if it decides to happen.
                 let newCache: DataSource.FetchResult = success as! DataSource.FetchResult
 
-                self.dataSource.saveData(newCache, requirements: requirements)
+                do {
+                    // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
+                    self.stopObservingCache()
 
-                self.syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
+                    try self.dataSource.saveData(newCache, requirements: requirements)
+                    self.syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
 
-                // Must do after changing the state of data or else it will fail from not being in a "has cache" state.
-                self.beginObservingCachedData(requirements: requirements)
-            }
+                    /*
+                     Do after saving cache, successfully.
+                     This scenario could happen: first fetch -> save new cache -> cache data/empty -> successful first fetch.
+                     Even though it would be better to have "successful first fetch" notification before cache data/empty, this scenario is better then if saving cache fails and we get this:
+                     first fetch -> successful first fetch -> save new cache -> failed first fetch.
+                     We would need to backtrack and that doesn't sound like the best idea. It's best to only say the fetch is successful after it is confirmed successful. Also because 
+                    */
+                    if !hasEverFetchedDataBefore {
+                        self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched: timeFetched) })
+                    } else {
+                        self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) })
+                    }
 
-            if !hasEverFetchedDataBefore {
-                self.currentStateOfData.changeState({ try! $0.successfulFirstFetch(timeFetched: timeFetched) })
-            } else {
-                self.currentStateOfData.changeState({ try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) })
+                    // Begin observing cache again. We may be observing for the first time because this is the first fetch, or we begin observing again after we stopped observing before saving.
+                    self.beginObservingCachedData(requirements: requirements)
+                } catch {
+                    if !hasEverFetchedDataBefore {
+                        self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: error) })
+                    } else {
+                        self.currentStateOfData.changeState({ try! $0.failFetchingFreshCache(error) })
+                    }
+                }
             }
             case .failure(let fetchError):
+                let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
                 // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
                 if !hasEverFetchedDataBefore {
                     self.currentStateOfData.changeState({ try! $0.errorFirstFetch(error: fetchError) })

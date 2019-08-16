@@ -20,7 +20,7 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
     var fetchFreshDataRequirements: MockGetDataRequirements? = nil
     var saveDataCount = 0
     var saveDataFetchedData: String? = nil
-    var saveDataThen: ((String) -> Void)? = nil
+    var saveDataThen: ((String) throws -> Void)? = nil
     var observeCachedDataCount = 0
     var observeCacheDataThenAnswer: ((MockGetDataRequirements) -> Observable<String>)? = nil
     var isDataEmptyCount = 0
@@ -39,10 +39,10 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         return self.fakeData.fetchFreshData
     }
 
-    func saveData(_ fetchedData: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) {
+    func saveData(_ fetchedData: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) throws {
         saveDataCount += 1
         saveDataFetchedData = fetchedData
-        saveDataThen?(fetchedData)
+        try saveDataThen?(fetchedData)
     }
     
     func observeCachedData(requirements: MockGetDataRequirements) -> Observable<String> {

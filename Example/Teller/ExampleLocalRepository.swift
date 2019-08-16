@@ -25,7 +25,7 @@ class GitHubUsernameDataSource: LocalRepositoryDataSource {
     typealias DataType = String
     
     // This function gets called from whatever thread you call it from.
-    func saveData(data: String) {
+    func saveData(data: String) throws {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
@@ -62,10 +62,10 @@ class ExampleUsingLocalRepository {
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
                 switch dataState.state() {
-                case .isEmpty?:
+                case .isEmpty(let error)?:
                     // The GitHub username is empty. It has never been set before.
                     break
-                case .data(let username)?:
+                case .data(let username, let error)?:
                     // `username` is the GitHub username that has been set last.
                     break
                 case .none:
@@ -75,7 +75,7 @@ class ExampleUsingLocalRepository {
             }).disposed(by: disposeBag)
         
         // Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
-         repository.dataSource.saveData(data: "new username")
+         repository.newCache("new username")
     }
     
 }

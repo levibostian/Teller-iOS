@@ -32,18 +32,33 @@ class LocalDataState_StateTest: XCTestCase {
     
     func test_state_empty() {
         dataState = LocalDataState.isEmpty()
-        XCTAssertEqual(dataState.state(), LocalDataState<String>.State.isEmpty)
+        XCTAssertEqual(dataState.state(), LocalDataState<String>.State.isEmpty(error: nil))
     }
     
     func test_state_data() {
         let data = "foo"
         dataState = LocalDataState.data(data: data)
-        XCTAssertEqual(dataState.state(), LocalDataState.State.data(data: data))
+        XCTAssertEqual(dataState.state(), LocalDataState.State.data(data: data, error: nil))
+    }
+
+    func test_state_emptyError() {
+        let error = Fail()
+        dataState = LocalDataState.isEmpty().errorOccurred(error)
+        XCTAssertEqual(dataState.state(), LocalDataState.State.isEmpty(error: error))
+    }
+
+    func test_state_dataError() {
+        let error = Fail()
+        let data = "foo"
+        dataState = LocalDataState.data(data: data).errorOccurred(error)
+        XCTAssertEqual(dataState.state(), LocalDataState.State.data(data: data, error: error))
     }
 
     func test_notEqual() {
         dataState = LocalDataState.data(data: "foo")
-        XCTAssertNotEqual(dataState.state(), LocalDataState<String>.State.isEmpty)
+        XCTAssertNotEqual(dataState.state(), LocalDataState<String>.State.isEmpty(error: nil))
     }
-    
+
+    private class Fail: Error {
+    }
 }

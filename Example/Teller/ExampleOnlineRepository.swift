@@ -57,8 +57,9 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     }
     
     // Note: Teller runs this function from a background thread.
-    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) {
+    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
+        // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
     
     // Note: Teller runs this function from the UI thread

@@ -39,7 +39,7 @@ public protocol OnlineRepositoryDataSource {
      *
      * **Called on a background thread.**
      */
-    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements)
+    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements) throws
     
     /**
      Get existing cached cacheData saved to the device if it exists. If no data exists, return an empty data set. **Do not** return nil or an Observable with nil as a value.

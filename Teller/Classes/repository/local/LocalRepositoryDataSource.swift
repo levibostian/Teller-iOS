@@ -22,7 +22,7 @@ public protocol LocalRepositoryDataSource {
      *
      * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
-    func saveData(data: Cache)
+    func saveData(data: Cache) throws
     
     /**
      * This function should be setup to trigger anytime there is a data change. So if you were to call [saveData], anyone observing the [Observable] returned here will get notified of a new update.

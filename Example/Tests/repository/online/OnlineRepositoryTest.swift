@@ -418,7 +418,8 @@ class OnlineRepositoryTest: XCTestCase {
 
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: existingCacheLastTimeFethed))
-        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache), fetchFreshData: fetchFreshDataSubject.asSingle()))
+        let observeCacheDataObservable = BehaviorSubject<String>.init(value: existingCache)
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCacheDataObservable, fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
 
         let expectStartObserving = expectation(description: "Expect observe to start observing cache")
@@ -450,11 +451,13 @@ class OnlineRepositoryTest: XCTestCase {
 
         wait(for: [expectStartObserving, expectToReceiveOldCache], timeout: TestConstants.AWAIT_DURATION)
 
-        self.dataSource.fakeData.observeCachedData = Observable.just(newlyFetchedCache)
+        self.dataSource.saveDataThen = { newCache in
+            observeCacheDataObservable.on(.next(newCache))
+        }
         fetchFreshDataSubject.onNext(FetchResponse<String>.success(newlyFetchedCache))
         fetchFreshDataSubject.onCompleted()
 
-        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+        waitForExpectations(timeout: 1.0, handler: nil)
     }
 
     func test_canObserveWithoutSettingRequirements() {
@@ -786,6 +789,54 @@ class OnlineRepositoryTest: XCTestCase {
         let secondFetchData = "second fetch"
         secondFreshDataSubject.onNext(FetchResponse<String>.success(secondFetchData))
         secondFreshDataSubject.onCompleted()
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
+
+    func test_firstFetch_failSavingNewCache_expectObserveError() {
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
+        initRepository()
+        let requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        self.repository.requirements = requirements
+
+        let fetchedData = "new cache"
+
+        enum FailSavingCache: Error {
+            case cacheSaveFail
+        }
+
+        let saveCacheFail = FailSavingCache.cacheSaveFail
+        let expectToSaveCache = expectation(description: "Expect to save cache")
+        self.dataSource.saveDataThen = { newCache in
+            expectToSaveCache.fulfill()
+            throw saveCacheFail
+        }
+
+        let expectToNotUpdateAgeOfCache = expectation(description: "Expect to not update the age of data")
+        expectToNotUpdateAgeOfCache.isInverted = true
+        self.syncStateManager.updateAgeOfDataListener = { () -> Bool? in
+            expectToNotUpdateAgeOfCache.fulfill()
+            return true
+        }
+
+        let expectToObserveSaveCacheError = expectation(description: "Expect to observe save cache error")
+        compositeDisposable += self.repository.observe()
+            .do(onNext: { (state) in
+                let errorFirstFetchState = try! OnlineDataStateStateMachine<String>
+                    .noCacheExists(requirements: requirements).change()
+                    .firstFetch().change()
+                    .errorFirstFetch(error: saveCacheFail)
+
+                if state == errorFirstFetchState {
+                    expectToObserveSaveCacheError.fulfill()
+                }
+            })
+            .subscribe()
+
+        fetchFreshDataSubject.onNext(FetchResponse.success(fetchedData))
+        fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }

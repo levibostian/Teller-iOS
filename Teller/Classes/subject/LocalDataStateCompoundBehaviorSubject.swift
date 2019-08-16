@@ -46,6 +46,13 @@ internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
     func onNextEmpty() {
         dataState = LocalDataState.isEmpty()
     }
+
+    /**
+     * An error occurred. Append to the current status of cacheData.
+     */
+    func onNextError(_ error: Error) {
+        dataState = dataState.errorOccurred(error)
+    }
     
     /**
      * The status of cacheData is cacheData (optionally fetching new fresh cacheData as well).

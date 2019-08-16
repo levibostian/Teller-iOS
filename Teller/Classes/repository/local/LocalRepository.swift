@@ -42,6 +42,14 @@ open class LocalRepository<DataSource: LocalRepositoryDataSource> {
         
         observeCacheDisposable?.dispose()
     }
+
+    public final func newCache(_ cache: DataSource.Cache) {
+        do {
+            try self.dataSource.saveData(data: cache)
+        } catch {
+            self.currentStateOfData.onNextError(error)
+        }
+    }
     
     fileprivate func beginObservingCachedData(requirements: DataSource.GetDataRequirements) {
         observeCacheDisposable?.dispose()
