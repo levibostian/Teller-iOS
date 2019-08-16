@@ -1,12 +1,10 @@
 PODS:
-  - Alamofire (4.8.2)
-  - Moya/Core (14.0.0-alpha.1):
-    - Alamofire (~> 4.1)
-    - Result (~> 4.1)
-  - Moya/RxSwift (14.0.0-alpha.1):
+  - Alamofire (5.0.0-beta.7)
+  - Moya/Core (14.0.0-alpha.2):
+    - Alamofire (= 5.0.0-beta.7)
+  - Moya/RxSwift (14.0.0-alpha.2):
     - Moya/Core
     - RxSwift (~> 5.0)
-  - Result (4.1.0)
   - RxBlocking (5.0.0):
     - RxSwift (~> 5)
   - RxCocoa (5.0.0):
@@ -17,11 +15,11 @@ PODS:
   - RxSwift (5.0.0)
   - RxTest (5.0.0):
     - RxSwift (~> 5)
-  - Teller (0.3.0-alpha):
+  - Teller (0.4.0-alpha):
     - RxSwift (~> 5.0)
 
 DEPENDENCIES:
-  - Moya/RxSwift (~> 14.0.0-alpha.1)
+  - Moya/RxSwift (~> 14.0.0-alpha.2)
   - RxBlocking (~> 5.0)
   - RxCocoa (~> 5.0)
   - RxTest (~> 5.0)
@@ -31,7 +29,6 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Alamofire
     - Moya
-    - Result
     - RxBlocking
     - RxCocoa
     - RxRelay
@@ -43,16 +40,15 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
-  Moya: 65485239114b3b327a17dc2e839f6c8b7143aae9
-  Result: bd966fac789cc6c1563440b348ab2598cc24d5c7
+  Alamofire: bd07938ceecad59d2492aeecb1f785a8f2721160
+  Moya: a6f1894cf6baec301aa02b0ecf10e5d8ade556ae
   RxBlocking: c67185d26498ea3cbe3e121917c3c16739e43123
   RxCocoa: fcf32050ac00d801f34a7f71d5e8e7f23026dcd8
   RxRelay: 4f7409406a51a55cd88483f21ed898c234d60f18
   RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
   RxTest: 4349afe98f564e0a9bc19063368904622d17d49a
-  Teller: a7f72a0766524acf09b0513f42d1556bd7fdf19a
+  Teller: e11dcbb99ae9ce61cb1efb41b1b166b1c1354eb1
 
-PODFILE CHECKSUM: 3fc2f72a3ccc77148842d7911df1e2f487d56bc7
+PODFILE CHECKSUM: 2f9caf289327a3885965607da22e8b396dc8e056
 
-COCOAPODS: 1.7.4
+COCOAPODS: 1.7.5
