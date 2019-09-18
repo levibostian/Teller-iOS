@@ -26,7 +26,7 @@ open class LocalRepository<DataSource: LocalRepositoryDataSource> {
         }
     }
     
-    required public init(dataSource: DataSource) {
+    public init(dataSource: DataSource) {
         self.dataSource = dataSource
         self.schedulersProvider = AppSchedulersProvider()
     }

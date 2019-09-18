@@ -62,7 +62,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         }
     }
     
-    required public init(dataSource: DataSource) {
+    public init(dataSource: DataSource) {
         self.dataSource = dataSource
         self.syncStateManager = TellerRepositorySyncStateManager()
         self.schedulersProvider = AppSchedulersProvider()
