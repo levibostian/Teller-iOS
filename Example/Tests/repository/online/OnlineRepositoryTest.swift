@@ -201,7 +201,7 @@ class OnlineRepositoryTest: XCTestCase {
         let expectRefreshToDispose = expectation(description: "Expect refresh to dispose")
         compositeDisposable += try! self.repository.refresh(force: true)
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.skipped(.cancelled) {
+                if refreshResult == .skipped(reason: .cancelled) {
                     expectCancelledRefreshResult.fulfill()
                 }
             }, onSubscribe: {
@@ -537,7 +537,7 @@ class OnlineRepositoryTest: XCTestCase {
         let expectRefreshToBeSuccessful = expectation(description: "Expect refresh to be successful")
         compositeDisposable += try! self.repository.refresh(force: true)
             .do(onSuccess: { (refreshResult) in
-                if refreshResult.didSucceed() {
+                if refreshResult == .successful {
                     expectRefreshToBeSuccessful.fulfill()
                 }
             }, onSubscribe: {
@@ -561,7 +561,7 @@ class OnlineRepositoryTest: XCTestCase {
         let expectRefreshToBeSkipped = expectation(description: "Expect refresh to be skipped")
         compositeDisposable += try! self.repository.refresh(force: false)
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.skipped(.dataNotTooOld) {
+                if refreshResult == .skipped(reason: .dataNotTooOld) {
                     expectRefreshToBeSkipped.fulfill()
                 }
             }, onSubscribe: {

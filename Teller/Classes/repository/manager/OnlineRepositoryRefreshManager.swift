@@ -93,9 +93,9 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
 
                     switch fetchResponse {
                     case .success:
-                        self?.doneRefresh(result: RefreshResult.success(), failure: nil)
+                        self?.doneRefresh(result: .successful, failure: nil)
                     case .failure(let fetchError):
-                        self?.doneRefresh(result: RefreshResult.fail(fetchError), failure: nil)
+                        self?.doneRefresh(result: .failedError(error: fetchError), failure: nil)
                     }
                 }
             }) { [weak self] (error) in
@@ -123,7 +123,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
         refreshSubjectQueue.sync {
             self.refreshTaskDisposeBag = DisposeBag()
 
-            self.refreshSubject?.onNext(RefreshResult.skipped(RefreshResult.SkippedReason.cancelled))
+            self.refreshSubject?.onNext(.skipped(reason: .cancelled))
             self.refreshSubject?.onCompleted()
             self.refreshSubject = nil
         }

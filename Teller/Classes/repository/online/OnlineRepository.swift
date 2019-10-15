@@ -117,7 +117,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
 
             return self.refreshManager.refresh(task: self.dataSource.fetchFreshData(requirements: requirements))
         } else {
-            return Single.just(RefreshResult.skipped(RefreshResult.SkippedReason.dataNotTooOld))
+            return Single.just(.skipped(reason:.dataNotTooOld))
         }
     }
     

@@ -102,7 +102,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable += self.refreshManager.refresh(task: observer1RefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.success() {
+                if refreshResult == .successful {
                     expectObserver1ToReceiveRefreshResultSuccessfulEvent.fulfill()
                 } else {
                     doNotExpectObserver1ReceiveRefreshResultFailedEvent.fulfill()
@@ -137,11 +137,14 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable += self.refreshManager.refresh(task: observer2RefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.success() {
+                switch refreshResult {
+                case .successful:
                     doNotExpectObserver2ReceiveRefreshResultSuccessfulEvent.fulfill()
-                }
-                if refreshResult.didFail() && refreshResult.failedError is Fail {
-                    expectObserver2ToReceiveRefreshResultFailedEvent.fulfill()
+                case .failedError(let failedError):
+                    if failedError is Fail {
+                        expectObserver2ToReceiveRefreshResultFailedEvent.fulfill()
+                    }
+                default: break
                 }
             }, onSubscribe: {
                 expectObserver2ToSubscribeToRefresh.fulfill()
@@ -184,7 +187,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.skipped(.cancelled) {
+                if refreshResult == .skipped(reason: .cancelled) {
                     expectObserverToReceiveRefreshResultSkippedEvent.fulfill()
                 } else {
                     doNotExpectObserverToReceiveOtherRefreshResults.fulfill()
@@ -238,7 +241,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { (refreshResult) in
-                if refreshResult == RefreshResult.skipped(RefreshResult.SkippedReason.cancelled) {
+                if refreshResult == .skipped(reason: .cancelled) {
                     expectObserverToReceiveRefreshResultSkippedEvent.fulfill()
                 } else {
                     doNotExpectObserverToReceiveOtherRefreshResults.fulfill()
@@ -307,7 +310,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
             .asObservable()
             .do(onNext: { (refreshResult) in
-                if refreshResult == RefreshResult.success() {
+                if refreshResult == .successful {
                     expectObserverToReceiveResultSuccessful.fulfill()
                 }
             }, onSubscribe: {

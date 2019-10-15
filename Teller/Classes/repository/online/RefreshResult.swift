@@ -10,53 +10,37 @@ import Foundation
 /**
  Result of a OnlineRepository.refresh() call.
  */
-public struct RefreshResult: Equatable {
+public enum RefreshResult: Equatable, CustomStringConvertible {
     
-    public let successful: Bool
-    public let failedError: Error?
-    public let skipped: SkippedReason?
-    
-    private init(successful: Bool, failedError: Error?, skipped: SkippedReason?) {
-        self.successful = successful
-        self.failedError = failedError
-        self.skipped = skipped
-    }
-    
-    public static func success() -> RefreshResult {
-        return RefreshResult(successful: true, failedError: nil, skipped: nil)
-    }
-    
-    public static func fail(_ error: Error) -> RefreshResult {
-        return RefreshResult(successful: false, failedError: error, skipped: nil)
-    }
-    
-    public static func skipped(_ reason: SkippedReason) -> RefreshResult {
-        return RefreshResult(successful: false, failedError: nil, skipped: reason)
-    }
-    
-    public func didSkip() -> Bool {
-        return skipped != nil
-    }
-    
-    public func didFail() -> Bool {
-        return failedError != nil
-    }
-    
-    public func didSucceed() -> Bool {
-        return successful
-    }
+    case successful
+    case failedError(error: Error)
+    case skipped(reason: SkippedReason)
     
     public static func == (lhs: RefreshResult, rhs: RefreshResult) -> Bool {
-        return lhs.successful == rhs.successful &&
-            lhs.skipped == rhs.skipped &&
-            ErrorsUtil.areErrorsEqual(lhs: lhs.failedError, rhs: rhs.failedError)
+        switch (lhs, rhs) {
+        case (.successful, .successful):
+            return true
+        case (.failedError(let lhs), .failedError(let rhs)):
+            return ErrorsUtil.areErrorsEqual(lhs: lhs, rhs: rhs)
+        case (.skipped(let lhs), .skipped(let rhs)):
+            return lhs == rhs
+        default: return false
+        }
+    }
+    
+    public var description: String {
+        switch self {
+        case .successful: return "successful"
+        case .failedError(let error): return "failed. Description: \(error.localizedDescription)"
+        case .skipped(let reason): return "skipped. Reason: \(reason.description)"
+        }
     }
     
     public struct FetchFailure: Error {
         public let message: String
     }
     
-    public enum SkippedReason {
+    public enum SkippedReason: CustomStringConvertible {
         /**
          * Cached cacheData already exists for the cacheData type, it's not too old yet, and force sync was not true to force sync to run.
          */
@@ -66,5 +50,12 @@ public struct RefreshResult: Equatable {
          The fetch call got cancelled. 
         */
         case cancelled
+        
+        public var description: String {
+            switch self {
+            case .dataNotTooOld: return "data not too old"
+            case .cancelled: return "cancelled"
+            }
+        }
     }
 }
