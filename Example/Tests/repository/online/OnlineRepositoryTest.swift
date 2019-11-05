@@ -571,6 +571,39 @@ class OnlineRepositoryTest: XCTestCase {
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
+    
+    // when OnlineRepository.refresh() called and completed, you should be guaranteed that all operations are complete for the refresh, including saving of the cache.
+    func test_refresh_expectAllOperationsDoneWhenRefreshComplete() {
+        initSyncStateManager(syncStateManagerFakeData: self.getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        initDataSource(fakeData: self.getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshData.asSingle()))
+        initRepository()
+        self.repository.requirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+
+        let newlyFetchedData = "new data"
+        let expectRefreshComplete = expectation(description: "Expect refresh to end.")
+        compositeDisposable += try! self.repository.refresh(force: true)
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // make sure refresh called on background to fully test this works as teller switches threads
+            .do(onSuccess: { (refreshResult) in
+                // expect new cache to be saved
+                XCTAssertEqual(self.dataSource.saveDataCount, 1)
+                XCTAssertEqual(self.dataSource.saveDataFetchedData!, newlyFetchedData)
+                
+                // expect sync state to be updated
+                XCTAssertEqual(self.syncStateManager.updateAgeOfDataCount, 1)
+                
+                expectRefreshComplete.fulfill()
+            }, onSubscribe: {
+                XCTAssertEqual(self.dataSource.saveDataCount, 0)
+                XCTAssertEqual(self.syncStateManager.updateAgeOfDataCount, 0)
+            })
+            .subscribe()
+        
+        fetchFreshData.onNext(FetchResponse<String>.success(newlyFetchedData))
+        fetchFreshData.onCompleted()
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
 
     func test_failedFirstFetchDoesNotBeginObservingCache() {
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()

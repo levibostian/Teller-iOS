@@ -185,6 +185,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
 
 extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
 
+    // called on background thread
     internal func refreshBegin() {
         let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
@@ -195,15 +196,14 @@ extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
         }
     }
 
+    // called on background thread
     internal func refreshComplete<FetchResponseData>(_ response: FetchResponse<FetchResponseData>) {
         guard let requirements = self.requirements else { return }
 
         switch response {
         case .success(let success):
             let timeFetched = Date()
-            // Must run async because delegate functions get called on main thread and we do not (and cannot) run background sync functions from background thread.
-            self.saveFetchedDataSerialQueue.async(flags: .barrier) { [weak self, requirements, success, timeFetched] in
-                guard let self = self else { return }
+            self.saveFetchedDataSerialQueue.sync { // make sure that we don't call saveCache() in multiple threads
                 let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
 
                 let newCache: DataSource.FetchResult = success as! DataSource.FetchResult

@@ -270,17 +270,15 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
-    func test_refresh_delegateCallsInCorrectOrder_andMainThread() {
+    func test_refresh_delegateCallsInCorrectOrder() {
         let expectDelegateRefreshBegin = expectation(description: "Expect manager delegate refresh begin.")
         let expectDelegateRefreshComplete = expectation(description: "Expect manager delegate refresh success to call.")
 
         let delegate = MockOnlineRepositoryRefreshManagerDelegate()
         delegate.invokedRefreshBeginThen = {
-            XCTAssertTrue(Thread.isMainThread)
             expectDelegateRefreshBegin.fulfill()
         }
         delegate.invokedRefreshCompleteThen = {
-            XCTAssertTrue(Thread.isMainThread)
             expectDelegateRefreshComplete.fulfill()
         }
         self.refreshManager.delegate = delegate

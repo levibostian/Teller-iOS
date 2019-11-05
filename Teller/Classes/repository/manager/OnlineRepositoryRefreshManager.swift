@@ -52,7 +52,7 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
     // Queue for reading and writing `refreshSubject` in a thread-safe way. Serial queue to make sure that only 1 refresh can be started at one time.
     private let refreshSubjectQueue = DispatchQueue(label: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_refreshSubjectQueue")
     // Serial queue to run refresh so only 1 refresh call is ever run at 1 time.
-    private let runRefreshScheduler = SerialDispatchQueueScheduler(qos: DispatchQoS.userInitiated, internalSerialQueueName: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_runRefreshScheduler", leeway: DispatchTimeInterval.never)
+    private let runRefreshScheduler = SerialDispatchQueueScheduler(qos: .background, internalSerialQueueName: "\(TellerConstants.namespace)_AppOnlineRepositoryRefreshManager_runRefreshScheduler", leeway: DispatchTimeInterval.never)
 
     init() {
     }
@@ -82,14 +82,11 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
     private func _runRefresh(task: Single<FetchResponse<FetchResponseData>>) {
         task
             .do(onSubscribe: { [weak self] in // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
-                DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.refreshBegin()
-                }
+                self?.delegate?.refreshBegin()
             })
             .subscribeOn(runRefreshScheduler)
             .subscribe(onSuccess: { [weak self] (fetchResponse) in
-                DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.refreshComplete(fetchResponse)
+                self?.delegate?.refreshComplete(fetchResponse)
 
                     switch fetchResponse {
                     case .success:
@@ -97,16 +94,13 @@ internal class AppOnlineRepositoryRefreshManager<FetchResponseData: Any>: Online
                     case .failure(let fetchError):
                         self?.doneRefresh(result: .failedError(error: fetchError), failure: nil)
                     }
-                }
             }) { [weak self] (error) in
                 self?.doneRefresh(result: nil, failure: error)
         }.disposed(by: refreshTaskDisposeBag)
     }
 
     private func doneRefresh(result: RefreshResult?, failure: Error?) {
-        refreshSubjectQueue.async(flags: .barrier) { [weak self] in
-            guard let self = self else { return }
-
+        refreshSubjectQueue.sync {
             if let failure = failure {
                 self.refreshSubject?.onError(failure)
             } else {
