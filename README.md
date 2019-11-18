@@ -5,7 +5,7 @@
 
 # Teller
 
-iOS library that manages the state of your app's data. Teller facilitates loading cached data and fetching fresh data so your app's data is always up to date.
+iOS library that manages the state of your app's data. Teller facilitates loading cached data and fetching fresh data so your app's data is always up-to-date.
 
 Teller works very well with MVVM and MVI design patterns (note the use of `Repository` subclasses in the library). However, you do not need to use these design patterns to use it.
 
@@ -81,68 +81,11 @@ Stable:
 
 The steps to get Teller up and running is pretty simple: (1) Create a `Repository` subclass for your data set. (2) Add a listener to your `Repository` subclass.
 
-* The first step is where you tell Teller how to query cached data, save data to the cache, and how to fetch fresh data. You do this by creating a subclass of `LocalRepository` or `OnlineRepository`.
-
-What type of `Repository` should you use you ask? Here is a description of each:
-
-...TL;DR...if you need to perform a network call to obtain data, use `OnlineRepository`. Else, `LocalRepository`.
-
-`LocalRepository` is a very simple class that does not use network calls to fetch fresh data. Data is simply saved to a cache and queried. If you need to store data in `UserDefaults`, for example, `LocalRepository` is the perfect way to do that.
+* The first step is where you tell Teller how to query cached data, save data to the cache, and how to fetch fresh data. You do this by creating a subclass of `OnlineRepository`.
 
 `OnlineRepository` is a class that saves data to a cache, queries data from the cache, and performs network calls to fetch fresh data when data expires. If you have a data set that is obtained from calling your network API, use `OnlineRepository`.
 
-Here is an example of each. 
-
-First off, `LocalRepository`:
-
-```swift
-import Foundation
-import Teller
-import RxSwift
-import RxCocoa
-
-// Determine what you want to observe locally using the `LocalRepositoryGetDataRequirements`. In this example, we are only going to watch 1 `UserDefaults` key but if you were watching multiple users in 1 app, for example, you could pass in the username of the user to observe and use that username in the `LocalRepositoryDataSource` below. 
-struct GitHubUsernameDataSourceGetDataRequirements: LocalRepositoryGetDataRequirements {
-}
-
-class GitHubUsernameDataSource: LocalRepositoryDataSource {
-    
-    typealias Cache = String
-    typealias GetDataRequirements = GitHubUsernameDataSourceGetDataRequirements
-    
-    fileprivate let userDefaultsKey = "githubuserdatasource"
-    
-    typealias DataType = String
-    
-    // This function gets called from whatever thread you call it from.    
-    func saveData(data: String) throws {
-        UserDefaults.standard.string(forKey: userDefaultsKey)
-    }
-    
-    // Note: Teller calls this function from the UI thread. 
-    func observeCachedData() -> Observable<String> {
-        return UserDefaults.standard.rx.observe(String.self, userDefaultsKey)
-            .map({ (value) -> String in return value! })
-    }
-    
-    func isDataEmpty(data: String) -> Bool {
-        return data.isEmpty
-    }
-    
-}
-
-class GitHubUsernameRepository: LocalRepository<GitHubUsernameDataSource> {
-    
-    convenience init() {
-        self.init(dataSource: GitHubUsernameDataSource())
-    }
-    
-}
-```
-
-This is a `LocalRepository` that is meant to store a `String` representing a GitHub username. As you can see, this `LocalRepository` uses `UserDefaults` to store data. You may use whatever type of data storage that you prefer!
-
-Now onto `OnlineRepository`. Here is an example of that:
+Here is an example. 
 
 ```swift
 import Foundation
@@ -228,40 +171,9 @@ class ReposRepository: OnlineRepository<ReposRepositoryDataSource> {
 
 This `OnlineRepository` subclass is meant to fetch, store, and query a list of GitHub repositories for a given GitHub username. Notice how Teller will even handle errors in your network fetch calls and deliver the errors to the UI of your application for you!
 
-Now it's your turn. Create subclasses of `OnlineRepository` and `LocalRepository` for your data sets!
+Now it's your turn. Create subclasses of `OnlineRepository` for your data sets!
 
 * The last step. Observe your data set. This is also pretty simple.
-
-`LocalRepository`
-
-```swift
-let disposeBag = DisposeBag()
-let repository: GitHubUsernameRepository = GitHubUsernameRepository()
-repository.requirements = GitHubUsernameDataSourceGetDataRequirements()
-
-repository
-    .observe()
-    .subscribeOn(MainScheduler.instance)
-    .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-    .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
-        switch dataState.state() {
-        case .isEmpty(let error)?:
-            // The GitHub username is empty. It has never been set before.
-            break
-        case .data(let username, let error)?:
-            // `username` is the GitHub username that has been set last.
-            break
-        case .none:
-            // There is no state yet. This is probably because you have not yet set the requirements on the repository yet.
-            break
-        }
-    }).disposed(by: disposeBag)
-
-// Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
-repository.newCache(data: "new username")
-```
-
-`OnlineRepository`
 
 ```swift 
 let disposeBag = DisposeBag()
