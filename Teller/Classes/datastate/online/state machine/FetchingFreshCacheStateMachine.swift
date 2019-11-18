@@ -1,23 +1,15 @@
-//
-//  FetchingFreshCacheStateMachine.swift
-//  Teller
-//
-//  Created by Levi Bostian on 11/28/18.
-//
-
 import Foundation
 
 /**
  State machine for fetching fresh cache data.
  */
 internal class FetchingFreshCacheStateMachine {
-
     let state: State
     let errorDuringFetch: Error?
     let lastTimeFetched: Date
 
     var isFetching: Bool {
-        return self.state == FetchingFreshCacheStateMachine.State.isFetching
+        return state == FetchingFreshCacheStateMachine.State.isFetching
     }
 
     private init(state: State, errorDuringFetch: Error?, lastTimeFetched: Date) {
@@ -53,13 +45,10 @@ internal class FetchingFreshCacheStateMachine {
             }
         }
     }
-
 }
 
 extension FetchingFreshCacheStateMachine: CustomStringConvertible {
-
     var description: String {
-        return self.state.description
+        return state.description
     }
-
 }

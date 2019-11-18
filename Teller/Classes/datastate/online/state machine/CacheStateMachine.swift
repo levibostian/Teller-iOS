@@ -1,17 +1,9 @@
-//
-//  CacheStateMachine.swift
-//  Teller
-//
-//  Created by Levi Bostian on 11/28/18.
-//
-
 import Foundation
 
 /**
  State machine for the phase of data's lifecycle when a cache exists.
  */
 internal class CacheStateMachine<Data: Any> {
-
     let state: State
     let cache: Data?
 
@@ -20,7 +12,8 @@ internal class CacheStateMachine<Data: Any> {
         self.cache = cache
     }
 
-    // MARK - constructors
+    // MARK: - constructors
+
     class func cacheEmpty() -> CacheStateMachine {
         return CacheStateMachine(state: CacheStateMachine<Data>.State.cacheEmpty, cache: nil)
     }
@@ -40,13 +33,10 @@ internal class CacheStateMachine<Data: Any> {
             }
         }
     }
-
 }
 
 extension CacheStateMachine: CustomStringConvertible {
-
     var description: String {
-        return self.state.description
+        return state.description
     }
-
 }

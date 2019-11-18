@@ -1,5 +1,5 @@
+import Foundation
 import RxSwift
 import Teller
-import Foundation
 
-// Play around with Teller here. 
+// Play around with Teller here.

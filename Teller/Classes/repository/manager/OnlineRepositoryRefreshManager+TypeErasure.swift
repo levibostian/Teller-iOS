@@ -1,10 +1,3 @@
-//
-//  OnlineRepositoryRefreshManager+TypeErasure.swift
-//  Teller
-//
-//  Created by Levi Bostian on 12/7/18.
-//
-
 import Foundation
 import RxSwift
 
@@ -13,7 +6,6 @@ import RxSwift
  */
 
 private class _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData: Any>: OnlineRepositoryRefreshManager {
-
     init() {
         guard type(of: self) != _AnyOnlineRepositoryRefreshManagerBase.self else {
             fatalError()
@@ -24,7 +16,7 @@ private class _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData: Any>: On
         get {
             fatalError()
         }
-        set {
+        set { // swiftlint:disable:this unused_setter_value
             fatalError()
         }
     }
@@ -36,11 +28,9 @@ private class _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData: Any>: On
     func cancelRefresh() {
         fatalError()
     }
-
 }
 
 private final class _AnyOnlineRepositoryRefreshManagerBox<Concrete: OnlineRepositoryRefreshManager>: _AnyOnlineRepositoryRefreshManagerBase<Concrete.FetchResponseDataType> {
-
     var concrete: Concrete
 
     init(_ concrete: Concrete) {
@@ -57,38 +47,35 @@ private final class _AnyOnlineRepositoryRefreshManagerBox<Concrete: OnlineReposi
     }
 
     override func refresh(task: Single<FetchResponse<Concrete.FetchResponseDataType>>) -> Single<RefreshResult> {
-        return self.concrete.refresh(task: task)
+        return concrete.refresh(task: task)
     }
 
     override func cancelRefresh() {
-        self.concrete.cancelRefresh()
+        concrete.cancelRefresh()
     }
-
 }
 
 internal final class AnyOnlineRepositoryRefreshManager<FetchResponseData: Any>: OnlineRepositoryRefreshManager {
-
     private let box: _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData>
 
     init<Concrete: OnlineRepositoryRefreshManager>(_ concrete: Concrete) where Concrete.FetchResponseDataType == FetchResponseData {
-        box = _AnyOnlineRepositoryRefreshManagerBox(concrete)
+        self.box = _AnyOnlineRepositoryRefreshManagerBox(concrete)
     }
 
     var delegate: OnlineRepositoryRefreshManagerDelegate? {
         get {
-            return self.box.delegate
+            return box.delegate
         }
         set {
-            self.box.delegate = newValue
+            box.delegate = newValue
         }
     }
 
     func refresh(task: Single<FetchResponse<FetchResponseData>>) -> Single<RefreshResult> {
-        return self.box.refresh(task: task)
+        return box.refresh(task: task)
     }
 
     func cancelRefresh() {
-        self.box.cancelRefresh()
+        box.cancelRefresh()
     }
-
 }

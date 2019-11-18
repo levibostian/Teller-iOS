@@ -1,29 +1,20 @@
-//
-//  ExampleOnlineRepository.swift
-//  Teller_Example
-//
-//  Created by Levi Bostian on 10/4/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
-import Teller
-import RxSwift
 import Moya
+import RxSwift
+import Teller
 
 class ReposRepositoryGetDataRequirements: OnlineRepositoryGetDataRequirements {
-    
     /**
      The tag is to make each instance of OnlineRepositoryGetDataRequirements unique. The tag is used to determine how old cached data is to determine if fresh data needs to be fetched or not. If the tag matches previoiusly cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
-     
+
      The best practice is to use the name of the OnlineRepositoryGetDataRequirements subclass and the value of any variables that are used for fetching fresh data.
      */
     var tag: ReposRepositoryGetDataRequirements.Tag {
         return "ReposRepositoryGetDataRequirements_\(username)"
     }
-    
+
     let username: String
-    
+
     init(username: String) {
         self.username = username
     }
@@ -36,64 +27,59 @@ struct Repo: Codable {
 }
 
 class ReposRepositoryDataSource: OnlineRepositoryDataSource {
-    
     typealias Cache = [Repo]
     typealias GetDataRequirements = ReposRepositoryGetDataRequirements
     typealias FetchResult = [Repo]
-    
+
     var maxAgeOfData: Period = Period(unit: 5, component: .hour)
-    
+
     func fetchFreshData(requirements: ReposRepositoryGetDataRequirements) -> Single<FetchResponse<[Repo]>> {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
-        
+
         let provider = MoyaProvider<GitHubService>()
         return provider.rx.request(.listRepos(user: requirements.username))
-            .map({ (response) -> FetchResponse<[Repo]> in
+            .map { (response) -> FetchResponse<[Repo]> in
                 let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
-                
+
                 return FetchResponse.success(repos)
-            })
+            }
     }
-    
+
     // Note: Teller runs this function from a background thread.
     func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
         // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
-    
+
     // Note: Teller runs this function from the UI thread
     func observeCachedData(requirements: ReposRepositoryGetDataRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
         //
         // When any of the repos in the database have been changed, we want to trigger an Observable update.
         // Teller may call `observeCachedData` regularly to keep data fresh.
-        
+
         return Observable.just([])
     }
 
     func isDataEmpty(_ cache: [Repo], requirements: ReposRepositoryGetDataRequirements) -> Bool {
         return cache.isEmpty
     }
-    
 }
 
 class ReposRepository: OnlineRepository<ReposRepositoryDataSource> {
-    
     convenience init() {
         self.init(dataSource: ReposRepositoryDataSource())
     }
-    
 }
 
 class ExampleUsingOnlineRepository {
-    
     func observe() {
         let disposeBag = DisposeBag()
         let repository: ReposRepository = ReposRepository()
-        
+
         let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
-        repository.requirements = reposGetDataRequirements        
+        repository.requirements = reposGetDataRequirements
         repository
             .observe()
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
@@ -121,9 +107,9 @@ class ExampleUsingOnlineRepository {
                     break
                 case .finishedFirstFetchOfData(let errorDuringFetch)?:
                     // Repos have been fetched for the very first time for this specific user. A `cacheState()` will also be sent to the dataState. This state does *not* mean that the fetch was successful. It simply means that it is done.
-                    
+
                     // If there was an error that happened during the fetch, errorDuringFetch will be populated.
-                    
+
                     // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `OnlineRepository` to try again. It is your responsibility to manually try the first fetch again.
                     break
                 case .none:
@@ -132,11 +118,11 @@ class ExampleUsingOnlineRepository {
                 }
                 switch dataState.fetchingFreshDataState() {
                 case .fetchingFreshCacheData?:
-                    // The cached repos for the specific user is too old and new, fresh data is being fetched right now. 
+                    // The cached repos for the specific user is too old and new, fresh data is being fetched right now.
                     break
                 case .finishedFetchingFreshCacheData(let errorDuringFetch)?:
                     // Fresh repos have been fetched for this specific user. This state does *not* mean that the fetch was successful. It simply means that it is done.
-                    
+
                     // If there was an error that happened during the fetch, errorDuringFetch will be populated.
                     break
                 case .none:
@@ -146,5 +132,4 @@ class ExampleUsingOnlineRepository {
             })
             .disposed(by: disposeBag)
     }
-    
 }

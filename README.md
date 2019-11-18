@@ -371,12 +371,7 @@ Teller is a pretty simple CocoaPods XCode workspace. Follow the directions below
 $> cd Teller/Example
 $> pod install
 $> bundle install
-```
-
-* Setup git hooks [via overcommit](https://github.com/brigade/overcommit/) to run misc tasks for you when using git. 
-
-```bash
-$> overcommit --install
+$> ./hooks/autohook.sh install # installs git hooks 
 ```
 
 ## Author

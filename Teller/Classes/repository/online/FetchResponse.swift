@@ -1,10 +1,3 @@
-//
-//  FetchResponse.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/17/18.
-//
-
 import Foundation
 
 /**

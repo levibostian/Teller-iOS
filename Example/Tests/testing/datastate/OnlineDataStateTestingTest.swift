@@ -1,20 +1,11 @@
-//
-//  OnlineCacheStateTestingTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 9/17/19.
-//  Copyright © 2019 CocoaPods. All rights reserved.
-//
-
-import XCTest
 @testable import Teller
+import XCTest
 
 enum ErrorForTesting: Error {
     case foo
 }
 
 class OnlineDataStateTestingTest: XCTestCase {
-
     var requirements: ReposRepositoryGetDataRequirements!
 
     override func setUp() {
@@ -28,7 +19,7 @@ class OnlineDataStateTestingTest: XCTestCase {
         XCTAssertEqual(fromStateMachine, testing)
     }
 
-    // MARK - noCache
+    // MARK: - noCache
 
     func test_noCache_expectResultToEqualStateMachine() {
         let fromStateMachine = OnlineDataStateStateMachine<String>.noCacheExists(requirements: requirements)
@@ -73,7 +64,7 @@ class OnlineDataStateTestingTest: XCTestCase {
         XCTAssertEqual(fromStateMachine, testing)
     }
 
-    // MARK - cache, empty
+    // MARK: - cache, empty
 
     func test_cache_cacheEmpty_notGivingCache_expectResultToEqualStateMachine() {
         let timeFetched = Date()
@@ -128,7 +119,7 @@ class OnlineDataStateTestingTest: XCTestCase {
         XCTAssertEqual(fromStateMachine, testing)
     }
 
-    // MARK - cache, cache not empty
+    // MARK: - cache, cache not empty
 
     func test_cache_cacheNotEmpty_expectResultToEqualStateMachine() {
         let timeFetched = Date()
@@ -146,7 +137,7 @@ class OnlineDataStateTestingTest: XCTestCase {
     func test_cache_cacheNotEmpty_fetching_expectResultToEqualStateMachine() {
         let timeFetched = Date()
         let cache = "cache"
-        
+
         let fromStateMachine = try! OnlineDataStateStateMachine<String>.cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
             .cachedData(cache).change()
             .fetchingFreshCache()
@@ -154,7 +145,7 @@ class OnlineDataStateTestingTest: XCTestCase {
             $0.cache(cache: cache)
             $0.fetching()
         }
-        
+
         XCTAssertEqual(fromStateMachine, testing)
     }
 
@@ -191,5 +182,4 @@ class OnlineDataStateTestingTest: XCTestCase {
 
         XCTAssertEqual(fromStateMachine, testing)
     }
-
 }

@@ -1,19 +1,10 @@
-//
-//  OnlineRepositoryRefreshManagerTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 12/4/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
-import XCTest
 import RxSwift
 import RxTest
 @testable import Teller
+import XCTest
 
 class OnlineRepositoryRefreshManagerTest: XCTestCase {
-
     private var refreshManager: AppOnlineRepositoryRefreshManager<String>!
 
     private let schedulersProvider = TestsSchedulersProvider()
@@ -24,7 +15,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         super.setUp()
 
         compositeDisposable = CompositeDisposable()
-        self.refreshManager = AppOnlineRepositoryRefreshManager<String>()
+        refreshManager = AppOnlineRepositoryRefreshManager<String>()
     }
 
     override func tearDown() {
@@ -88,7 +79,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             expectDelegateRefreshComplete.fulfill()
         }
 
-        self.refreshManager.delegate = delegate
+        refreshManager.delegate = delegate
 
         let observer1RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
@@ -99,9 +90,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectObserver1ToComplete = expectation(description: "Expect observer1 to complete refresh after fetch response back.")
 
         let observer1 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observer1RefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observer1RefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
+            .do(onSuccess: { refreshResult in
                 if refreshResult == .successful {
                     expectObserver1ToReceiveRefreshResultSuccessfulEvent.fulfill()
                 } else {
@@ -134,9 +125,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectObserver2ToComplete = expectation(description: "Expect observer2 to complete refresh after fetch response back.")
 
         let observer2 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observer2RefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observer2RefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
+            .do(onSuccess: { refreshResult in
                 switch refreshResult {
                 case .successful:
                     doNotExpectObserver2ReceiveRefreshResultSuccessfulEvent.fulfill()
@@ -173,7 +164,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             doNotExpectDelegateRefreshComplete.fulfill()
         }
 
-        self.refreshManager.delegate = delegate
+        refreshManager.delegate = delegate
 
         let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
@@ -184,9 +175,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after manager is cancelled.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
+            .do(onSuccess: { refreshResult in
                 if refreshResult == .skipped(reason: .cancelled) {
                     expectObserverToReceiveRefreshResultSkippedEvent.fulfill()
                 } else {
@@ -203,7 +194,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         wait(for: [expectDelegateRefreshBegin,
                    expectObserverToSubscribeToRefresh], timeout: TestConstants.AWAIT_DURATION)
 
-        self.refreshManager.cancelRefresh()
+        refreshManager.cancelRefresh()
         wait(for: [expectObserverToReceiveRefreshResultSkippedEvent], timeout: TestConstants.AWAIT_DURATION) // Because cancelRefresh() call is running async, we need to wait for that event to happen.
 
         // These should be ignored
@@ -227,7 +218,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
             doNotExpectDelegateRefreshComplete.fulfill()
         }
 
-        self.refreshManager.delegate = delegate
+        refreshManager.delegate = delegate
 
         let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
@@ -238,9 +229,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after manager is cancelled.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
-            .do(onSuccess: { (refreshResult) in
+            .do(onSuccess: { refreshResult in
                 if refreshResult == .skipped(reason: .cancelled) {
                     expectObserverToReceiveRefreshResultSkippedEvent.fulfill()
                 } else {
@@ -281,12 +272,12 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         delegate.invokedRefreshCompleteThen = {
             expectDelegateRefreshComplete.fulfill()
         }
-        self.refreshManager.delegate = delegate
+        refreshManager.delegate = delegate
 
         let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
             .asObservable()
             .subscribe(observer)
 
@@ -305,9 +296,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after fetch call complete.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
             .asObservable()
-            .do(onNext: { (refreshResult) in
+            .do(onNext: { refreshResult in
                 if refreshResult == .successful {
                     expectObserverToReceiveResultSuccessful.fulfill()
                 }
@@ -335,9 +326,9 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let fetchFail = Fail()
 
         let refreshObserver = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += self.refreshManager.refresh(task: refreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: refreshTask.asSingle())
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-            .do(onError: { (error) in
+            .do(onError: { error in
                 if error is Fail {
                     expectRefreshObserverToReceiveError.fulfill()
                 }
@@ -352,7 +343,5 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
-    class Fail: Error {
-    }
-
+    class Fail: Error {}
 }

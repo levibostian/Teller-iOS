@@ -1,17 +1,8 @@
-//
-//  FetchingFreshCacheStateMachineTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 11/30/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
-import XCTest
 @testable import Teller
+import XCTest
 
 class FetchingFreshCacheStateMachineTest: XCTestCase {
-
     private var stateMachine: FetchingFreshCacheStateMachine!
 
     override func setUp() {
@@ -26,44 +17,41 @@ class FetchingFreshCacheStateMachineTest: XCTestCase {
 
     func test_notFetching_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched)
+        stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched)
 
-        XCTAssertEqual(self.stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
-        XCTAssertNil(self.stateMachine.errorDuringFetch)
-        XCTAssertEqual(self.stateMachine.lastTimeFetched, lastTimeFetched)
+        XCTAssertEqual(stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
+        XCTAssertNil(stateMachine.errorDuringFetch)
+        XCTAssertEqual(stateMachine.lastTimeFetched, lastTimeFetched)
     }
 
     func test_fetching_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching()
+        stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching()
 
-        XCTAssertEqual(self.stateMachine.state, FetchingFreshCacheStateMachine.State.isFetching)
-        XCTAssertNil(self.stateMachine.errorDuringFetch)
-        XCTAssertEqual(self.stateMachine.lastTimeFetched, lastTimeFetched)
+        XCTAssertEqual(stateMachine.state, FetchingFreshCacheStateMachine.State.isFetching)
+        XCTAssertNil(stateMachine.errorDuringFetch)
+        XCTAssertEqual(stateMachine.lastTimeFetched, lastTimeFetched)
     }
 
     func test_failedFetching_setsCorrectProperties() {
         let lastTimeFetched = Date()
         let fail = Failure()
-        self.stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching().failedFetching(fail)
+        stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching().failedFetching(fail)
 
-        XCTAssertEqual(self.stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
-        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: self.stateMachine.errorDuringFetch, rhs: fail))
-        XCTAssertEqual(self.stateMachine.lastTimeFetched, lastTimeFetched)
+        XCTAssertEqual(stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
+        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: stateMachine.errorDuringFetch, rhs: fail))
+        XCTAssertEqual(stateMachine.lastTimeFetched, lastTimeFetched)
     }
 
     func test_successfulFetch_setsCorrectProperties() {
         let lastTimeFetched = Date()
         let newTimeFetched = Date(timeIntervalSince1970: lastTimeFetched.timeIntervalSince1970 + 1)
-        self.stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching().successfulFetch(timeFetched: newTimeFetched)
+        stateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched).fetching().successfulFetch(timeFetched: newTimeFetched)
 
-        XCTAssertEqual(self.stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
-        XCTAssertNil(self.stateMachine.errorDuringFetch)
-        XCTAssertEqual(self.stateMachine.lastTimeFetched, newTimeFetched)
+        XCTAssertEqual(stateMachine.state, FetchingFreshCacheStateMachine.State.notFetching)
+        XCTAssertNil(stateMachine.errorDuringFetch)
+        XCTAssertEqual(stateMachine.lastTimeFetched, newTimeFetched)
     }
 
-    class Failure: Error {
-    }
-
+    class Failure: Error {}
 }
-

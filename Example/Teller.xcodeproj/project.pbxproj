@@ -409,6 +409,7 @@
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
 				5D27B4C85AAC3DD444A10FA1 /* [CP] Embed Pods Frameworks */,
+				F75BFD3123832E300042A564 /* Swiftlint */,
 			);
 			buildRules = (
 			);
@@ -446,7 +447,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = CocoaPods;
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
@@ -590,6 +591,24 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		F75BFD3123832E300042A564 /* Swiftlint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = Swiftlint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n./Pods/SwiftLint/swiftlint\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

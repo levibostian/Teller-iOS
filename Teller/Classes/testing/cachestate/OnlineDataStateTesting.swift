@@ -1,22 +1,13 @@
-//
-//  OnlineCacheStateTesting.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/17/19.
-//
-
 import Foundation
 
 public class OnlineDataStateTesting {
+    private init() {}
 
-    private init() {
-    }
-
-    static public func none<DataType: Any>() -> OnlineDataState<DataType> {
+    public static func none<DataType: Any>() -> OnlineDataState<DataType> {
         return OnlineDataState.none()
     }
 
-    static public func noCache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> OnlineDataState<DataType> {
+    public static func noCache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> OnlineDataState<DataType> {
         var noCacheExists = NoCacheExistsDsl()
 
         if let more = more {
@@ -40,14 +31,14 @@ public class OnlineDataStateTesting {
 
         if noCacheExists.props.successfulFirstFetch {
             stateMachine = try! stateMachine.change()
-            .firstFetch().change()
-            .successfulFirstFetch(timeFetched: noCacheExists.props.timeFetched!)
+                .firstFetch().change()
+                .successfulFirstFetch(timeFetched: noCacheExists.props.timeFetched!)
         }
 
         return stateMachine
     }
 
-    static public func cache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> OnlineDataState<DataType> {
+    public static func cache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> OnlineDataState<DataType> {
         var cacheExists = CacheExistsDsl<DataType>()
 
         if let more = more {
@@ -70,26 +61,24 @@ public class OnlineDataStateTesting {
 
         if let fetchError = cacheExists.props.errorDuringFetch {
             stateMachine = try! stateMachine.change()
-            .fetchingFreshCache().change()
-            .failFetchingFreshCache(fetchError)
+                .fetchingFreshCache().change()
+                .failFetchingFreshCache(fetchError)
         }
 
         if cacheExists.props.successfulFetch {
             stateMachine = try! stateMachine.change()
-            .fetchingFreshCache().change()
-            .successfulFetchingFreshCache(timeFetched: cacheExists.props.successfulFetchTime!)
+                .fetchingFreshCache().change()
+                .successfulFetchingFreshCache(timeFetched: cacheExists.props.successfulFetchTime!)
         }
 
         return stateMachine
     }
-
 }
 
 public class NoCacheExistsDsl {
     internal var props = Props()
 
-    internal init() {
-    }
+    internal init() {}
 
     public func fetchingFirstTime() {
         props = Props()
@@ -109,9 +98,9 @@ public class NoCacheExistsDsl {
 
     internal struct Props {
         var fetchingFirstTime: Bool = false
-        var errorDuringFirstFetch: Error? = nil
+        var errorDuringFirstFetch: Error?
         var successfulFirstFetch: Bool = false
-        var timeFetched: Date? = nil
+        var timeFetched: Date?
     }
 }
 
@@ -124,7 +113,7 @@ public class CacheExistsDsl<DataType: Any> {
     }
 
     public func fetching() {
-        let oldCache = self.props.cache
+        let oldCache = props.cache
 
         props = Props()
         props.cache = oldCache
@@ -132,7 +121,7 @@ public class CacheExistsDsl<DataType: Any> {
     }
 
     public func failedFetch(error: Error) {
-        let oldCache = self.props.cache
+        let oldCache = props.cache
 
         props = Props()
         props.cache = oldCache
@@ -140,7 +129,7 @@ public class CacheExistsDsl<DataType: Any> {
     }
 
     public func successfulFetch(timeFetched: Date) {
-        let oldCache = self.props.cache
+        let oldCache = props.cache
 
         props = Props()
         props.cache = oldCache
@@ -149,10 +138,10 @@ public class CacheExistsDsl<DataType: Any> {
     }
 
     internal struct Props<DataType: Any> {
-        var cache: DataType? = nil
+        var cache: DataType?
         var fetching: Bool = false
-        var errorDuringFetch: Error? = nil
+        var errorDuringFetch: Error?
         var successfulFetch: Bool = false
-        var successfulFetchTime: Date? = nil
+        var successfulFetchTime: Date?
     }
 }

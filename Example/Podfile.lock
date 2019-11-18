@@ -15,6 +15,8 @@ PODS:
   - RxSwift (5.0.0)
   - RxTest (5.0.0):
     - RxSwift (~> 5)
+  - SwiftFormat/CLI (0.40.14)
+  - SwiftLint (0.37.0)
   - Teller (0.4.0-alpha):
     - RxSwift (~> 5.0)
 
@@ -23,10 +25,12 @@ DEPENDENCIES:
   - RxBlocking (~> 5.0)
   - RxCocoa (~> 5.0)
   - RxTest (~> 5.0)
+  - SwiftFormat/CLI
+  - SwiftLint
   - Teller (from `../`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  trunk:
     - Alamofire
     - Moya
     - RxBlocking
@@ -34,6 +38,8 @@ SPEC REPOS:
     - RxRelay
     - RxSwift
     - RxTest
+    - SwiftFormat
+    - SwiftLint
 
 EXTERNAL SOURCES:
   Teller:
@@ -47,8 +53,10 @@ SPEC CHECKSUMS:
   RxRelay: 4f7409406a51a55cd88483f21ed898c234d60f18
   RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
   RxTest: 4349afe98f564e0a9bc19063368904622d17d49a
+  SwiftFormat: 21c9c3c748d5fcece493d8610eee23df15393458
+  SwiftLint: c078a14d7d7ade75e5507795d185e3da41d844d2
   Teller: e11dcbb99ae9ce61cb1efb41b1b166b1c1354eb1
 
-PODFILE CHECKSUM: 2f9caf289327a3885965607da22e8b396dc8e056
+PODFILE CHECKSUM: 6e7ce8098b1ff739fa5b2dadb70f2130281ae535
 
-COCOAPODS: 1.8.3
+COCOAPODS: 1.8.4

@@ -1,14 +1,6 @@
-//
-//  OnlineDataState+Testing.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/18/19.
-//
-
 import Foundation
 
 public extension OnlineDataState {
-
     static var testing: Testing<DataType> {
         return Testing()
     }
@@ -26,5 +18,4 @@ public extension OnlineDataState {
             return OnlineDataStateTesting.cache(requirements: requirements, lastTimeFetched: lastTimeFetched, more: more)
         }
     }
-
 }

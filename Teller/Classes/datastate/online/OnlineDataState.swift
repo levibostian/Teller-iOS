@@ -1,10 +1,3 @@
-//
-//  OnlineDataState.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/14/18.
-//
-
 import Foundation
 
 /**
@@ -19,7 +12,6 @@ import Foundation
  3. A cache exists, and we are fetching fresh data to update the cache.
  */
 public struct OnlineDataState<DataType: Any> {
-
     let noCacheExists: Bool
     let fetchingForFirstTime: Bool
     let cacheData: DataType?
@@ -39,33 +31,30 @@ public struct OnlineDataState<DataType: Any> {
      Used to change the state of data.
      */
     internal func change() -> OnlineDataStateStateMachine<DataType> {
-        return self.stateMachine!
+        return stateMachine!
     }
 
-    // MARK - Intializers. Use these constructors to construct the initial state of this immutable object.
-    
+    // MARK: - Intializers. Use these constructors to construct the initial state of this immutable object.
+
     /**
      This constructor is meant to be more of a placeholder. It's having "no state".
      */
     internal static func none() -> OnlineDataState {
-        return OnlineDataState(
-            noCacheExists: false,
-            fetchingForFirstTime: false,
-            cacheData: nil,
-            lastTimeFetched: nil,
-            isFetchingFreshData: false,
-            requirements: nil,
-            stateMachine: nil,
-            errorDuringFirstFetch: nil,
-            justCompletedSuccessfulFirstFetch: false,
-            errorDuringFetch: nil,
-            justCompletedSuccessfullyFetchingFreshData: false)
+        return OnlineDataState(noCacheExists: false,
+                               fetchingForFirstTime: false,
+                               cacheData: nil,
+                               lastTimeFetched: nil,
+                               isFetchingFreshData: false,
+                               requirements: nil,
+                               stateMachine: nil,
+                               errorDuringFirstFetch: nil,
+                               justCompletedSuccessfulFirstFetch: false,
+                               errorDuringFetch: nil,
+                               justCompletedSuccessfullyFetchingFreshData: false)
     }
-    
 }
 
 extension OnlineDataState: Equatable where DataType: Equatable {
-
     public static func == (lhs: OnlineDataState<DataType>, rhs: OnlineDataState<DataType>) -> Bool {
         return lhs.noCacheExists == rhs.noCacheExists &&
             lhs.fetchingForFirstTime == rhs.fetchingForFirstTime &&
@@ -80,5 +69,4 @@ extension OnlineDataState: Equatable where DataType: Equatable {
             lhs.justCompletedSuccessfullyFetchingFreshData == rhs.justCompletedSuccessfullyFetchingFreshData &&
             ErrorsUtil.areErrorsEqual(lhs: lhs.errorDuringFetch, rhs: rhs.errorDuringFetch)
     }
-    
 }
