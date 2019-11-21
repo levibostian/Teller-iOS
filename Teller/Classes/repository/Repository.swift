@@ -2,27 +2,27 @@ import Foundation
 import RxSwift
 
 /**
- Use in your app: 1 instance per 1 instance of OnlineRepositoryDataSource, to observe a OnlineRepositoryDataSource.
+ Use in your app: 1 instance per 1 instance of RepositoryDataSource, to observe a RepositoryDataSource.
 
- 1. Initialize an instance of OnlineRepository
- 2. Set the `dataSource` property with an instance of OnlineRepositoryDataSource
+ 1. Initialize an instance of Repository
+ 2. Set the `dataSource` property with an instance of RepositoryDataSource
  3. Call any of the functions below to sync or observe data.
 
- OnlineRepository is thread safe. Actions called upon for OnlineRepository can be performed on any thread.
+ Repository is thread safe. Actions called upon for Repository can be performed on any thread.
  */
-open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
+open class Repository<DataSource: RepositoryDataSource> {
     public let dataSource: DataSource
     internal let syncStateManager: RepositorySyncStateManager
     internal let schedulersProvider: SchedulersProvider
 
     internal var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
-    internal let observeCacheQueue = DispatchQueue(label: "\(TellerConstants.namespace)_OnlineRepository_observeCacheQueue", qos: .userInitiated)
+    internal let observeCacheQueue = DispatchQueue(label: "\(TellerConstants.namespace)_Repository_observeCacheQueue", qos: .userInitiated)
 
-    internal let saveFetchedDataSerialQueue = DispatchQueue(label: "\(TellerConstants.namespace)_OnlineRepository_saveFetchedDataQueue", qos: .background)
+    internal let saveFetchedDataSerialQueue = DispatchQueue(label: "\(TellerConstants.namespace)_Repository_saveFetchedDataQueue", qos: .background)
 
-    internal var currentStateOfData: OnlineDataStateBehaviorSubject<DataSource.Cache> = OnlineDataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
+    internal var currentStateOfData: DataStateBehaviorSubject<DataSource.Cache> = DataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
 
-    internal var refreshManager: AnyOnlineRepositoryRefreshManager<DataSource.FetchResult>
+    internal var refreshManager: AnyRepositoryRefreshManager<DataSource.FetchResult>
 
     /**
      If requirements is set to nil, we will stop observing the cache changes and reset the state of data to nil.
@@ -58,14 +58,14 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
         self.dataSource = dataSource
         self.syncStateManager = TellerRepositorySyncStateManager()
         self.schedulersProvider = AppSchedulersProvider()
-        self.refreshManager = AnyOnlineRepositoryRefreshManager(AppOnlineRepositoryRefreshManager())
+        self.refreshManager = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
 
         postInit()
     }
 
     // init designed for testing purposes. Pass in mocked `syncStateManager` if you wish.
-    // The OnlineRepository is designed to *not* perform any behavior until parameters have been set sometime in the future. **Do not** trigger any refresh, observe, etc behavior in init.
-    internal init(dataSource: DataSource, syncStateManager: RepositorySyncStateManager, schedulersProvider: SchedulersProvider, refreshManager: AnyOnlineRepositoryRefreshManager<DataSource.FetchResult>) {
+    // The Repository is designed to *not* perform any behavior until parameters have been set sometime in the future. **Do not** trigger any refresh, observe, etc behavior in init.
+    internal init(dataSource: DataSource, syncStateManager: RepositorySyncStateManager, schedulersProvider: SchedulersProvider, refreshManager: AnyRepositoryRefreshManager<DataSource.FetchResult>) {
         self.dataSource = dataSource
         self.syncStateManager = syncStateManager
         self.schedulersProvider = schedulersProvider
@@ -151,12 +151,12 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
      ### Observe changes to the state of data.
 
      **Note**
-     * The state of the Observable returned from this function is maintained by the OnlineRepository. When the OnlineRepository `deinit` is called, all observers will be disposed.
+     * The state of the Observable returned from this function is maintained by the Repository. When the Repository `deinit` is called, all observers will be disposed.
      * When you subscribe to the returned `Observable`, you will receive a result immediately with the current state of the data when you subscribe (even if there is "no state").
 
-     - Returns: A RxSwift Observable<OnlineDataState<Cache>> instance that gets notified when the state of the cached data changes.
+     - Returns: A RxSwift Observable<DataState<Cache>> instance that gets notified when the state of the cached data changes.
      */
-    public final func observe() -> Observable<OnlineDataState<DataSource.Cache>> {
+    public final func observe() -> Observable<DataState<DataSource.Cache>> {
         if requirements != nil {
             // Trigger a refresh to help keep data up-to-date.
             _ = try! refresh(force: false)
@@ -173,7 +173,7 @@ open class OnlineRepository<DataSource: OnlineRepositoryDataSource> {
     }
 }
 
-extension OnlineRepository: OnlineRepositoryRefreshManagerDelegate {
+extension Repository: RepositoryRefreshManagerDelegate {
     // called on background thread
     internal func refreshBegin() {
         let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists

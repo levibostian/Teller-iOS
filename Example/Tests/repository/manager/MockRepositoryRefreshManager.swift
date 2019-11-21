@@ -2,7 +2,7 @@ import Foundation
 import RxSwift
 @testable import Teller
 
-internal class MockOnlineRepositoryRefreshManagerDelegate: OnlineRepositoryRefreshManagerDelegate {
+internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDelegate {
     var invokedRefreshBegin = false
     var invokedRefreshBeginCount = 0
     var invokedRefreshBeginThen: (() -> Void)?
@@ -22,15 +22,15 @@ internal class MockOnlineRepositoryRefreshManagerDelegate: OnlineRepositoryRefre
     }
 }
 
-internal class MockOnlineRepositoryRefreshManager<FetchResponseDataType: Any>: OnlineRepositoryRefreshManager {
+internal class MockRepositoryRefreshManager<FetchResponseDataType: Any>: RepositoryRefreshManager {
     var invokedDelegateSetter = false
     var invokedDelegateSetterCount = 0
-    var invokedDelegate: OnlineRepositoryRefreshManagerDelegate?
-    var invokedDelegateList = [OnlineRepositoryRefreshManagerDelegate?]()
+    var invokedDelegate: RepositoryRefreshManagerDelegate?
+    var invokedDelegateList = [RepositoryRefreshManagerDelegate?]()
     var invokedDelegateGetter = false
     var invokedDelegateGetterCount = 0
-    var stubbedDelegate: OnlineRepositoryRefreshManagerDelegate!
-    var delegate: OnlineRepositoryRefreshManagerDelegate? {
+    var stubbedDelegate: RepositoryRefreshManagerDelegate!
+    var delegate: RepositoryRefreshManagerDelegate? {
         set {
             invokedDelegateSetter = true
             invokedDelegateSetterCount += 1

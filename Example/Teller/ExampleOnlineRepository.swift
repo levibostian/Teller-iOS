@@ -3,7 +3,7 @@ import Moya
 import RxSwift
 import Teller
 
-class ReposRepositoryGetDataRequirements: OnlineRepositoryGetDataRequirements {
+class ReposRepositoryGetDataRequirements: RepositoryGetDataRequirements {
     /**
      The tag is to make each instance of OnlineRepositoryGetDataRequirements unique. The tag is used to determine how old cached data is to determine if fresh data needs to be fetched or not. If the tag matches previoiusly cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
 
@@ -26,7 +26,7 @@ struct Repo: Codable {
     var name: String!
 }
 
-class ReposRepositoryDataSource: OnlineRepositoryDataSource {
+class ReposRepositoryDataSource: RepositoryDataSource {
     typealias Cache = [Repo]
     typealias GetDataRequirements = ReposRepositoryGetDataRequirements
     typealias FetchResult = [Repo]
@@ -67,7 +67,7 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     }
 }
 
-class ReposRepository: OnlineRepository<ReposRepositoryDataSource> {
+class ReposRepository: Repository<ReposRepositoryDataSource> {
     convenience init() {
         self.init(dataSource: ReposRepositoryDataSource())
     }
@@ -84,7 +84,7 @@ class ExampleUsingOnlineRepository {
             .observe()
             .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribeOn(MainScheduler.instance)
-            .subscribe(onNext: { (dataState: OnlineDataState<[Repo]>) in
+            .subscribe(onNext: { (dataState: DataState<[Repo]>) in
                 switch dataState.cacheState() {
                 case .cacheEmpty?:
                     // Cache is empty. Repos for this specific user has been fetched before, but they do not have any for their account.

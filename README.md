@@ -81,9 +81,9 @@ Stable:
 
 The steps to get Teller up and running is pretty simple: (1) Create a `Repository` subclass for your data set. (2) Add a listener to your `Repository` subclass.
 
-* The first step is where you tell Teller how to query cached data, save data to the cache, and how to fetch fresh data. You do this by creating a subclass of `OnlineRepository`.
+* The first step is where you tell Teller how to query cached data, save data to the cache, and how to fetch fresh data. You do this by creating a subclass of `Repository`.
 
-`OnlineRepository` is a class that saves data to a cache, queries data from the cache, and performs network calls to fetch fresh data when data expires. If you have a data set that is obtained from calling your network API, use `OnlineRepository`.
+`Repository` is a class that saves data to a cache, queries data from the cache, and performs network calls to fetch fresh data when data expires. If you have a data set that is obtained from calling your network API, use `Repository`.
 
 Here is an example. 
 
@@ -93,12 +93,12 @@ import Teller
 import RxSwift
 import Moya
 
-class ReposRepositoryGetDataRequirements: OnlineRepositoryGetDataRequirements {
+class ReposRepositoryGetDataRequirements: RepositoryGetDataRequirements {
     
     /**
-     The tag is to make each instance of OnlineRepositoryGetDataRequirements unique. The tag is used to determine how old cached data is to determine if fresh data needs to be fetched or not. If the tag matches previoiusly cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
+     The tag is to make each instance of RepositoryGetDataRequirements unique. The tag is used to determine how old cached data is to determine if fresh data needs to be fetched or not. If the tag matches previoiusly cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
      
-     The best practice is to use the name of the OnlineRepositoryGetDataRequirements subclass and the value of any variables that are used for fetching fresh data.
+     The best practice is to use the name of the RepositoryGetDataRequirements subclass and the value of any variables that are used for fetching fresh data.
      */
     var tag: ReposRepositoryGetDataRequirements.Tag {
         return "ReposRepositoryGetDataRequirements_\(username)"
@@ -117,7 +117,7 @@ struct Repo: Codable {
     var name: String!
 }
 
-class ReposRepositoryDataSource: OnlineRepositoryDataSource {
+class ReposRepositoryDataSource: RepositoryDataSource {
     
     typealias Cache = [Repo]
     typealias GetDataRequirements = ReposRepositoryGetDataRequirements
@@ -160,7 +160,7 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     
 }
 
-class ReposRepository: OnlineRepository<ReposRepositoryDataSource> {
+class ReposRepository: Repository<ReposRepositoryDataSource> {
     
     convenience init() {
         self.init(dataSource: ReposRepositoryDataSource())
@@ -169,9 +169,9 @@ class ReposRepository: OnlineRepository<ReposRepositoryDataSource> {
 }
 ```
 
-This `OnlineRepository` subclass is meant to fetch, store, and query a list of GitHub repositories for a given GitHub username. Notice how Teller will even handle errors in your network fetch calls and deliver the errors to the UI of your application for you!
+This `Repository` subclass is meant to fetch, store, and query a list of GitHub repositories for a given GitHub username. Notice how Teller will even handle errors in your network fetch calls and deliver the errors to the UI of your application for you!
 
-Now it's your turn. Create subclasses of `OnlineRepository` for your data sets!
+Now it's your turn. Create subclasses of `Repository` for your data sets!
 
 * The last step. Observe your data set. This is also pretty simple.
 
@@ -185,7 +185,7 @@ repository
     .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
-    .subscribe(onNext: { (dataState: OnlineDataState<[Repo]>) in
+    .subscribe(onNext: { (dataState: DataState<[Repo]>) in
         switch dataState.cacheState() {
         case .cacheEmpty?:
             // Cache is empty. Repos for this specific user has been fetched before, but they do not have any for their account.
@@ -211,7 +211,7 @@ repository
             
             // If there was an error that happened during the fetch, errorDuringFetch will be populated.
             
-            // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `OnlineRepository` to try again. It is your responsibility to manually try the first fetch again.
+            // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `Repository` to try again. It is your responsibility to manually try the first fetch again.
             break
         case .none:
             // The dataState has no first fetch state. This means that repos have been fetched before for this specific user so no first fetch is required.
@@ -255,9 +255,9 @@ repository.refresh(force: false)
         .subscribe()
 ```
 
-Teller `OnlineRepository`s provides a `refresh` function. `refresh` will check if the cached data is too old. If cached data is too old, it will fetch fresh data and save it and if it's not too old, it will simply ignore the request (unless `force` is `true`). `refresh` returns a `Single`, so we need to subscribe to it to run the refresh.
+Teller `Repository`s provides a `refresh` function. `refresh` will check if the cached data is too old. If cached data is too old, it will fetch fresh data and save it and if it's not too old, it will simply ignore the request (unless `force` is `true`). `refresh` returns a `Single`, so we need to subscribe to it to run the refresh.
 
-You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `OnlineRepository`s periodically. 
+You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically. 
 
 ## Example app
 

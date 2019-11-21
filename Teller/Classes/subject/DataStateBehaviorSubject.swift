@@ -15,19 +15,19 @@ import RxSwift
  * With that in mind, we "compound" errors and status of fetching cacheData to the last instance of [StateData] found inside of an instance of [BehaviorSubject].
  */
 
-// This class is meant to work with OnlineRepository because it has all the states cacheData can have, including loading and fetching of fresh cacheData.
+// This class is meant to work with Repository because it has all the states cacheData can have, including loading and fetching of fresh cacheData.
 // You may see many `try!` statements in this file. The code based used to have many `fatalError` statements but those are (1) not testable and (2) not flexible with the potential try/catch in the future if we see a potential for that. So, using `try!` allows us to have errors thrown that we can then fix later.
-internal class OnlineDataStateBehaviorSubject<DataType: Any> {
-    private let dataSourceQueue = DispatchQueue(label: "\(TellerConstants.namespace)_OnlineDataStateBehaviorSubject_dataSourceQueue")
-    private var _dataState: OnlineDataState<DataType>! {
+internal class DataStateBehaviorSubject<DataType: Any> {
+    private let dataSourceQueue = DispatchQueue(label: "\(TellerConstants.namespace)DataStateBehaviorSubject_dataSourceQueue")
+    private var _dataState: DataState<DataType>! {
         didSet {
             subject.onNext(_dataState)
         }
     }
 
-    private var dataState: OnlineDataState<DataType>! {
+    private var dataState: DataState<DataType>! {
         get {
-            var dataStateCopy: OnlineDataState<DataType>?
+            var dataStateCopy: DataState<DataType>?
             dataSourceQueue.sync {
                 dataStateCopy = self._dataState
             }
@@ -40,34 +40,34 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
         }
     }
 
-    internal let subject: BehaviorSubject<OnlineDataState<DataType>>
+    internal let subject: BehaviorSubject<DataState<DataType>>
 
-    var currentState: OnlineDataState<DataType> {
+    var currentState: DataState<DataType> {
         return try! subject.value()
     }
 
     init() {
-        let initialDataState = OnlineDataState<DataType>.none()
+        let initialDataState = DataState<DataType>.none()
         self.subject = BehaviorSubject(value: initialDataState)
         self.dataState = initialDataState
     }
 
     /**
-     When the `OnlineRepositoryGetDataRequirements` is changed in an `OnlineRepository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
+     When the `RepositoryGetDataRequirements` is changed in an `Repository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
      */
     func resetStateToNone() {
-        dataState = OnlineDataState.none()
+        dataState = DataState.none()
     }
 
-    func resetToNoCacheState(requirements: OnlineRepositoryGetDataRequirements) {
-        dataState = OnlineDataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
+    func resetToNoCacheState(requirements: RepositoryGetDataRequirements) {
+        dataState = DataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
     }
 
-    func resetToCacheState(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date) {
-        dataState = OnlineDataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
+    func resetToCacheState(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date) {
+        dataState = DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
     }
 
-    func changeState(_ change: (OnlineDataStateStateMachine<DataType>) -> OnlineDataState<DataType>) {
+    func changeState(_ change: (DataStateStateMachine<DataType>) -> DataState<DataType>) {
         dataState = change(dataState.stateMachine!)
     }
 }

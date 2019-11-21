@@ -1,10 +1,10 @@
 import Foundation
 
 internal protocol RepositorySyncStateManager {
-    func isDataTooOld(tag: OnlineRepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool
-    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag, age: Date)
-    func hasEverFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Bool
-    func lastTimeFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Date?
+    func isDataTooOld(tag: RepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool
+    func updateAgeOfData(tag: RepositoryGetDataRequirements.Tag, age: Date)
+    func hasEverFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Bool
+    func lastTimeFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Date?
 }
 
 /**
@@ -17,7 +17,7 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
         self.userDefaults = userDefaults
     }
 
-    func isDataTooOld(tag: OnlineRepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool {
+    func isDataTooOld(tag: RepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool {
         if !hasEverFetchedData(tag: tag) {
             return true
         }
@@ -25,15 +25,15 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
         return lastTimeFetchedData(tag: tag)! < maxAgeOfData.toDate()
     }
 
-    func hasEverFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Bool {
+    func hasEverFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Bool {
         return lastTimeFetchedData(tag: tag) != nil
     }
 
-    func updateAgeOfData(tag: OnlineRepositoryGetDataRequirements.Tag, age: Date) {
+    func updateAgeOfData(tag: RepositoryGetDataRequirements.Tag, age: Date) {
         userDefaults.set(age.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
     }
 
-    func lastTimeFetchedData(tag: OnlineRepositoryGetDataRequirements.Tag) -> Date? {
+    func lastTimeFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Date? {
         let lastFetchedTime = userDefaults.double(forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
         guard lastFetchedTime > 0 else { return nil }
 

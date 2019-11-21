@@ -1,7 +1,7 @@
 import Foundation
 
 /**
- Result of a OnlineRepository.refresh() call.
+ Result of a Repository.refresh() call.
  */
 public enum RefreshResult: Equatable, CustomStringConvertible {
     case successful

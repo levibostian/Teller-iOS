@@ -3,7 +3,7 @@ import Foundation
 /**
  Holds the current state of data that is obtained via a network call. This data structure is meant to be passed out of Teller and to the application using Teller so it can parse it and display the data representation in the app.
 
- The online data state is *not* manipulated here. It is only stored.
+ The data state is *not* manipulated here. It is only stored.
 
  Data in apps are in 1 of 3 different types of state:
 
@@ -11,15 +11,15 @@ import Foundation
  2. Data has been cached in the app and is either empty or not.
  3. A cache exists, and we are fetching fresh data to update the cache.
  */
-public struct OnlineDataState<DataType: Any> {
+public struct DataState<DataType: Any> {
     let noCacheExists: Bool
     let fetchingForFirstTime: Bool
     let cacheData: DataType?
     let lastTimeFetched: Date?
     let isFetchingFreshData: Bool
 
-    let requirements: OnlineRepositoryGetDataRequirements?
-    let stateMachine: OnlineDataStateStateMachine<DataType>?
+    let requirements: RepositoryGetDataRequirements?
+    let stateMachine: DataStateStateMachine<DataType>?
 
     // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of data, the following properties should be set once in the constuctor and then for future state calls, negate them.
     let errorDuringFirstFetch: Error?
@@ -30,7 +30,7 @@ public struct OnlineDataState<DataType: Any> {
     /**
      Used to change the state of data.
      */
-    internal func change() -> OnlineDataStateStateMachine<DataType> {
+    internal func change() -> DataStateStateMachine<DataType> {
         return stateMachine!
     }
 
@@ -39,23 +39,23 @@ public struct OnlineDataState<DataType: Any> {
     /**
      This constructor is meant to be more of a placeholder. It's having "no state".
      */
-    internal static func none() -> OnlineDataState {
-        return OnlineDataState(noCacheExists: false,
-                               fetchingForFirstTime: false,
-                               cacheData: nil,
-                               lastTimeFetched: nil,
-                               isFetchingFreshData: false,
-                               requirements: nil,
-                               stateMachine: nil,
-                               errorDuringFirstFetch: nil,
-                               justCompletedSuccessfulFirstFetch: false,
-                               errorDuringFetch: nil,
-                               justCompletedSuccessfullyFetchingFreshData: false)
+    internal static func none() -> DataState {
+        return DataState(noCacheExists: false,
+                         fetchingForFirstTime: false,
+                         cacheData: nil,
+                         lastTimeFetched: nil,
+                         isFetchingFreshData: false,
+                         requirements: nil,
+                         stateMachine: nil,
+                         errorDuringFirstFetch: nil,
+                         justCompletedSuccessfulFirstFetch: false,
+                         errorDuringFetch: nil,
+                         justCompletedSuccessfullyFetchingFreshData: false)
     }
 }
 
-extension OnlineDataState: Equatable where DataType: Equatable {
-    public static func == (lhs: OnlineDataState<DataType>, rhs: OnlineDataState<DataType>) -> Bool {
+extension DataState: Equatable where DataType: Equatable {
+    public static func == (lhs: DataState<DataType>, rhs: DataState<DataType>) -> Bool {
         return lhs.noCacheExists == rhs.noCacheExists &&
             lhs.fetchingForFirstTime == rhs.fetchingForFirstTime &&
             lhs.cacheData == rhs.cacheData &&

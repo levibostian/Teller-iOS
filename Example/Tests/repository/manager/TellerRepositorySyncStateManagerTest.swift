@@ -5,7 +5,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     private var tellerRepositorySyncStateManager: TellerRepositorySyncStateManager!
     private var userDefaults: UserDefaults!
 
-    private let tag: OnlineRepositoryGetDataRequirements.Tag = "tag here"
+    private let tag: RepositoryGetDataRequirements.Tag = "tag here"
 
     override func setUp() {
         super.setUp()

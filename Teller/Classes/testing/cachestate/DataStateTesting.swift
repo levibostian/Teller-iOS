@@ -1,13 +1,13 @@
 import Foundation
 
-public class OnlineDataStateTesting {
+public class DataStateTesting {
     private init() {}
 
-    public static func none<DataType: Any>() -> OnlineDataState<DataType> {
-        return OnlineDataState.none()
+    public static func none<DataType: Any>() -> DataState<DataType> {
+        return DataState.none()
     }
 
-    public static func noCache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> OnlineDataState<DataType> {
+    public static func noCache<DataType: Any>(requirements: RepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
         var noCacheExists = NoCacheExistsDsl()
 
         if let more = more {
@@ -15,9 +15,9 @@ public class OnlineDataStateTesting {
         }
 
         /**
-         * We are using the [OnlineCacheStateStateMachine] here to (1) prevent duplicate constructor code that is a pain to maintain and (2) we are starting with the assumption that no cache exists and editing the state from there if the DSL asks for it.
+         * We are using the [CacheStateStateMachine] here to (1) prevent duplicate constructor code that is a pain to maintain and (2) we are starting with the assumption that no cache exists and editing the state from there if the DSL asks for it.
          */
-        var stateMachine = OnlineDataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
+        var stateMachine = DataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
 
         if noCacheExists.props.fetchingFirstTime {
             stateMachine = try! stateMachine.change().firstFetch()
@@ -38,14 +38,14 @@ public class OnlineDataStateTesting {
         return stateMachine
     }
 
-    public static func cache<DataType: Any>(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> OnlineDataState<DataType> {
+    public static func cache<DataType: Any>(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
         var cacheExists = CacheExistsDsl<DataType>()
 
         if let more = more {
             more(&cacheExists)
         }
 
-        var stateMachine = OnlineDataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
+        var stateMachine = DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
 
         if let cache = cacheExists.props.cache {
             stateMachine = try! stateMachine.change()

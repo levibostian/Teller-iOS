@@ -2,17 +2,17 @@ import Foundation
 import RxSwift
 
 /*
- Because `OnlineRepositoryRefreshManager` contains an associatedType and want to be able to provide mocks of it in other Teller files, we need to use type erasure.
+ Because `RepositoryRefreshManager` contains an associatedType and want to be able to provide mocks of it in other Teller files, we need to use type erasure.
  */
 
-private class _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData: Any>: OnlineRepositoryRefreshManager {
+private class _AnyRepositoryRefreshManagerBase<FetchResponseData: Any>: RepositoryRefreshManager {
     init() {
-        guard type(of: self) != _AnyOnlineRepositoryRefreshManagerBase.self else {
+        guard type(of: self) != _AnyRepositoryRefreshManagerBase.self else {
             fatalError()
         }
     }
 
-    var delegate: OnlineRepositoryRefreshManagerDelegate? {
+    var delegate: RepositoryRefreshManagerDelegate? {
         get {
             fatalError()
         }
@@ -30,14 +30,14 @@ private class _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData: Any>: On
     }
 }
 
-private final class _AnyOnlineRepositoryRefreshManagerBox<Concrete: OnlineRepositoryRefreshManager>: _AnyOnlineRepositoryRefreshManagerBase<Concrete.FetchResponseDataType> {
+private final class _AnyRepositoryRefreshManagerBox<Concrete: RepositoryRefreshManager>: _AnyRepositoryRefreshManagerBase<Concrete.FetchResponseDataType> {
     var concrete: Concrete
 
     init(_ concrete: Concrete) {
         self.concrete = concrete
     }
 
-    override var delegate: OnlineRepositoryRefreshManagerDelegate? {
+    override var delegate: RepositoryRefreshManagerDelegate? {
         get {
             return self.concrete.delegate
         }
@@ -55,14 +55,14 @@ private final class _AnyOnlineRepositoryRefreshManagerBox<Concrete: OnlineReposi
     }
 }
 
-internal final class AnyOnlineRepositoryRefreshManager<FetchResponseData: Any>: OnlineRepositoryRefreshManager {
-    private let box: _AnyOnlineRepositoryRefreshManagerBase<FetchResponseData>
+internal final class AnyRepositoryRefreshManager<FetchResponseData: Any>: RepositoryRefreshManager {
+    private let box: _AnyRepositoryRefreshManagerBase<FetchResponseData>
 
-    init<Concrete: OnlineRepositoryRefreshManager>(_ concrete: Concrete) where Concrete.FetchResponseDataType == FetchResponseData {
-        self.box = _AnyOnlineRepositoryRefreshManagerBox(concrete)
+    init<Concrete: RepositoryRefreshManager>(_ concrete: Concrete) where Concrete.FetchResponseDataType == FetchResponseData {
+        self.box = _AnyRepositoryRefreshManagerBox(concrete)
     }
 
-    var delegate: OnlineRepositoryRefreshManagerDelegate? {
+    var delegate: RepositoryRefreshManagerDelegate? {
         get {
             return box.delegate
         }

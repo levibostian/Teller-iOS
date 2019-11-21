@@ -2,8 +2,8 @@ import RxSwift
 @testable import Teller
 import XCTest
 
-class OnlineRepositoryDataSourceTest: XCTestCase {
-    private var dataSource: MockOnlineRepositoryDataSource!
+class RepositoryDataSourceTest: XCTestCase {
+    private var dataSource: MockRepositoryDataSource!
     private var userDefaults: UserDefaults!
 
     override func setUp() {
@@ -19,7 +19,7 @@ class OnlineRepositoryDataSourceTest: XCTestCase {
         super.tearDown()
     }
 
-    private func initDataSource(fakeData: MockOnlineRepositoryDataSource.FakeData = MockOnlineRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfData: Period = Period(unit: 1, component: Calendar.Component.second)) {
-        dataSource = MockOnlineRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
+    private func initDataSource(fakeData: MockRepositoryDataSource.FakeData = MockRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfData: Period = Period(unit: 1, component: Calendar.Component.second)) {
+        dataSource = MockRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
     }
 }

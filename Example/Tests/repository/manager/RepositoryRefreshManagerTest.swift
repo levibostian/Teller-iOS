@@ -4,8 +4,8 @@ import RxTest
 @testable import Teller
 import XCTest
 
-class OnlineRepositoryRefreshManagerTest: XCTestCase {
-    private var refreshManager: AppOnlineRepositoryRefreshManager<String>!
+class RepositoryRefreshManagerTest: XCTestCase {
+    private var refreshManager: AppRepositoryRefreshManager<String>!
 
     private let schedulersProvider = TestsSchedulersProvider()
 
@@ -15,7 +15,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         super.setUp()
 
         compositeDisposable = CompositeDisposable()
-        refreshManager = AppOnlineRepositoryRefreshManager<String>()
+        refreshManager = AppRepositoryRefreshManager<String>()
     }
 
     override func tearDown() {
@@ -71,7 +71,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectDelegateRefreshComplete = expectation(description: "Expect manager delegate refresh success after fetch response comes in.")
         expectDelegateRefreshComplete.expectedFulfillmentCount = 2
 
-        let delegate = MockOnlineRepositoryRefreshManagerDelegate()
+        let delegate = MockRepositoryRefreshManagerDelegate()
         delegate.invokedRefreshBeginThen = {
             expectDelegateRefreshBegin.fulfill()
         }
@@ -156,7 +156,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let doNotExpectDelegateRefreshComplete = expectation(description: "Do not expect manager delegate refresh success to call.")
         doNotExpectDelegateRefreshComplete.isInverted = true
 
-        let delegate = MockOnlineRepositoryRefreshManagerDelegate()
+        let delegate = MockRepositoryRefreshManagerDelegate()
         delegate.invokedRefreshBeginThen = {
             expectDelegateRefreshBegin.fulfill()
         }
@@ -210,7 +210,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let doNotExpectDelegateRefreshComplete = expectation(description: "Do not expect manager delegate refresh success to call.")
         doNotExpectDelegateRefreshComplete.isInverted = true
 
-        let delegate = MockOnlineRepositoryRefreshManagerDelegate()
+        let delegate = MockRepositoryRefreshManagerDelegate()
         delegate.invokedRefreshBeginThen = {
             expectDelegateRefreshBegin.fulfill()
         }
@@ -265,7 +265,7 @@ class OnlineRepositoryRefreshManagerTest: XCTestCase {
         let expectDelegateRefreshBegin = expectation(description: "Expect manager delegate refresh begin.")
         let expectDelegateRefreshComplete = expectation(description: "Expect manager delegate refresh success to call.")
 
-        let delegate = MockOnlineRepositoryRefreshManagerDelegate()
+        let delegate = MockRepositoryRefreshManagerDelegate()
         delegate.invokedRefreshBeginThen = {
             expectDelegateRefreshBegin.fulfill()
         }

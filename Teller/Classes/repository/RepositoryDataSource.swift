@@ -1,15 +1,15 @@
 import Foundation
 import RxSwift
 
-public protocol OnlineRepositoryGetDataRequirements {
+public protocol RepositoryGetDataRequirements {
     typealias Tag = String
 
     var tag: Tag { get }
 }
 
-public protocol OnlineRepositoryDataSource {
+public protocol RepositoryDataSource {
     associatedtype Cache: Any
-    associatedtype GetDataRequirements: OnlineRepositoryGetDataRequirements
+    associatedtype GetDataRequirements: RepositoryGetDataRequirements
     associatedtype FetchResult: Any
 
     var maxAgeOfData: Period { get }
@@ -17,7 +17,7 @@ public protocol OnlineRepositoryDataSource {
     /**
      Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
 
-     Feel free to call this function yourself anytime that you want to perform an API call *without* affecting the `OnlineRepository`.
+     Feel free to call this function yourself anytime that you want to perform an API call *without* affecting the `Repository`.
 
      **Called on a background thread.**
      */

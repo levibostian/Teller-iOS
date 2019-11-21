@@ -2,7 +2,7 @@ import Foundation
 import RxSwift
 @testable import Teller
 
-internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
+internal class MockRepositoryDataSource: RepositoryDataSource {
     typealias Cache = String
     typealias GetDataRequirements = MockGetDataRequirements
     typealias FetchResult = String
@@ -30,7 +30,7 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         return fakeData.fetchFreshData
     }
 
-    func saveData(_ fetchedData: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) throws {
+    func saveData(_ fetchedData: String, requirements: MockRepositoryDataSource.MockGetDataRequirements) throws {
         saveDataCount += 1
         saveDataFetchedData = fetchedData
         try saveDataThen?(fetchedData)
@@ -41,7 +41,7 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         return observeCacheDataThenAnswer?(requirements) ?? fakeData.observeCachedData
     }
 
-    func isDataEmpty(_ cache: String, requirements: MockOnlineRepositoryDataSource.MockGetDataRequirements) -> Bool {
+    func isDataEmpty(_ cache: String, requirements: MockRepositoryDataSource.MockGetDataRequirements) -> Bool {
         isDataEmptyCount += 1
         return fakeData.isDataEmpty
     }
@@ -52,8 +52,8 @@ internal class MockOnlineRepositoryDataSource: OnlineRepositoryDataSource {
         var fetchFreshData: Single<FetchResponse<String>>
     }
 
-    struct MockGetDataRequirements: OnlineRepositoryGetDataRequirements, Equatable {
-        var tag: OnlineRepositoryGetDataRequirements.Tag = "MockGetDataRequirements"
+    struct MockGetDataRequirements: RepositoryGetDataRequirements, Equatable {
+        var tag: RepositoryGetDataRequirements.Tag = "MockGetDataRequirements"
 
         let randomString: String?
 

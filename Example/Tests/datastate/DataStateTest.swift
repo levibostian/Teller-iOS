@@ -1,9 +1,9 @@
 @testable import Teller
 import XCTest
 
-class OnlineDataStateTest: XCTestCase {
-    private var dataState: OnlineDataState<String>!
-    let getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+class DataStateTest: XCTestCase {
+    private var dataState: DataState<String>!
+    let getDataRequirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
     override func setUp() {
         super.setUp()
@@ -16,7 +16,7 @@ class OnlineDataStateTest: XCTestCase {
     }
 
     func test_none_setsCorrectProperties() {
-        dataState = OnlineDataState.none()
+        dataState = DataState.none()
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
