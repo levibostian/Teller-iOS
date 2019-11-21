@@ -37,11 +37,11 @@ class ReposRepositoryDataSource: RepositoryDataSource {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
 
-        let provider = MoyaProvider<GitHubService>()
-        return provider.rx.request(.listRepos(user: requirements.username))
+        return MoyaProvider<GitHubService>().rx.request(.listRepos(user: requirements.username))
             .map { (response) -> FetchResponse<[Repo]> in
                 let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
 
+                // If there was a failure, use FetchResponse.failure(Error) and the error will be sent to your user in the UI
                 return FetchResponse.success(repos)
             }
     }
@@ -62,21 +62,16 @@ class ReposRepositoryDataSource: RepositoryDataSource {
         return Observable.just([])
     }
 
+    // Note: Teller runs this function from the same thread as `observeCachedData()`
     func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements) -> Bool {
         return cache.isEmpty
-    }
-}
-
-class ReposRepository: Repository<ReposRepositoryDataSource> {
-    convenience init() {
-        self.init(dataSource: ReposRepositoryDataSource())
     }
 }
 
 class ExampleUsingOnlineRepository {
     func observe() {
         let disposeBag = DisposeBag()
-        let repository: ReposRepository = ReposRepository()
+        let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
 
         let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements

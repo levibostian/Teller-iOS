@@ -39,7 +39,6 @@ Here are the added benefits of Teller:
 * Small. The only dependency at this time is RxSwift ([follow this issue as I work to remove this 1 dependency and make it optional](https://github.com/levibostian/Teller-iOS/issues/6)). Teller is made to do 1 job and do it well. 
 * Built for Swift, by Swift. Teller is written in Swift which means you can expect a nice to use API.
 * Not opinionated. Teller does not care where your data is stored or how it is queried. You simply tell Teller when you're done fetching, saving, and querying and Teller takes care of delivering it to the listeners.
-* Teller works very well with MVVM and MVI design patterns (note the use of `Repository` subclasses in the library). However, you do not need to use these design patterns to use it.
 * Well tested. Currently running in production apps. 
 
 ## Installation
@@ -64,7 +63,6 @@ Alpha (where the library is at currently):
 - [X] Documentation for README created.
 - [ ] Make non-RxSwift version of the library to make it even smaller and more portable.
 - [ ] Documentation in form of Jazzy Apple Doc created.
-- [ ] Documentation on how to use in MVVM, MVI setup and other setups as well.
 - [X] Fixup the API for the library if needed.
 
 Beta:
@@ -79,11 +77,9 @@ Stable:
 
 # Getting started
 
-The steps to get Teller up and running is pretty simple: (1) Create a `Repository` subclass for your data set. (2) Add a listener to your `Repository` subclass.
+Teller is designed with 1 goal in mind: Help you add cache support to your app quickly and easily. You help Teller understand where the cache is saved, how to get it, and Teller takes care of the rest. Let's get going. 
 
-* The first step is where you tell Teller how to query cached data, save data to the cache, and how to fetch fresh data. You do this by creating a subclass of `Repository`.
-
-`Repository` is a class that saves data to a cache, queries data from the cache, and performs network calls to fetch fresh data when data expires. If you have a data set that is obtained from calling your network API, use `Repository`.
+* First, create an implementation of `RepositoryDataSource`. 
 
 Here is an example. 
 
@@ -93,12 +89,12 @@ import Teller
 import RxSwift
 import Moya
 
-class ReposRepositoryRequirements: RepositoryRequirements {
+class ReposRequirements: RepositoryRequirements {
     
     /**
-     The tag is to make each instance of RepositoryRequirements unique. The tag is used to determine how old cached data is to determine if fresh data needs to be fetched or not. If the tag matches previoiusly cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
+     The tag is used to determine how old your cache is. Teller uses this to determine if a fresh cache needs to be fetched or not. If the tag matches previously cached data of the same tag, the data that data was fetched will be queried and determined if it's considered too old and will fetch fresh data or not from the result of the compare.
      
-     The best practice is to use the name of the RepositoryRequirements subclass and the value of any variables that are used for fetching fresh data.
+     The best practice is to describe what the cache represents. "Repos for <username>" is a great example. 
      */
     var tag: ReposRepositoryRequirements.Tag {
         return "Repos for \(username)"
@@ -120,7 +116,7 @@ struct Repo: Codable {
 class ReposRepositoryDataSource: RepositoryDataSource {
     
     typealias Cache = [Repo]
-    typealias GetDataRequirements = ReposRepositoryRequirements
+    typealias Requirements = ReposRepositoryRequirements
     typealias FetchResult = [Repo]
     
     var maxAgeOfCache: Period = Period(unit: 5, component: .hour)
@@ -128,24 +124,24 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     func fetchFreshCache(requirements: ReposRepositoryRequirements) -> Single<FetchResponse<[Repo]>> {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
-        
-        let provider = MoyaProvider<GitHubService>()
-        return provider.rx.request(.listRepos(user: requirements.username))
+                
+        return MoyaProvider<GitHubService>().rx.request(.listRepos(user: requirements.username))
             .map({ (response) -> FetchResponse<[Repo]> in
                 let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
                 
+                // If there was a failure, use FetchResponse.failure(Error) and the error will be sent to your user in the UI
                 return FetchResponse.success(data: repos)
             })
     }
     
     // Note: Teller runs this function from a background thread.
-    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryRequirements) throws {
+    func saveCache(_ fetchedData: [Repo], requirements: ReposRepositoryRequirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
         // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
     
     // Note: Teller runs this function from the UI thread
-    func observeCachedData(requirements: ReposRepositoryRequirements) -> Observable<[Repo]> {
+    func observeCache(requirements: ReposRepositoryRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
         //
         // When any of the repos in the database have been changed, we want to trigger an Observable update.
@@ -154,33 +150,21 @@ class ReposRepositoryDataSource: RepositoryDataSource {
         return Observable.just([])
     }
 
-    func isDataEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements) -> Bool {
+    // Note: Teller runs this function from the same thread as `observeCachedData()`
+    func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements) -> Bool {
         return cache.isEmpty
-    }
-    
-}
-
-class ReposRepository: Repository<ReposRepositoryDataSource> {
-    
-    convenience init() {
-        self.init(dataSource: ReposRepositoryDataSource())
     }
     
 }
 ```
 
-This `Repository` subclass is meant to fetch, store, and query a list of GitHub repositories for a given GitHub username. Notice how Teller will even handle errors in your network fetch calls and deliver the errors to the UI of your application for you!
-
-Now it's your turn. Create subclasses of `Repository` for your data sets!
-
-* The last step. Observe your data set. This is also pretty simple.
+* The last step. Observe your cache. Do this with a `Repository` instance.
 
 ```swift 
 let disposeBag = DisposeBag()
-let repository: ReposRepository = ReposRepository()
+let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
 
-let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
-repository.requirements = reposGetDataRequirements
+repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 repository
     .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
@@ -234,7 +218,9 @@ repository
     .disposed(by: disposeBag)
 ```
 
-Done! You are using Teller! When you add a listener to your `Repository` subclass, Teller kicks into gear and begins it's work parsing your cached data and fetching fresh if needed.
+Done! You are using Teller!
+
+In order for Teller to do it's magic, you need to (1) initialize the `requirements` property and (2) `observe()` the `Repository` instance. This gives Teller the information it needs to begin. 
 
 Enjoy!
 
@@ -244,20 +230,33 @@ Teller comes with extra, but optional, features you may also enjoy.
 
 #### Keep app data fresh in the background
 
-You want to make sure that the data of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to refresh your `Repository`s data with your remote storage.
+When users open up your app, they want to see fresh data. Not data that is out dated. To do this, it's best to perform background refreshes while your app is in the background. 
+
+Teller provides a simple method to refresh your `Repository`'s cache while in the background. Run this function as often as you wish. Teller will only perform a new fetch for fresh cache is the cache is outdated. 
 
 ```swift
-let repository: ReposRepository = ReposRepository()        
-let reposGetDataRequirements = ReposRepositoryDataSource.GetDataRequirements(username: "username to get repos for")
-repository.requirements = reposGetDataRequirements
+let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 
 repository.refresh(force: false)
         .subscribe()
 ```
 
-Teller `Repository`s provides a `refresh` function. `refresh` will check if the cached data is too old. If cached data is too old, it will fetch fresh data and save it and if it's not too old, it will simply ignore the request (unless `force` is `true`). `refresh` returns a `Single`, so we need to subscribe to it to run the refresh.
+*Note: You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically.*
 
-You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically. 
+#### Manual refresh 
+
+Do you have a `UITableView` with pull-to-refresh enabled? Do you have a refresh button in your `UINavigationBar` that you want your users to refresh the data when it's pressed? 
+
+No problem. Tell your Teller `Repository` instance to force refresh:
+
+```swift
+let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
+
+repository.refresh(force: true)
+        .subscribe()
+```
 
 ## Example app
 
@@ -280,9 +279,8 @@ Teller is a pretty simple CocoaPods XCode workspace. Follow the directions below
 * Install cocoapods/gems and setup workspace:
 
 ```bash
-$> cd Teller/Example
-$> pod install
 $> bundle install
+$> cd Example/; pod install; cd ..; 
 $> ./hooks/autohook.sh install # installs git hooks 
 ```
 

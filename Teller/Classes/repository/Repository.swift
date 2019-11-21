@@ -10,8 +10,9 @@ import RxSwift
 
  Repository is thread safe. Actions called upon for Repository can be performed on any thread.
  */
-open class Repository<DataSource: RepositoryDataSource> {
-    public let dataSource: DataSource
+public class Repository<DataSource: RepositoryDataSource> {
+    internal let dataSource: DataSource
+
     internal let syncStateManager: RepositorySyncStateManager
     internal let schedulersProvider: SchedulersProvider
 
@@ -100,7 +101,7 @@ open class Repository<DataSource: RepositoryDataSource> {
      - Returns: A Single<RefreshResult> that notifies you asynchronously with how the sync performed (successful or failed).
      - Throws: TellerError.objectPropertiesNotSet if you did not set `requirements` before calling this function.
      */
-    public final func refresh(force: Bool) throws -> Single<RefreshResult> {
+    public func refresh(force: Bool) throws -> Single<RefreshResult> {
         guard let requirements = self.requirements else {
             throw TellerError.objectPropertiesNotSet(["requirements"])
         }
@@ -156,7 +157,7 @@ open class Repository<DataSource: RepositoryDataSource> {
 
      - Returns: A RxSwift Observable<DataState<Cache>> instance that gets notified when the state of the cached data changes.
      */
-    public final func observe() -> Observable<DataState<DataSource.Cache>> {
+    public func observe() -> Observable<DataState<DataSource.Cache>> {
         if requirements != nil {
             // Trigger a refresh to help keep data up-to-date.
             _ = try! refresh(force: false)
