@@ -1,10 +1,10 @@
 import Foundation
 
 internal protocol RepositorySyncStateManager {
-    func isDataTooOld(tag: RepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool
-    func updateAgeOfData(tag: RepositoryGetDataRequirements.Tag, age: Date)
-    func hasEverFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Bool
-    func lastTimeFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Date?
+    func isCacheTooOld(tag: RepositoryRequirements.Tag, maxAgeOfCache: Period) -> Bool
+    func updateAgeOfData(tag: RepositoryRequirements.Tag, age: Date)
+    func hasEverFetchedData(tag: RepositoryRequirements.Tag) -> Bool
+    func lastTimeFetchedData(tag: RepositoryRequirements.Tag) -> Date?
 }
 
 /**
@@ -17,23 +17,23 @@ internal class TellerRepositorySyncStateManager: RepositorySyncStateManager {
         self.userDefaults = userDefaults
     }
 
-    func isDataTooOld(tag: RepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool {
+    func isCacheTooOld(tag: RepositoryRequirements.Tag, maxAgeOfCache: Period) -> Bool {
         if !hasEverFetchedData(tag: tag) {
             return true
         }
 
-        return lastTimeFetchedData(tag: tag)! < maxAgeOfData.toDate()
+        return lastTimeFetchedData(tag: tag)! < maxAgeOfCache.toDate()
     }
 
-    func hasEverFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Bool {
+    func hasEverFetchedData(tag: RepositoryRequirements.Tag) -> Bool {
         return lastTimeFetchedData(tag: tag) != nil
     }
 
-    func updateAgeOfData(tag: RepositoryGetDataRequirements.Tag, age: Date) {
+    func updateAgeOfData(tag: RepositoryRequirements.Tag, age: Date) {
         userDefaults.set(age.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
     }
 
-    func lastTimeFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Date? {
+    func lastTimeFetchedData(tag: RepositoryRequirements.Tag) -> Date? {
         let lastFetchedTime = userDefaults.double(forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
         guard lastFetchedTime > 0 else { return nil }
 

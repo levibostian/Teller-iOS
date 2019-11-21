@@ -19,7 +19,7 @@ class RepositoryDataSourceTest: XCTestCase {
         super.tearDown()
     }
 
-    private func initDataSource(fakeData: MockRepositoryDataSource.FakeData = MockRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfData: Period = Period(unit: 1, component: Calendar.Component.second)) {
-        dataSource = MockRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
+    private func initDataSource(fakeData: MockRepositoryDataSource.FakeData = MockRepositoryDataSource.FakeData(isDataEmpty: false, observeCachedData: Observable.empty(), fetchFreshData: Single.never()), maxAgeOfCache: Period = Period(unit: 1, component: Calendar.Component.second)) {
+        dataSource = MockRepositoryDataSource(fakeData: fakeData, maxAgeOfCache: maxAgeOfCache)
     }
 }

@@ -38,7 +38,7 @@ class DataStateBehaviorSubjectTest: XCTestCase {
     }
 
     func test_resetToNoCacheState_receiveCorrectDataState() {
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         subject.resetToNoCacheState(requirements: requirements)
 
         let observer = TestScheduler(initialClock: 0).createObserver(DataState<String>.self)
@@ -48,7 +48,7 @@ class DataStateBehaviorSubjectTest: XCTestCase {
     }
 
     func test_resetToCacheState_receiveCorrectDataState() {
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         let lastTimeFetched = Date()
         subject.resetToCacheState(requirements: requirements, lastTimeFetched: lastTimeFetched)
 
@@ -59,7 +59,7 @@ class DataStateBehaviorSubjectTest: XCTestCase {
     }
 
     func test_changeState_sendsResultToSubject() {
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         subject.resetToNoCacheState(requirements: requirements)
 
         let observer = TestScheduler(initialClock: 0).createObserver(DataState<String>.self)
@@ -74,7 +74,7 @@ class DataStateBehaviorSubjectTest: XCTestCase {
     }
 
     func test_multipleObservers_receiveDifferentNumberOfEvents() {
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         subject.resetStateToNone()
         subject.resetToNoCacheState(requirements: requirements)
         subject.changeState { try! $0.firstFetch() }

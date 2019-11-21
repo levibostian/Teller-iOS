@@ -101,8 +101,8 @@ class RepositoryTest: XCTestCase {
     }
 
     // When test function runs, the `RepositorySyncStateManager` will already be initialized, but you can override it by calling this function again to inject it into the repository.
-    private func initDataSource(fakeData: MockRepositoryDataSource.FakeData, maxAgeOfData: Period = Period(unit: 1, component: Calendar.Component.second)) {
-        dataSource = MockRepositoryDataSource(fakeData: fakeData, maxAgeOfData: maxAgeOfData)
+    private func initDataSource(fakeData: MockRepositoryDataSource.FakeData, maxAgeOfCache: Period = Period(unit: 1, component: Calendar.Component.second)) {
+        dataSource = MockRepositoryDataSource(fakeData: fakeData, maxAgeOfCache: maxAgeOfCache)
     }
 
     // When test function runs, the `RepositorySyncStateManager` will already be initialized, but you can override it by calling this function again to inject it into the repository.
@@ -149,7 +149,7 @@ class RepositoryTest: XCTestCase {
 
             // Test when begin to observe cache on background thread
             self.initRepository()
-            self.repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+            self.repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         }
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -164,7 +164,7 @@ class RepositoryTest: XCTestCase {
         } // Make an Observable that does not complete on it's own like: Observable.just() to test that `deinit` completes for us.
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCache, fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectToBeginObserving = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
@@ -232,7 +232,7 @@ class RepositoryTest: XCTestCase {
         initRepository()
 
         // Set requirements for first time starts the first refresh
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 1)
 
@@ -249,7 +249,7 @@ class RepositoryTest: XCTestCase {
         let existingCache = "existing cache"
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache), fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
@@ -287,7 +287,7 @@ class RepositoryTest: XCTestCase {
             return Disposables.create()
         }, fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
@@ -324,7 +324,7 @@ class RepositoryTest: XCTestCase {
         dataSource.fakeData.observeCachedData = Observable.create { $0.onNext(newCache)
             return Disposables.create()
         }
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
@@ -334,7 +334,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let fetchedData = "new cache"
 
@@ -377,7 +377,7 @@ class RepositoryTest: XCTestCase {
         initRepository()
 
         // Set requirements for first time starts the first refresh
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
     }
@@ -402,7 +402,7 @@ class RepositoryTest: XCTestCase {
         initRepository()
 
         // Set requirements for first time starts the first refresh
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
@@ -444,7 +444,7 @@ class RepositoryTest: XCTestCase {
             .subscribe()
 
         // Set requirements for first time starts the first refresh
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         wait(for: [expectStartObserving, expectToReceiveOldCache], timeout: TestConstants.AWAIT_DURATION)
 
@@ -491,7 +491,7 @@ class RepositoryTest: XCTestCase {
 
         wait(for: [expectStartObserving, expectToReceiveANoneStateFirst], timeout: TestConstants.AWAIT_DURATION)
 
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
@@ -515,7 +515,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         // Trigger observe to test fetch does not happen here as well.
         compositeDisposable += repository.observe().subscribe()
@@ -528,7 +528,7 @@ class RepositoryTest: XCTestCase {
         let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshData.asSingle()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin.")
         let expectRefreshToBeSuccessful = expectation(description: "Expect refresh to be successful")
@@ -552,7 +552,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin.")
         let expectRefreshToBeSkipped = expectation(description: "Expect refresh to be skipped")
@@ -575,7 +575,7 @@ class RepositoryTest: XCTestCase {
         let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshData.asSingle()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let newlyFetchedData = "new data"
         let expectRefreshComplete = expectation(description: "Expect refresh to end.")
@@ -609,7 +609,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectObserveToBegin = expectation(description: "Expect observe() to begin observing")
         let expectObserveToNotDispose = expectation(description: "Expect observe to not dispose")
@@ -654,7 +654,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: existingCacheLastTimeFethed))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCacheData.asObservable(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         let expectToBeginObserving = expectation(description: "Expect to begin observing")
         let expectToReceiveExistingCacheAndFetchingFresh = expectation(description: "Expect to receive existing cache and fetching fresh cache")
@@ -693,7 +693,7 @@ class RepositoryTest: XCTestCase {
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         let firstFetchData = "new cache"
         let firstFetchTime = Date()
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: firstFetchTime))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(firstFetchData), fetchFreshData: fetchFreshDataSubject.asSingle()))
@@ -754,12 +754,12 @@ class RepositoryTest: XCTestCase {
         let firstFetchTime = Date()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: firstFetchTime))
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
-        let firstDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let firstDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let firstRefreshManager: AnyRepositoryRefreshManager<String> = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
 
         let firstRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: firstDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: firstRefreshManager)
 
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         firstRepo.requirements = requirements
 
         let firstFetchState = try! DataStateStateMachine<String>
@@ -784,7 +784,7 @@ class RepositoryTest: XCTestCase {
         wait(for: [expectFirstRepoToBeginFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         let secondFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
-        let secondDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let secondDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let secondRefreshManager: AnyRepositoryRefreshManager<String> = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
 
         let secondRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: secondDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: secondRefreshManager)
@@ -828,7 +828,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
-        let requirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         repository.requirements = requirements
 
         let fetchedData = "new cache"

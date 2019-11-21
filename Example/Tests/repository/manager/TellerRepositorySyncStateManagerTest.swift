@@ -5,7 +5,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     private var tellerRepositorySyncStateManager: TellerRepositorySyncStateManager!
     private var userDefaults: UserDefaults!
 
-    private let tag: RepositoryGetDataRequirements.Tag = "tag here"
+    private let tag: RepositoryRequirements.Tag = "tag here"
 
     override func setUp() {
         super.setUp()
@@ -27,7 +27,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
     func test_isDataTooOld_dataNeverFetchedBefore() {
         initManager()
 
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.hour))
+        let isDataTooOld = tellerRepositorySyncStateManager.isCacheTooOld(tag: tag, maxAgeOfCache: Period(unit: 1, component: Calendar.Component.hour))
 
         XCTAssertTrue(isDataTooOld)
     }
@@ -38,7 +38,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
         let dateLastUpdated = Date()
         userDefaults.set(dateLastUpdated.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
 
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let isDataTooOld = tellerRepositorySyncStateManager.isCacheTooOld(tag: tag, maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
 
         XCTAssertFalse(isDataTooOld)
     }
@@ -49,7 +49,7 @@ class TellerRepositorySyncStateManagerTest: XCTestCase {
         let olderDate: Date = Calendar.current.date(byAdding: .minute, value: -1, to: Date())!
         userDefaults.set(olderDate.timeIntervalSince1970, forKey: "\(TellerConstants.userDefaultsPrefix)\(tag)")
 
-        let isDataTooOld = tellerRepositorySyncStateManager.isDataTooOld(tag: tag, maxAgeOfData: Period(unit: 1, component: Calendar.Component.second))
+        let isDataTooOld = tellerRepositorySyncStateManager.isCacheTooOld(tag: tag, maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
 
         XCTAssertTrue(isDataTooOld)
     }

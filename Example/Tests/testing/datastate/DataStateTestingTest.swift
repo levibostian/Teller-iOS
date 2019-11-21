@@ -6,10 +6,10 @@ enum ErrorForTesting: Error {
 }
 
 class DataStateTestingTest: XCTestCase {
-    var requirements: ReposRepositoryGetDataRequirements!
+    var requirements: ReposRepositoryRequirements!
 
     override func setUp() {
-        requirements = ReposRepositoryGetDataRequirements(username: "")
+        requirements = ReposRepositoryRequirements(username: "")
     }
 
     func test_none_expectResultToEqualStateMachine() {

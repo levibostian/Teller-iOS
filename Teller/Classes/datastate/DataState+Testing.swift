@@ -10,11 +10,11 @@ public extension DataState {
             return DataStateTesting.none()
         }
 
-        public func noCache(requirements: RepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
+        public func noCache(requirements: RepositoryRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
             return DataStateTesting.noCache(requirements: requirements, more: more)
         }
 
-        public func cache(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
+        public func cache(requirements: RepositoryRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
             return DataStateTesting.cache(requirements: requirements, lastTimeFetched: lastTimeFetched, more: more)
         }
     }

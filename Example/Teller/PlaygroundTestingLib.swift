@@ -11,7 +11,7 @@ class PlaygroundTestingLib {
     }
 
     func test_DataStateTesting_noCache() {
-        let requirements = ReposRepositoryGetDataRequirements(username: "")
+        let requirements = ReposRepositoryRequirements(username: "")
 
         let _: DataState<String> = DataStateTesting.noCache(requirements: requirements) {
             $0.fetchingFirstTime()
@@ -23,7 +23,7 @@ class PlaygroundTestingLib {
     }
 
     func test_DataStateTesting_cache() {
-        let requirements = ReposRepositoryGetDataRequirements(username: "")
+        let requirements = ReposRepositoryRequirements(username: "")
 
         let _: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: Date()) {
             $0.successfulFetch(timeFetched: Date())

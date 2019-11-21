@@ -18,7 +18,7 @@ public struct DataState<DataType: Any> {
     let lastTimeFetched: Date?
     let isFetchingFreshData: Bool
 
-    let requirements: RepositoryGetDataRequirements?
+    let requirements: RepositoryRequirements?
     let stateMachine: DataStateStateMachine<DataType>?
 
     // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of data, the following properties should be set once in the constuctor and then for future state calls, negate them.

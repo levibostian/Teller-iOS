@@ -4,7 +4,7 @@ import XCTest
 
 class DataState_StateTest: XCTestCase {
     private var dataState: DataState<String>!
-    let getDataRequirements: RepositoryGetDataRequirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+    let getDataRequirements: RepositoryRequirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
     override func setUp() {
         super.setUp()

@@ -21,12 +21,12 @@ internal class MockRepositorySyncStateManager: RepositorySyncStateManager {
         self.fakeData = fakeData
     }
 
-    func isDataTooOld(tag: RepositoryGetDataRequirements.Tag, maxAgeOfData: Period) -> Bool {
+    func isCacheTooOld(tag: RepositoryRequirements.Tag, maxAgeOfCache: Period) -> Bool {
         isDataTooOldCount += 1
         return fakeData.isDataTooOld
     }
 
-    func updateAgeOfData(tag: RepositoryGetDataRequirements.Tag, age: Date) {
+    func updateAgeOfData(tag: RepositoryRequirements.Tag, age: Date) {
         updateAgeOfDataCount += 1
         updateAgeOfData_age = age
         if let newHasEverFetchedData = updateAgeOfDataListener?() {
@@ -34,12 +34,12 @@ internal class MockRepositorySyncStateManager: RepositorySyncStateManager {
         }
     }
 
-    func hasEverFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Bool {
+    func hasEverFetchedData(tag: RepositoryRequirements.Tag) -> Bool {
         hasEverFetchedDataCount += 1
         return fakeData.hasEverFetchedData
     }
 
-    func lastTimeFetchedData(tag: RepositoryGetDataRequirements.Tag) -> Date? {
+    func lastTimeFetchedData(tag: RepositoryRequirements.Tag) -> Date? {
         lastTimeFetchedDataCount += 1
         return fakeData.lastTimeFetchedData
     }
