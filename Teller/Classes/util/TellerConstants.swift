@@ -1,16 +1,8 @@
-//
-//  TellerConstants.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/17/18.
-//
-
 import Foundation
 
 internal class TellerConstants {
-
     internal static let namespace = "com.levibostian.teller"
-    
+
     internal static let userDefaultsPrefix = "TELLER_"
     /**
      Dev note: I am using the standard app's UserDefaults here because:
@@ -18,5 +10,4 @@ internal class TellerConstants {
      2. I can simply have a prefix for all keys and remove those when I choose to to not touch others.
      */
     internal static let userDefaults: UserDefaults = UserDefaults.standard
-    
 }

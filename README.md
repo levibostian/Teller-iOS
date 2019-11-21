@@ -115,7 +115,7 @@ class GitHubUsernameDataSource: LocalRepositoryDataSource {
     typealias DataType = String
     
     // This function gets called from whatever thread you call it from.    
-    func saveData(data: String) {
+    func saveData(data: String) throws {
         UserDefaults.standard.string(forKey: userDefaultsKey)
     }
     
@@ -196,8 +196,9 @@ class ReposRepositoryDataSource: OnlineRepositoryDataSource {
     }
     
     // Note: Teller runs this function from a background thread.
-    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) {
+    func saveData(_ fetchedData: [Repo], requirements: ReposRepositoryGetDataRequirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
+        // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
     
     // Note: Teller runs this function from the UI thread
@@ -244,10 +245,10 @@ repository
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribe(onNext: { (dataState: LocalDataState<GitHubUsernameDataSource.DataType>) in
         switch dataState.state() {
-        case .isEmpty?:
+        case .isEmpty(let error)?:
             // The GitHub username is empty. It has never been set before.
             break
-        case .data(let username)?:
+        case .data(let username, let error)?:
             // `username` is the GitHub username that has been set last.
             break
         case .none:
@@ -257,7 +258,7 @@ repository
     }).disposed(by: disposeBag)
 
 // Now let's say that you want to *update* the GitHub username. On your instance of GitHubUsernameRepository, save data to it. All of your observables will be notified of this change.
-repository.dataSource.saveData(data: "new username")
+repository.newCache(data: "new username")
 ```
 
 `OnlineRepository`
@@ -370,12 +371,7 @@ Teller is a pretty simple CocoaPods XCode workspace. Follow the directions below
 $> cd Teller/Example
 $> pod install
 $> bundle install
-```
-
-* Setup git hooks [via overcommit](https://github.com/brigade/overcommit/) to run misc tasks for you when using git. 
-
-```bash
-$> overcommit --install
+$> ./hooks/autohook.sh install # installs git hooks 
 ```
 
 ## Author

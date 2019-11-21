@@ -1,23 +1,15 @@
-//
-//  Teller.swift
-//  Teller
-//
-//  Created by Levi Bostian on 12/3/18.
-//
-
 import Foundation
 
 /**
- Misc tasks for Teller. 
+ Misc tasks for Teller.
  */
 public class Teller {
-
     /**
      Sigleton instance of Teller.
      */
     public static var shared: Teller = Teller()
 
-    fileprivate let userDefaultsUtil: UserDefaultsUtil
+    private let userDefaultsUtil: UserDefaultsUtil
 
     internal init(userDefaultsUtil: UserDefaultsUtil) {
         self.userDefaultsUtil = userDefaultsUtil
@@ -37,5 +29,4 @@ public class Teller {
     private func deleteAllData() {
         userDefaultsUtil.clear()
     }
-
 }

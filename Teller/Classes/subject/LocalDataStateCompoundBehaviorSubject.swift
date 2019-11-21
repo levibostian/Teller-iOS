@@ -1,10 +1,3 @@
-//
-//  LocalDataStateCompoundBehaviorSubject.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/14/18.
-//
-
 import Foundation
 import RxSwift
 
@@ -22,36 +15,42 @@ import RxSwift
 
 // This class is meant to work with LocalRepository because it has the most basic states.
 internal class LocalDataStateCompoundBehaviorSubject<DataType: Any> {
-    
     private var dataState: LocalDataState<DataType>! {
         didSet {
             subject.onNext(dataState)
         }
     }
+
     internal let subject: BehaviorSubject<LocalDataState<DataType>>
-    
+
     init() {
         let initialDataState = LocalDataState<DataType>.none()
         self.subject = BehaviorSubject<LocalDataState<DataType>>(value: initialDataState)
         self.dataState = initialDataState
     }
-    
+
     func resetStateToNone() {
-        self.dataState = LocalDataState<DataType>.none()
+        dataState = LocalDataState<DataType>.none()
     }
-    
+
     /**
      * The status of cacheData is empty (optionally fetching new fresh cacheData as well).
      */
     func onNextEmpty() {
         dataState = LocalDataState.isEmpty()
     }
-    
+
+    /**
+     * An error occurred. Append to the current status of cacheData.
+     */
+    func onNextError(_ error: Error) {
+        dataState = dataState.errorOccurred(error)
+    }
+
     /**
      * The status of cacheData is cacheData (optionally fetching new fresh cacheData as well).
      */
     func onNextData(data: DataType) {
         dataState = LocalDataState.data(data: data)
-    }    
-    
+    }
 }

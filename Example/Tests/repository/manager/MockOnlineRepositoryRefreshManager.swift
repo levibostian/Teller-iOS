@@ -1,11 +1,3 @@
-//
-//  MockOnlineRepositoryRefreshManager.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 12/7/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
 import RxSwift
 @testable import Teller
@@ -13,15 +5,16 @@ import RxSwift
 internal class MockOnlineRepositoryRefreshManagerDelegate: OnlineRepositoryRefreshManagerDelegate {
     var invokedRefreshBegin = false
     var invokedRefreshBeginCount = 0
-    var invokedRefreshBeginThen: (() -> Void)? = nil
+    var invokedRefreshBeginThen: (() -> Void)?
     func refreshBegin() {
         invokedRefreshBegin = true
         invokedRefreshBeginCount += 1
         invokedRefreshBeginThen?()
     }
+
     var invokedRefreshComplete = false
     var invokedRefreshCompleteCount = 0
-    var invokedRefreshCompleteThen: (() -> Void)? = nil
+    var invokedRefreshCompleteThen: (() -> Void)?
     func refreshComplete<String>(_ response: FetchResponse<String>) {
         invokedRefreshComplete = true
         invokedRefreshCompleteCount += 1
@@ -30,7 +23,6 @@ internal class MockOnlineRepositoryRefreshManagerDelegate: OnlineRepositoryRefre
 }
 
 internal class MockOnlineRepositoryRefreshManager<FetchResponseDataType: Any>: OnlineRepositoryRefreshManager {
-
     var invokedDelegateSetter = false
     var invokedDelegateSetterCount = 0
     var invokedDelegate: OnlineRepositoryRefreshManagerDelegate?
@@ -51,6 +43,7 @@ internal class MockOnlineRepositoryRefreshManager<FetchResponseDataType: Any>: O
             return stubbedDelegate
         }
     }
+
     var invokedRefresh = false
     var invokedRefreshCount = 0
     var invokedRefreshParameters: (task: Single<FetchResponse<FetchResponseDataType>>, Void)?
@@ -63,11 +56,11 @@ internal class MockOnlineRepositoryRefreshManager<FetchResponseDataType: Any>: O
         invokedRefreshParametersList.append((task, ()))
         return stubbedRefreshResult
     }
+
     var invokedCancelRefresh = false
     var invokedCancelRefreshCount = 0
     func cancelRefresh() {
         invokedCancelRefresh = true
         invokedCancelRefreshCount += 1
     }
-
 }

@@ -1,16 +1,7 @@
-//
-//  OnlineDataStateStateMachineTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 11/29/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
-import XCTest
 @testable import Teller
+import XCTest
 
 class OnlineDataStateStateMachineTest: XCTestCase {
-
     private var dataState: OnlineDataState<String>!
     let getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
 
@@ -32,7 +23,7 @@ class OnlineDataStateStateMachineTest: XCTestCase {
      3. _travelingToNextNode - Going from the state machine node under test to all of the other possible nodes, what paths are valid and not valid?
      */
     func test_noCacheExists_setsCorrectProperties() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
 
         XCTAssertTrue(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -48,20 +39,20 @@ class OnlineDataStateStateMachineTest: XCTestCase {
     }
 
     func test_noCacheExists_travelingToNextNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
 
-        XCTAssertNoThrow(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertThrowsError(try self.dataState.change().cacheIsEmpty())
-        XCTAssertThrowsError(try self.dataState.change().cachedData(""))
-        XCTAssertThrowsError(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().cacheIsEmpty())
+        XCTAssertThrowsError(try dataState.change().cachedData(""))
+        XCTAssertThrowsError(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_cacheExists_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -78,25 +69,25 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_cacheExists_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_firstFetch_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
+        XCTAssertThrowsError(try dataState.change().firstFetch())
     }
 
     func test_firstFetch_setsCorrectProperties() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
 
         XCTAssertTrue(dataState.noCacheExists)
         XCTAssertTrue(dataState.fetchingForFirstTime)
@@ -112,31 +103,31 @@ class OnlineDataStateStateMachineTest: XCTestCase {
     }
 
     func test_firstFetch_travelingToNextNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
 
-        XCTAssertNoThrow(try self.dataState.change().firstFetch())
-        XCTAssertNoThrow(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertNoThrow(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertThrowsError(try self.dataState.change().cacheIsEmpty())
-        XCTAssertThrowsError(try self.dataState.change().cachedData(""))
-        XCTAssertThrowsError(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().firstFetch())
+        XCTAssertNoThrow(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertNoThrow(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().cacheIsEmpty())
+        XCTAssertThrowsError(try dataState.change().cachedData(""))
+        XCTAssertThrowsError(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_errorFirstFetch_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
 
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
     }
 
     func test_errorFirstFetch_setsCorrectProperties() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
         let fetchFail: Error = Failure()
-        self.dataState = try! self.dataState.change().errorFirstFetch(error: fetchFail)
+        dataState = try! dataState.change().errorFirstFetch(error: fetchFail)
 
         XCTAssertTrue(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -152,32 +143,32 @@ class OnlineDataStateStateMachineTest: XCTestCase {
     }
 
     func test_errorFirstFetch_travelingToNextNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
-        self.dataState = try! self.dataState.change().errorFirstFetch(error: Failure())
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
+        dataState = try! dataState.change().errorFirstFetch(error: Failure())
 
-        XCTAssertNoThrow(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertThrowsError(try self.dataState.change().cacheIsEmpty())
-        XCTAssertThrowsError(try self.dataState.change().cachedData(""))
-        XCTAssertThrowsError(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().cacheIsEmpty())
+        XCTAssertThrowsError(try dataState.change().cachedData(""))
+        XCTAssertThrowsError(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_successfulFirstFetch_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
 
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
     }
 
     func test_successfulFirstFetch_setsCorrectProperties() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
         let lastTimeFetched = Date()
-        self.dataState = try! self.dataState.change().successfulFirstFetch(timeFetched: lastTimeFetched)
+        dataState = try! dataState.change().successfulFirstFetch(timeFetched: lastTimeFetched)
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -193,29 +184,29 @@ class OnlineDataStateStateMachineTest: XCTestCase {
     }
 
     func test_successfulFirstFetch_travelingToNextNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        self.dataState = try! self.dataState.change().firstFetch()
-        self.dataState = try! self.dataState.change().successfulFirstFetch(timeFetched: Date())
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        dataState = try! dataState.change().firstFetch()
+        dataState = try! dataState.change().successfulFirstFetch(timeFetched: Date())
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_cacheIsEmpty_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().cacheIsEmpty())
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().cacheIsEmpty())
     }
 
     func test_cacheIsEmpty_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
-        self.dataState = try! self.dataState.change().cacheIsEmpty()
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().cacheIsEmpty()
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -232,29 +223,29 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_cacheIsEmpty_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().cacheIsEmpty()
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().cacheIsEmpty()
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_cachedData_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().cachedData("cache"))
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().cachedData("cache"))
     }
 
     func test_cachedData_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().fetchingFreshCache()
         let cache = "cache"
-        self.dataState = try! self.dataState.change().cachedData(cache)
+        dataState = try! dataState.change().cachedData(cache)
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -271,30 +262,30 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_cachedData_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
         let cache = "cache"
-        self.dataState = try! self.dataState.change().cachedData(cache)
+        dataState = try! dataState.change().cachedData(cache)
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_fetchingFreshCache_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().fetchingFreshCache())
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().fetchingFreshCache())
     }
 
     func test_fetchingFreshCache_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
         let cache = "cache"
-        self.dataState = try! self.dataState.change().cachedData(cache)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().cachedData(cache)
+        dataState = try! dataState.change().fetchingFreshCache()
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -311,34 +302,34 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_fetchingFreshCache_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().fetchingFreshCache()
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertNoThrow(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertNoThrow(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_failFetchingFreshCache_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().failFetchingFreshCache(Failure()))
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().failFetchingFreshCache(Failure()))
 
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
-        XCTAssertThrowsError(try self.dataState.change().failFetchingFreshCache(Failure()))
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
+        XCTAssertThrowsError(try dataState.change().failFetchingFreshCache(Failure()))
     }
 
     func test_failFetchingFreshCache_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
         let cache = "cache"
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
-        self.dataState = try! self.dataState.change().cachedData(cache)
+        dataState = try! dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().cachedData(cache)
         let fetchFailure = Failure()
-        self.dataState = try! self.dataState.change().failFetchingFreshCache(fetchFailure)
+        dataState = try! dataState.change().failFetchingFreshCache(fetchFailure)
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -355,35 +346,35 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_failFetchingFreshCache_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
-        self.dataState = try! self.dataState.change().failFetchingFreshCache(Failure())
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().failFetchingFreshCache(Failure())
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_successfulFetchingFreshCache_errorCannotTravelToNode() {
-        self.dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        dataState = OnlineDataStateStateMachine.noCacheExists(requirements: getDataRequirements)
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
 
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: Date())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
     func test_successfulFetchingFreshCache_setsCorrectProperties() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
         let cache = "cache"
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
-        self.dataState = try! self.dataState.change().cachedData(cache)
+        dataState = try! dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().cachedData(cache)
         let newTimeFetched = Date()
-        self.dataState = try! self.dataState.change().successfulFetchingFreshCache(timeFetched: newTimeFetched)
+        dataState = try! dataState.change().successfulFetchingFreshCache(timeFetched: newTimeFetched)
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -400,20 +391,18 @@ class OnlineDataStateStateMachineTest: XCTestCase {
 
     func test_successfulFetchingFreshCache_travelingToNextNode() {
         let lastTimeFetched = Date()
-        self.dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
-        self.dataState = try! self.dataState.change().fetchingFreshCache()
-        self.dataState = try! self.dataState.change().successfulFetchingFreshCache(timeFetched: Date())
+        dataState = OnlineDataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
+        dataState = try! dataState.change().fetchingFreshCache()
+        dataState = try! dataState.change().successfulFetchingFreshCache(timeFetched: Date())
 
-        XCTAssertThrowsError(try self.dataState.change().firstFetch())
-        XCTAssertThrowsError(try self.dataState.change().errorFirstFetch(error: Failure()))
-        XCTAssertThrowsError(try self.dataState.change().successfulFirstFetch(timeFetched: Date()))
-        XCTAssertNoThrow(try self.dataState.change().cacheIsEmpty())
-        XCTAssertNoThrow(try self.dataState.change().cachedData(""))
-        XCTAssertNoThrow(try self.dataState.change().fetchingFreshCache())
-        XCTAssertThrowsError(try self.dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
+        XCTAssertThrowsError(try dataState.change().firstFetch())
+        XCTAssertThrowsError(try dataState.change().errorFirstFetch(error: Failure()))
+        XCTAssertThrowsError(try dataState.change().successfulFirstFetch(timeFetched: Date()))
+        XCTAssertNoThrow(try dataState.change().cacheIsEmpty())
+        XCTAssertNoThrow(try dataState.change().cachedData(""))
+        XCTAssertNoThrow(try dataState.change().fetchingFreshCache())
+        XCTAssertThrowsError(try dataState.change().successfulFetchingFreshCache(timeFetched: Date()))
     }
 
-    class Failure: Error {
-    }
-
+    class Failure: Error {}
 }

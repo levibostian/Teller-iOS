@@ -1,9 +1,13 @@
 use_frameworks!
+platform :ios, '10.0'
 
 target 'Teller_Example' do
   pod 'Teller', :path => '../'
   pod 'RxCocoa', '~> 5.0'
-  pod 'Moya/RxSwift', '~> 14.0.0-alpha.1'
+  pod 'Moya/RxSwift', '~> 14.0.0-alpha.2'
+  
+  pod 'SwiftFormat/CLI'
+  pod 'SwiftLint'
 
   target 'Teller_Tests' do
     inherit! :search_paths

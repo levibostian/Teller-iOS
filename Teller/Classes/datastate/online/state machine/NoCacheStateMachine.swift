@@ -1,17 +1,9 @@
-//
-//  FirstFetchStateMachine.swift
-//  Teller
-//
-//  Created by Levi Bostian on 11/28/18.
-//
-
 import Foundation
 
 /**
  State machine for the phase of data's lifecycle when no cache exists.
  */
 internal class NoCacheStateMachine {
-
     let state: State
     let errorDuringFetch: Error?
 
@@ -47,13 +39,10 @@ internal class NoCacheStateMachine {
             }
         }
     }
-
 }
 
 extension NoCacheStateMachine: CustomStringConvertible {
-
     var description: String {
-        return self.state.description
+        return state.description
     }
-
 }

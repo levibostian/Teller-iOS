@@ -1,10 +1,3 @@
-//
-//  OnlineDataStateBehaviorSubject.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/14/18.
-//
-
 import Foundation
 import RxSwift
 
@@ -25,13 +18,13 @@ import RxSwift
 // This class is meant to work with OnlineRepository because it has all the states cacheData can have, including loading and fetching of fresh cacheData.
 // You may see many `try!` statements in this file. The code based used to have many `fatalError` statements but those are (1) not testable and (2) not flexible with the potential try/catch in the future if we see a potential for that. So, using `try!` allows us to have errors thrown that we can then fix later.
 internal class OnlineDataStateBehaviorSubject<DataType: Any> {
-
     private let dataSourceQueue = DispatchQueue(label: "\(TellerConstants.namespace)_OnlineDataStateBehaviorSubject_dataSourceQueue")
     private var _dataState: OnlineDataState<DataType>! {
         didSet {
             subject.onNext(_dataState)
         }
     }
+
     private var dataState: OnlineDataState<DataType>! {
         get {
             var dataStateCopy: OnlineDataState<DataType>?
@@ -46,35 +39,35 @@ internal class OnlineDataStateBehaviorSubject<DataType: Any> {
             }
         }
     }
+
     internal let subject: BehaviorSubject<OnlineDataState<DataType>>
 
     var currentState: OnlineDataState<DataType> {
         return try! subject.value()
     }
-    
+
     init() {
         let initialDataState = OnlineDataState<DataType>.none()
         self.subject = BehaviorSubject(value: initialDataState)
         self.dataState = initialDataState
     }
-    
+
     /**
      When the `OnlineRepositoryGetDataRequirements` is changed in an `OnlineRepository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
      */
     func resetStateToNone() {
-        self.dataState = OnlineDataState.none()
+        dataState = OnlineDataState.none()
     }
 
     func resetToNoCacheState(requirements: OnlineRepositoryGetDataRequirements) {
-        self.dataState = OnlineDataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
+        dataState = OnlineDataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
     }
 
     func resetToCacheState(requirements: OnlineRepositoryGetDataRequirements, lastTimeFetched: Date) {
-        self.dataState = OnlineDataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
+        dataState = OnlineDataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
     }
 
     func changeState(_ change: (OnlineDataStateStateMachine<DataType>) -> OnlineDataState<DataType>) {
-        self.dataState = change(self.dataState.stateMachine!)
+        dataState = change(dataState.stateMachine!)
     }
-    
 }

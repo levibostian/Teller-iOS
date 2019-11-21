@@ -1,10 +1,3 @@
-//
-//  LocalDataState.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/14/18.
-//
-
 import Foundation
 
 /**
@@ -27,37 +20,31 @@ import Foundation
  *
  */
 public struct LocalDataState<DataType: Any> {
-    
     public let isEmpty: Bool
     public let data: DataType?
-    
-    private init(isEmpty: Bool, data: DataType?) {
-        self.isEmpty = isEmpty
-        self.data = data
-    }
-    
+    public let error: Error?
+
     public static func none() -> LocalDataState {
-        return LocalDataState(isEmpty: false, data: nil)
+        return LocalDataState(isEmpty: false, data: nil, error: nil)
     }
-    
+
     public static func isEmpty() -> LocalDataState {
-        return LocalDataState(isEmpty: true, data: nil)
+        return LocalDataState(isEmpty: true, data: nil, error: nil)
     }
-    
+
     public static func data(data: DataType) -> LocalDataState {
-        return LocalDataState(isEmpty: false, data: data)
-    }    
-    
+        return LocalDataState(isEmpty: false, data: data, error: nil)
+    }
+
+    public func errorOccurred(_ error: Error) -> LocalDataState {
+        return LocalDataState(isEmpty: isEmpty, data: data, error: error)
+    }
 }
 
 extension LocalDataState: Equatable where DataType: Equatable {
-    
     public static func == (lhs: LocalDataState<DataType>, rhs: LocalDataState<DataType>) -> Bool {
         return type(of: lhs.data) == type(of: rhs.data) &&
             lhs.data == rhs.data &&
             lhs.isEmpty == rhs.isEmpty
     }
-    
 }
-
-

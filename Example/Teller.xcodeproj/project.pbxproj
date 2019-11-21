@@ -27,6 +27,15 @@
 		F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */; };
 		F7818C8E2152CA1F0050607E /* LocalDataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C8D2152CA1F0050607E /* LocalDataState+StateTest.swift */; };
 		F7818C912152CE440050607E /* OnlineDataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* OnlineDataState+StateTest.swift */; };
+		F782856423317C4400CD7807 /* ExampleOnlineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */; };
+		F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
+		F782856623317D2B00CD7807 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
+		F782856723317D2B00CD7807 /* ExampleLocalRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */; };
+		F782856823317D2B00CD7807 /* GitHubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D27547216687D400D89CA5 /* GitHubService.swift */; };
+		F782856923317D3500CD7807 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
+		F782856A23317D3500CD7807 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
+		F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */; };
+		F78285732332595B00CD7807 /* OnlineDataStateTestingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78285722332595B00CD7807 /* OnlineDataStateTestingTest.swift */; };
 		F7909F1521BB2EF60034055D /* MockOnlineRepositoryRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7909F1421BB2EF60034055D /* MockOnlineRepositoryRefreshManager.swift */; };
 		F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDE921505130008ECB51 /* LocalDataStateTest.swift */; };
 		F7AFBDEC21505339008ECB51 /* OnlineDataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* OnlineDataStateTest.swift */; };
@@ -92,6 +101,8 @@
 		F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositorySyncStateManager.swift; sourceTree = "<group>"; };
 		F7818C8D2152CA1F0050607E /* LocalDataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocalDataState+StateTest.swift"; sourceTree = "<group>"; };
 		F7818C902152CE440050607E /* OnlineDataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnlineDataState+StateTest.swift"; sourceTree = "<group>"; };
+		F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTestingLib.swift; sourceTree = "<group>"; };
+		F78285722332595B00CD7807 /* OnlineDataStateTestingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnlineDataStateTestingTest.swift; sourceTree = "<group>"; };
 		F7909F1421BB2EF60034055D /* MockOnlineRepositoryRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOnlineRepositoryRefreshManager.swift; sourceTree = "<group>"; };
 		F7AFBDE921505130008ECB51 /* LocalDataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataStateTest.swift; sourceTree = "<group>"; };
 		F7AFBDEB21505339008ECB51 /* OnlineDataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineDataStateTest.swift; sourceTree = "<group>"; };
@@ -184,6 +195,7 @@
 				F7BE7233216677E800D0F288 /* ExampleLocalRepository.swift */,
 				F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */,
 				F7D27547216687D400D89CA5 /* GitHubService.swift */,
+				F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */,
 			);
 			name = "Example for Teller";
 			path = Teller;
@@ -200,6 +212,7 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				F782856B233187DE00CD7807 /* testing */,
 				F721D2102187C3C700C2C7E8 /* rxswift */,
 				F72A285A21876F6A007444D7 /* error */,
 				F7818C5721514C2F0050607E /* subject */,
@@ -319,6 +332,22 @@
 			path = online;
 			sourceTree = "<group>";
 		};
+		F782856B233187DE00CD7807 /* testing */ = {
+			isa = PBXGroup;
+			children = (
+				F78285712332595B00CD7807 /* datastate */,
+			);
+			path = testing;
+			sourceTree = "<group>";
+		};
+		F78285712332595B00CD7807 /* datastate */ = {
+			isa = PBXGroup;
+			children = (
+				F78285722332595B00CD7807 /* OnlineDataStateTestingTest.swift */,
+			);
+			path = datastate;
+			sourceTree = "<group>";
+		};
 		F7AFBDE821505109008ECB51 /* datastate */ = {
 			isa = PBXGroup;
 			children = (
@@ -380,6 +409,7 @@
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
 				5D27B4C85AAC3DD444A10FA1 /* [CP] Embed Pods Frameworks */,
+				F75BFD3123832E300042A564 /* Swiftlint */,
 			);
 			buildRules = (
 			);
@@ -417,7 +447,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = CocoaPods;
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
@@ -468,6 +498,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F782856A23317D3500CD7807 /* LaunchScreen.xib in Resources */,
+				F782856923317D3500CD7807 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,7 +573,6 @@
 				"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/Moya/Moya.framework",
-				"${BUILT_PRODUCTS_DIR}/Result/Result.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
 				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
@@ -551,7 +582,6 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Moya.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Result.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
@@ -561,6 +591,24 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		F75BFD3123832E300042A564 /* Swiftlint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = Swiftlint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n./Pods/SwiftLint/swiftlint\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -574,6 +622,7 @@
 				F7B5CD06216682C900EDC914 /* ExampleOnlineRepository.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -581,9 +630,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F782856623317D2B00CD7807 /* ViewController.swift in Sources */,
 				F7AFBDEC21505339008ECB51 /* OnlineDataStateTest.swift in Sources */,
+				F782856823317D2B00CD7807 /* GitHubService.swift in Sources */,
+				F782856423317C4400CD7807 /* ExampleOnlineRepository.swift in Sources */,
 				F7AFBDF521505D03008ECB51 /* LocalRepositoryTest.swift in Sources */,
 				F7818C6121517C820050607E /* MockOnlineRepositoryDataSource.swift in Sources */,
+				F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */,
 				F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */,
 				F7818C5F21517C220050607E /* OnlineRepositoryTest.swift in Sources */,
 				F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */,
@@ -591,6 +644,7 @@
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
 				F7EC6AB821B7230F002D272A /* OnlineRepositoryRefreshManagerTest.swift in Sources */,
 				F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */,
+				F782856723317D2B00CD7807 /* ExampleLocalRepository.swift in Sources */,
 				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7AFBDEA21505130008ECB51 /* LocalDataStateTest.swift in Sources */,
@@ -603,6 +657,7 @@
 				F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */,
 				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
 				F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */,
+				F78285732332595B00CD7807 /* OnlineDataStateTestingTest.swift in Sources */,
 				F7818C5D215172180050607E /* OnlineDataStateBehaviorSubjectTest.swift in Sources */,
 				F7DDEDA221B00A6A005ADF92 /* OnlineDataStateStateMachineTest.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,
@@ -688,7 +743,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -737,7 +792,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";

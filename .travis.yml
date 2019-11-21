@@ -1,23 +1,39 @@
 os: osx
-osx_image: xcode10.2
+osx_image: xcode11.2
 language: swift
 
-before_cache:
-  - cocoacache save --podfile Example/Podfile.lock 
 cache:
   bundler: true 
-  directories:    
-    - Specs
-install:  
+  cocoapods: true
+  
+before_install:
+  - gem install cocoapods
+  - pod --version
+  - pod repo update
+install:
   - bundle install
-  - cocoacache restore --podfile Example/Podfile.lock
-  - cd Example; pod install --repo-update; cd ..
+  - cd Example; pod install; cd ..;
+env:
+  global:
+    # COCOAPODS_TRUNK_TOKEN - access token to deploy to cocoapods. 
 
 jobs:
   include:
-  - stage: tests
-    script: ruby bin/run_unit_tests.rb
+  - stage: commit 
+    script:
+      - bundle exec fastlane scan
+  - stage: pr
+    script:
+      - bundle exec fastlane scan
+      - danger --fail-on-errors=true 
+  - stage: deploy
+    script: 
+      - pod trunk push
 
 stages:
-- name: tests
-  if: type IN (pull_request, push) AND tag IS blank
+  - name: commit
+    if: type IN (push) AND tag IS blank
+  - name: pr
+    if: type IN (pull_request)
+  - name: deploy
+    if: tag IS present

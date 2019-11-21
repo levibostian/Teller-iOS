@@ -1,17 +1,8 @@
-//
-//  CacheStateMachineTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 11/30/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
-import XCTest
 @testable import Teller
+import XCTest
 
 class CacheStateMachineTest: XCTestCase {
-
     private var stateMachine: CacheStateMachine<String>!
 
     override func setUp() {
@@ -25,19 +16,17 @@ class CacheStateMachineTest: XCTestCase {
     }
 
     func test_cacheEmpty_setsCorrectProperties() {
-        self.stateMachine = CacheStateMachine.cacheEmpty()
+        stateMachine = CacheStateMachine.cacheEmpty()
 
-        XCTAssertEqual(self.stateMachine.state, CacheStateMachine.State.cacheEmpty)
-        XCTAssertNil(self.stateMachine.cache)
+        XCTAssertEqual(stateMachine.state, CacheStateMachine.State.cacheEmpty)
+        XCTAssertNil(stateMachine.cache)
     }
 
     func test_cacheExists_setsCorrectProperties() {
         let cache = "cache"
-        self.stateMachine = CacheStateMachine.cacheExists(cache)
+        stateMachine = CacheStateMachine.cacheExists(cache)
 
-        XCTAssertEqual(self.stateMachine.state, CacheStateMachine.State.cacheNotEmpty)
-        XCTAssertEqual(self.stateMachine.cache, cache)
+        XCTAssertEqual(stateMachine.state, CacheStateMachine.State.cacheNotEmpty)
+        XCTAssertEqual(stateMachine.cache, cache)
     }
-
 }
-

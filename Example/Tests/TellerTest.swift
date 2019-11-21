@@ -1,16 +1,7 @@
-//
-//  TellerTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 12/3/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
-import XCTest
 @testable import Teller
+import XCTest
 
 class TellerTest: XCTestCase {
-
     private var userDefaultsUtilMock: UserDefaultsUtilMock!
     private var teller: Teller!
 
@@ -32,5 +23,4 @@ class TellerTest: XCTestCase {
         XCTAssertTrue(userDefaultsUtilMock.invokedClear)
         XCTAssertEqual(userDefaultsUtilMock.invokedClearCount, 1)
     }
-
 }

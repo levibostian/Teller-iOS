@@ -1,16 +1,9 @@
-//
-//  OnlineRepository.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/16/18.
-//
-
 import Foundation
 import RxSwift
 
 public protocol OnlineRepositoryGetDataRequirements {
     typealias Tag = String
-    
+
     var tag: Tag { get }
 }
 
@@ -18,12 +11,12 @@ public protocol OnlineRepositoryDataSource {
     associatedtype Cache: Any
     associatedtype GetDataRequirements: OnlineRepositoryGetDataRequirements
     associatedtype FetchResult: Any
-    
+
     var maxAgeOfData: Period { get }
-    
+
     /**
      Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
-     
+
      Feel free to call this function yourself anytime that you want to perform an API call *without* affecting the `OnlineRepository`.
 
      **Called on a background thread.**
@@ -39,24 +32,23 @@ public protocol OnlineRepositoryDataSource {
      *
      * **Called on a background thread.**
      */
-    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements)
-    
+    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements) throws
+
     /**
      Get existing cached cacheData saved to the device if it exists. If no data exists, return an empty data set. **Do not** return nil or an Observable with nil as a value.
-     
+
      This function will be always executed on a background thread.
-     
+
      This function is only called after data has been fetched successfully. Assume that data is empty (no cache data) or there is cache data.
 
      **Called on main UI thread.**
      */
     func observeCachedData(requirements: GetDataRequirements) -> Observable<Cache>
-    
+
     /**
      * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
 
      **Called on main UI thread.**
      */
     func isDataEmpty(_ cache: Cache, requirements: GetDataRequirements) -> Bool
-
 }

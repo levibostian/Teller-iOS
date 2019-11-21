@@ -1,19 +1,11 @@
-//
-//  OnlineDataState+State.swift
-//  Teller
-//
-//  Created by Levi Bostian on 9/19/18.
-//
-
 import Foundation
 
 extension OnlineDataState {
-    
     public enum CacheState {
         case cacheEmpty(fetched: Date)
         case cacheData(data: DataType, fetched: Date)
     }
-    
+
     public enum NoCacheState {
         case noCache
         case firstFetchOfData
@@ -22,7 +14,7 @@ extension OnlineDataState {
          */
         case finishedFirstFetchOfData(errorDuringFetch: Error?)
     }
-    
+
     public enum FetchingFreshDataState {
         case fetchingFreshCacheData
         /**
@@ -34,7 +26,7 @@ extension OnlineDataState {
          */
         case finishedFetchingFreshCacheData(errorDuringFetch: Error?)
     }
-    
+
     /**
      * This is usually used in the UI of an app to display cacheData to a user.
      *
@@ -44,7 +36,7 @@ extension OnlineDataState {
      */
     public func cacheState() -> CacheState? {
         // state of cache could be none() which is represented as cache exists. Therefore, make sure that last time fetched is not null before moving forward to indicate state is not none.
-        guard !self.noCacheExists, let lastTimeFetched = self.lastTimeFetched else {
+        guard !noCacheExists, let lastTimeFetched = self.lastTimeFetched else {
             return nil
         }
 
@@ -54,7 +46,7 @@ extension OnlineDataState {
             return CacheState.cacheEmpty(fetched: lastTimeFetched)
         }
     }
-    
+
     /**
      * This is usually used in the UI of an app to display cacheData to a user.
      *
@@ -63,21 +55,21 @@ extension OnlineDataState {
      * Use a switch statement to get the states that you care about.
      */
     public func noCacheState() -> NoCacheState? {
-        if self.justCompletedSuccessfulFirstFetch {
+        if justCompletedSuccessfulFirstFetch {
             return NoCacheState.finishedFirstFetchOfData(errorDuringFetch: nil)
         }
-        if self.fetchingForFirstTime {
+        if fetchingForFirstTime {
             return NoCacheState.firstFetchOfData
         }
         if let errorDuringFetch = self.errorDuringFirstFetch {
             return NoCacheState.finishedFirstFetchOfData(errorDuringFetch: errorDuringFetch)
         }
-        if self.noCacheExists {
+        if noCacheExists {
             return NoCacheState.noCache
         }
-        return nil 
+        return nil
     }
-    
+
     /**
      * This is usually used in the UI of an app to display cacheData to a user.
      *
@@ -86,58 +78,51 @@ extension OnlineDataState {
      * Use a switch statement to get the states that you care about.
      */
     public func fetchingFreshDataState() -> FetchingFreshDataState? {
-        if self.isFetchingFreshData {
+        if isFetchingFreshData {
             return FetchingFreshDataState.fetchingFreshCacheData
         }
-        if self.justCompletedSuccessfullyFetchingFreshData {
-            return FetchingFreshDataState.finishedFetchingFreshCacheData(errorDuringFetch: self.errorDuringFetch)
+        if justCompletedSuccessfullyFetchingFreshData {
+            return FetchingFreshDataState.finishedFetchingFreshCacheData(errorDuringFetch: errorDuringFetch)
         }
         return nil
     }
-    
 }
 
 extension OnlineDataState.CacheState: Equatable where DataType: Equatable {
-    
     public static func == (lhs: OnlineDataState<DataType>.CacheState, rhs: OnlineDataState<DataType>.CacheState) -> Bool {
         switch (lhs, rhs) {
-        case (let .cacheEmpty(data1), let .cacheEmpty(data2)):
+        case (let .cacheEmpty(data1), .cacheEmpty(let data2)):
             return data1 == data2
-        case (let .cacheData(data1), let .cacheData(data2)):
+        case (let .cacheData(data1), .cacheData(let data2)):
             return data1 == data2
         default:
             return false
         }
     }
-    
 }
 
 extension OnlineDataState.NoCacheState: Equatable where DataType: Equatable {
-    
     public static func == (lhs: OnlineDataState<DataType>.NoCacheState, rhs: OnlineDataState<DataType>.NoCacheState) -> Bool {
         switch (lhs, rhs) {
         case (.firstFetchOfData, .firstFetchOfData), (.noCache, .noCache):
             return true
-        case (let .finishedFirstFetchOfData(error1), let .finishedFirstFetchOfData(error2)):
+        case (let .finishedFirstFetchOfData(error1), .finishedFirstFetchOfData(let error2)):
             return ErrorsUtil.areErrorsEqual(lhs: error1, rhs: error2)
         default:
             return false
         }
     }
-    
 }
 
 extension OnlineDataState.FetchingFreshDataState: Equatable where DataType: Equatable {
-    
     public static func == (lhs: OnlineDataState<DataType>.FetchingFreshDataState, rhs: OnlineDataState<DataType>.FetchingFreshDataState) -> Bool {
         switch (lhs, rhs) {
         case (.fetchingFreshCacheData, .fetchingFreshCacheData):
             return true
-        case (let .finishedFetchingFreshCacheData(error1), let .finishedFetchingFreshCacheData(error2)):
+        case (let .finishedFetchingFreshCacheData(error1), .finishedFetchingFreshCacheData(let error2)):
             return ErrorsUtil.areErrorsEqual(lhs: error1, rhs: error2)
         default:
             return false
         }
     }
-    
 }

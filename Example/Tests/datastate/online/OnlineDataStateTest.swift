@@ -1,31 +1,22 @@
-//
-//  OnlineDataStateTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 9/17/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
-import XCTest
 @testable import Teller
+import XCTest
 
 class OnlineDataStateTest: XCTestCase {
-    
     private var dataState: OnlineDataState<String>!
     let getDataRequirements = MockOnlineRepositoryDataSource.MockGetDataRequirements(randomString: nil)
-    
+
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-    
+
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
 
     func test_none_setsCorrectProperties() {
-        self.dataState = OnlineDataState.none()
+        dataState = OnlineDataState.none()
 
         XCTAssertFalse(dataState.noCacheExists)
         XCTAssertFalse(dataState.fetchingForFirstTime)
@@ -39,5 +30,4 @@ class OnlineDataStateTest: XCTestCase {
         XCTAssertNil(dataState.errorDuringFetch)
         XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
     }
-    
 }

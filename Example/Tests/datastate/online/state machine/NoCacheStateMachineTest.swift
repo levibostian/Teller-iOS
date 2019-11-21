@@ -1,17 +1,8 @@
-//
-//  NoCacheStateMachineTest.swift
-//  Teller_Tests
-//
-//  Created by Levi Bostian on 11/30/18.
-//  Copyright © 2018 CocoaPods. All rights reserved.
-//
-
 import Foundation
-import XCTest
 @testable import Teller
+import XCTest
 
 class NoCacheStateMachineTest: XCTestCase {
-
     private var stateMachine: NoCacheStateMachine!
 
     override func setUp() {
@@ -25,28 +16,26 @@ class NoCacheStateMachineTest: XCTestCase {
     }
 
     func test_noCacheExists_setsCorrectProperties() {
-        self.stateMachine = NoCacheStateMachine.noCacheExists()
+        stateMachine = NoCacheStateMachine.noCacheExists()
 
-        XCTAssertEqual(self.stateMachine.state, NoCacheStateMachine.State.noCacheExists)
-        XCTAssertNil(self.stateMachine.errorDuringFetch)
+        XCTAssertEqual(stateMachine.state, NoCacheStateMachine.State.noCacheExists)
+        XCTAssertNil(stateMachine.errorDuringFetch)
     }
 
     func test_fetching_setsCorrectProperties() {
-        self.stateMachine = NoCacheStateMachine.noCacheExists().fetching()
+        stateMachine = NoCacheStateMachine.noCacheExists().fetching()
 
-        XCTAssertEqual(self.stateMachine.state, NoCacheStateMachine.State.isFetching)
-        XCTAssertNil(self.stateMachine.errorDuringFetch)
+        XCTAssertEqual(stateMachine.state, NoCacheStateMachine.State.isFetching)
+        XCTAssertNil(stateMachine.errorDuringFetch)
     }
 
     func test_failedFetching_setsCorrectProperties() {
         let fail = Failure()
-        self.stateMachine = NoCacheStateMachine.noCacheExists().fetching().failedFetching(error: fail)
+        stateMachine = NoCacheStateMachine.noCacheExists().fetching().failedFetching(error: fail)
 
-        XCTAssertEqual(self.stateMachine.state, NoCacheStateMachine.State.noCacheExists)
-        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: self.stateMachine.errorDuringFetch, rhs: fail))
+        XCTAssertEqual(stateMachine.state, NoCacheStateMachine.State.noCacheExists)
+        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: stateMachine.errorDuringFetch, rhs: fail))
     }
 
-    class Failure: Error {
-    }
-
+    class Failure: Error {}
 }

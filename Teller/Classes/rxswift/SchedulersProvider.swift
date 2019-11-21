@@ -1,10 +1,3 @@
-//
-//  SchedulersProvider.swift
-//  Teller
-//
-//  Created by Levi Bostian on 10/29/18.
-//
-
 import Foundation
 import RxSwift
 
@@ -19,15 +12,12 @@ internal protocol SchedulersProvider {
 }
 
 internal class AppSchedulersProvider: SchedulersProvider {
-    
     internal var ui: ImmediateSchedulerType = MainScheduler.instance
     internal var background: ImmediateSchedulerType = ConcurrentDispatchQueueScheduler(qos: .background)
-    
-    internal init() {
-    }
+
+    internal init() {}
 
     func backgroundWithQueue(_ dispatchQueue: DispatchQueue) -> ImmediateSchedulerType {
         return ConcurrentDispatchQueueScheduler(queue: dispatchQueue)
     }
-    
 }
