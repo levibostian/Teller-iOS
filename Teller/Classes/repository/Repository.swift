@@ -30,28 +30,32 @@ public class Repository<DataSource: RepositoryDataSource> {
      */
     public var requirements: DataSource.Requirements? {
         didSet {
-            // 1. Cancel observing cache so no more reading of cache updates can happen.
-            // 2. Cancel refreshing so no fetch can finish.
-            // 3. Set curentStateOfData to something so anyone observing does not think they are still observing old requirements (old data).
-            // 4. Start everything up again.
+            newRequirementsSet(requirements)
+        }
+    }
 
-            refreshManager.cancelRefresh()
-            stopObservingCache()
+    internal func newRequirementsSet(_ requirements: DataSource.Requirements?) {
+        // 1. Cancel observing cache so no more reading of cache updates can happen.
+        // 2. Cancel refreshing so no fetch can finish.
+        // 3. Set curentStateOfData to something so anyone observing does not think they are still observing old requirements (old data).
+        // 4. Start everything up again.
 
-            if let requirements = requirements {
-                if syncStateManager.hasEverFetchedData(tag: requirements.tag) {
-                    currentStateOfData.resetToCacheState(requirements: requirements, lastTimeFetched: syncStateManager.lastTimeFetchedData(tag: requirements.tag)!)
-                    beginObservingCachedData(requirements: requirements)
-                } else {
-                    currentStateOfData.resetToNoCacheState(requirements: requirements)
-                    // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
-                    _ = try! refresh(force: false)
-                        .subscribeOn(schedulersProvider.background)
-                        .subscribe()
-                }
+        refreshManager.cancelRefresh()
+        stopObservingCache()
+
+        if let requirements = requirements {
+            if syncStateManager.hasEverFetchedData(tag: requirements.tag) {
+                currentStateOfData.resetToCacheState(requirements: requirements, lastTimeFetched: syncStateManager.lastTimeFetchedData(tag: requirements.tag)!)
+                beginObservingCachedData(requirements: requirements)
             } else {
-                currentStateOfData.resetStateToNone()
+                currentStateOfData.resetToNoCacheState(requirements: requirements)
+                // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
+                _ = try! refresh(force: false)
+                    .subscribeOn(schedulersProvider.background)
+                    .subscribe()
             }
+        } else {
+            currentStateOfData.resetStateToNone()
         }
     }
 

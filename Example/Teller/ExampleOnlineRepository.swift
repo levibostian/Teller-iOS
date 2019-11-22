@@ -21,7 +21,7 @@ class ReposRepositoryRequirements: RepositoryRequirements {
 }
 
 // Struct used to represent the JSON data pulled from the GitHub API.
-struct Repo: Codable {
+struct Repo: Codable, Equatable {
     var id: Int!
     var name: String!
 }

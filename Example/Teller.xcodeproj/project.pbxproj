@@ -16,6 +16,11 @@
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */; };
 		F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72A285B21876F96007444D7 /* TellerErrorTest.swift */; };
+		F76131242387524400200FCE /* RepositoryMockTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76131232387524400200FCE /* RepositoryMockTest.swift */; };
+		F76A2D1B238892DD000A90AA /* ReposViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76A2D1A238892DD000A90AA /* ReposViewModel.swift */; };
+		F778B9EA238898C00005076E /* ReposViewModelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9E9238898C00005076E /* ReposViewModelTest.swift */; };
+		F778B9EB2388991C0005076E /* ReposViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76A2D1A238892DD000A90AA /* ReposViewModel.swift */; };
+		F778B9EC238899290005076E /* PlaygroundTestingLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */; };
 		F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */; };
 		F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */; };
 		F7818C53215143460050607E /* RepositoryDataSourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C52215143460050607E /* RepositoryDataSourceTest.swift */; };
@@ -84,6 +89,9 @@
 		EDF3627C0E4FA9CEE926B448 /* Pods-Teller_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Teller_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		F721D2112187C3D500C2C7E8 /* TestsSchedulersProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsSchedulersProvider.swift; sourceTree = "<group>"; };
 		F72A285B21876F96007444D7 /* TellerErrorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerErrorTest.swift; sourceTree = "<group>"; };
+		F76131232387524400200FCE /* RepositoryMockTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryMockTest.swift; sourceTree = "<group>"; };
+		F76A2D1A238892DD000A90AA /* ReposViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReposViewModel.swift; sourceTree = "<group>"; };
+		F778B9E9238898C00005076E /* ReposViewModelTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReposViewModelTest.swift; sourceTree = "<group>"; };
 		F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerRepositorySyncStateManagerTest.swift; sourceTree = "<group>"; };
 		F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerUserDefaultsUtilTest.swift; sourceTree = "<group>"; };
 		F7818C52215143460050607E /* RepositoryDataSourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDataSourceTest.swift; sourceTree = "<group>"; };
@@ -184,6 +192,7 @@
 				F7B5CD05216682C900EDC914 /* ExampleOnlineRepository.swift */,
 				F7D27547216687D400D89CA5 /* GitHubService.swift */,
 				F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */,
+				F76A2D1A238892DD000A90AA /* ReposViewModel.swift */,
 			);
 			name = "Example for Teller";
 			path = Teller;
@@ -200,6 +209,7 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				F778B9E8238898A80005076E /* ExampleApp */,
 				F782856B233187DE00CD7807 /* testing */,
 				F721D2102187C3C700C2C7E8 /* rxswift */,
 				F72A285A21876F6A007444D7 /* error */,
@@ -264,6 +274,22 @@
 			path = error;
 			sourceTree = "<group>";
 		};
+		F76131222387522B00200FCE /* repository */ = {
+			isa = PBXGroup;
+			children = (
+				F76131232387524400200FCE /* RepositoryMockTest.swift */,
+			);
+			path = repository;
+			sourceTree = "<group>";
+		};
+		F778B9E8238898A80005076E /* ExampleApp */ = {
+			isa = PBXGroup;
+			children = (
+				F778B9E9238898C00005076E /* ReposViewModelTest.swift */,
+			);
+			path = ExampleApp;
+			sourceTree = "<group>";
+		};
 		F7818C43215074EA0050607E /* manager */ = {
 			isa = PBXGroup;
 			children = (
@@ -303,6 +329,7 @@
 		F782856B233187DE00CD7807 /* testing */ = {
 			isa = PBXGroup;
 			children = (
+				F76131222387522B00200FCE /* repository */,
 				F78285712332595B00CD7807 /* datastate */,
 			);
 			path = testing;
@@ -465,14 +492,14 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Teller_Tests/Pods-Teller_Tests-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxTest/RxTest.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxBlocking.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxTest.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -525,6 +552,7 @@
 				"${PODS_ROOT}/Target Support Files/Pods-Teller_Example/Pods-Teller_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/Moya/Moya.framework",
+				"${BUILT_PRODUCTS_DIR}/RxBlocking/RxBlocking.framework",
 				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
 				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
 				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
@@ -534,6 +562,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Moya.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxBlocking.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
@@ -571,6 +600,7 @@
 			files = (
 				F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */,
 				F7B5CD06216682C900EDC914 /* ExampleOnlineRepository.swift in Sources */,
+				F76A2D1B238892DD000A90AA /* ReposViewModel.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */,
@@ -582,6 +612,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F782856623317D2B00CD7807 /* ViewController.swift in Sources */,
+				F76131242387524400200FCE /* RepositoryMockTest.swift in Sources */,
 				F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */,
 				F782856823317D2B00CD7807 /* GitHubService.swift in Sources */,
 				F782856423317C4400CD7807 /* ExampleOnlineRepository.swift in Sources */,
@@ -606,8 +637,11 @@
 				F78285732332595B00CD7807 /* DataStateTestingTest.swift in Sources */,
 				F7818C5D215172180050607E /* DataStateBehaviorSubjectTest.swift in Sources */,
 				F7DDEDA221B00A6A005ADF92 /* DataStateStateMachineTest.swift in Sources */,
+				F778B9EB2388991C0005076E /* ReposViewModel.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,
 				F7818C53215143460050607E /* RepositoryDataSourceTest.swift in Sources */,
+				F778B9EA238898C00005076E /* ReposViewModelTest.swift in Sources */,
+				F778B9EC238899290005076E /* PlaygroundTestingLib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

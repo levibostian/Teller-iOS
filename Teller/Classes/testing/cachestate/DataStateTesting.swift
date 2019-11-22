@@ -107,7 +107,7 @@ public class NoCacheExistsDsl {
 public class CacheExistsDsl<DataType: Any> {
     internal var props = Props<DataType>()
 
-    public func cache(cache: DataType) {
+    public func cache(_ cache: DataType) {
         props = Props()
         props.cache = cache
     }

@@ -224,11 +224,7 @@ In order for Teller to do it's magic, you need to (1) initialize the `requiremen
 
 Enjoy!
 
-## Extra functionality
-
-Teller comes with extra, but optional, features you may also enjoy.
-
-#### Keep app data fresh in the background
+## Keep app data up-to-date
 
 When users open up your app, they want to see fresh data. Not data that is out dated. To do this, it's best to perform background refreshes while your app is in the background. 
 
@@ -244,7 +240,7 @@ repository.refresh(force: false)
 
 *Note: You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically.*
 
-#### Manual refresh 
+## Manual refresh of cache
 
 Do you have a `UITableView` with pull-to-refresh enabled? Do you have a refresh button in your `UINavigationBar` that you want your users to refresh the data when it's pressed? 
 
@@ -256,6 +252,71 @@ repository.requirements = ReposRepositoryDataSource.Requirements(username: "user
 
 repository.refresh(force: true)
         .subscribe()
+```
+
+# Testing 
+
+Teller was built with unit/integration/UI testing in mind. Here is how to use Teller in your tests:
+
+## Write unit tests against `RepositoryDataSource` implementations
+
+Your implementations of `RepositoryDataSource` should be no problem. `RepositoryDataSource` is just a protocol. You can unit test your implementation using dependency injection, for example, to test all of the functions of `RepositoryDataSource`. 
+
+## Write unit tests for code that depends on `Repository`
+
+For your app's code that uses the Teller `Repository` class, use the pre-built `Repository` mock for your unit tests. Inject the mock into your class under test using dependency injection. 
+
+Here is an example XCTest for unit testing a class that depends on Teller's `Repository`. 
+
+```swift
+import RxBlocking
+import RxSwift
+@testable import YourApp
+import XCTest
+
+class RepositoryViewModelTest: XCTestCase {
+    var viewModel: ReposViewModel!
+    var repository: RepositoryMock<ReposRepositoryDataSource>!
+
+    override func setUp() {
+        // Create an instance of `RepositoryMock`
+        repository = RepositoryMock(dataSource: ReposRepositoryDataSource())
+        // Provide the repository mock to your code under test with dependency injection
+        viewModel = ReposViewModel(reposRepository: repository)
+    }
+    
+    func test_observeRepos_givenReposRepositoryObserve_expectReceiveCacheFromReposRepository() {
+        // 1. Setup the mock
+        let given: DataState<[Repo]> = DataState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: "username"), lastTimeFetched: Date()) {
+            $0.cache([
+                Repo(id: 1, name: "repo-name")
+            ])
+        }
+        repository.observeClosure = {
+            return Observable.just(given)
+        }
+        
+        // 2. Run the code under test
+        let actual = try! repository.observe().toBlocking().first()
+        
+        // 3. Assert your code under test is working
+        XCTAssertEqual(given, actual)
+    }
+    
+    func test_setReposToObserve_givenUsername_expectSetRepositoryRequirements() {
+        let given = "random-username"
+        
+        // Run your code under test
+        viewModel.setReposToObserve(username: given)
+
+        // Pull out the properties of the repository mock to see if your code under test works as expected
+        XCTAssertTrue(repository.requirementsCalled)
+        XCTAssertEqual(repository.requirementsCallsCount, 1)
+        let actual = repository.requirementsInvocations[0]!.username
+        XCTAssertEqual(given, actual)
+    }
+
+}
 ```
 
 ## Example app
