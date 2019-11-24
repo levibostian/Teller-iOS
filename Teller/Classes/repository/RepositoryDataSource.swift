@@ -1,7 +1,7 @@
 import Foundation
 import RxSwift
 
-public protocol RepositoryGetDataRequirements {
+public protocol RepositoryRequirements {
     typealias Tag = String
 
     var tag: Tag { get }
@@ -9,10 +9,10 @@ public protocol RepositoryGetDataRequirements {
 
 public protocol RepositoryDataSource {
     associatedtype Cache: Any
-    associatedtype GetDataRequirements: RepositoryGetDataRequirements
+    associatedtype Requirements: RepositoryRequirements
     associatedtype FetchResult: Any
 
-    var maxAgeOfData: Period { get }
+    var maxAgeOfCache: Period { get }
 
     /**
      Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
@@ -21,7 +21,7 @@ public protocol RepositoryDataSource {
 
      **Called on a background thread.**
      */
-    func fetchFreshData(requirements: GetDataRequirements) -> Single<FetchResponse<FetchResult>>
+    func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult>>
 
     /**
      * Save the cacheData to whatever storage method Repository chooses.
@@ -32,7 +32,7 @@ public protocol RepositoryDataSource {
      *
      * **Called on a background thread.**
      */
-    func saveData(_ fetchedData: FetchResult, requirements: GetDataRequirements) throws
+    func saveCache(_ cache: FetchResult, requirements: Requirements) throws
 
     /**
      Get existing cached cacheData saved to the device if it exists. If no data exists, return an empty data set. **Do not** return nil or an Observable with nil as a value.
@@ -43,12 +43,12 @@ public protocol RepositoryDataSource {
 
      **Called on main UI thread.**
      */
-    func observeCachedData(requirements: GetDataRequirements) -> Observable<Cache>
+    func observeCache(requirements: Requirements) -> Observable<Cache>
 
     /**
      * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
 
      **Called on main UI thread.**
      */
-    func isDataEmpty(_ cache: Cache, requirements: GetDataRequirements) -> Bool
+    func isCacheEmpty(_ cache: Cache, requirements: Requirements) -> Bool
 }

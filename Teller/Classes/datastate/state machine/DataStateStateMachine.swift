@@ -15,9 +15,9 @@ internal class DataStateStateMachine<Data: Any> {
     fileprivate let cacheExistsStateMachine: CacheStateMachine<Data>?
     fileprivate let fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine?
 
-    fileprivate let requirements: RepositoryGetDataRequirements
+    fileprivate let requirements: RepositoryRequirements
 
-    private init(requirements: RepositoryGetDataRequirements,
+    private init(requirements: RepositoryRequirements,
                  noCacheExistsStateMachine: NoCacheStateMachine?,
                  cacheExistsStateMachine: CacheStateMachine<Data>?,
                  fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine?) {
@@ -29,7 +29,7 @@ internal class DataStateStateMachine<Data: Any> {
 
     // MARK: - Constructors. The 2 starting nodes in state machine.
 
-    class func noCacheExists(requirements: RepositoryGetDataRequirements) -> DataState<Data> {
+    class func noCacheExists(requirements: RepositoryRequirements) -> DataState<Data> {
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: NoCacheStateMachine.noCacheExists(), cacheExistsStateMachine: nil, fetchingFreshCacheStateMachine: nil)
 
         return DataState(noCacheExists: true,
@@ -45,7 +45,7 @@ internal class DataStateStateMachine<Data: Any> {
                          justCompletedSuccessfullyFetchingFreshData: false)
     }
 
-    class func cacheExists(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date) -> DataState<Data> {
+    class func cacheExists(requirements: RepositoryRequirements, lastTimeFetched: Date) -> DataState<Data> {
         let cacheExistsStateMachine = CacheStateMachine<Data>.cacheEmpty() // Empty is a placeholder for now but it indicates that a cache does exist for future calls to the state machine.
         let fetchingFreshCacheStateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched)
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: nil, cacheExistsStateMachine: cacheExistsStateMachine, fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine)

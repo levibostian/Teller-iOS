@@ -59,11 +59,11 @@ internal class DataStateBehaviorSubject<DataType: Any> {
         dataState = DataState.none()
     }
 
-    func resetToNoCacheState(requirements: RepositoryGetDataRequirements) {
+    func resetToNoCacheState(requirements: RepositoryRequirements) {
         dataState = DataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
     }
 
-    func resetToCacheState(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date) {
+    func resetToCacheState(requirements: RepositoryRequirements, lastTimeFetched: Date) {
         dataState = DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
     }
 

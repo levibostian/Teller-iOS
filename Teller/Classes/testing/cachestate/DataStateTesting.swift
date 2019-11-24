@@ -7,7 +7,7 @@ public class DataStateTesting {
         return DataState.none()
     }
 
-    public static func noCache<DataType: Any>(requirements: RepositoryGetDataRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
+    public static func noCache<DataType: Any>(requirements: RepositoryRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
         var noCacheExists = NoCacheExistsDsl()
 
         if let more = more {
@@ -38,7 +38,7 @@ public class DataStateTesting {
         return stateMachine
     }
 
-    public static func cache<DataType: Any>(requirements: RepositoryGetDataRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
+    public static func cache<DataType: Any>(requirements: RepositoryRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
         var cacheExists = CacheExistsDsl<DataType>()
 
         if let more = more {
@@ -107,7 +107,7 @@ public class NoCacheExistsDsl {
 public class CacheExistsDsl<DataType: Any> {
     internal var props = Props<DataType>()
 
-    public func cache(cache: DataType) {
+    public func cache(_ cache: DataType) {
         props = Props()
         props.cache = cache
     }

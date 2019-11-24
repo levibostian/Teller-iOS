@@ -3,7 +3,7 @@ import XCTest
 
 class DataStateTest: XCTestCase {
     private var dataState: DataState<String>!
-    let getDataRequirements = MockRepositoryDataSource.MockGetDataRequirements(randomString: nil)
+    let getDataRequirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
     override func setUp() {
         super.setUp()

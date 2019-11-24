@@ -4,44 +4,44 @@ import RxSwift
 
 internal class MockRepositoryDataSource: RepositoryDataSource {
     typealias Cache = String
-    typealias GetDataRequirements = MockGetDataRequirements
+    typealias Requirements = MockRequirements
     typealias FetchResult = String
 
     var fetchFreshDataCount = 0
-    var fetchFreshDataRequirements: MockGetDataRequirements?
+    var fetchFreshDataRequirements: MockRequirements?
     var saveDataCount = 0
     var saveDataFetchedData: String?
     var saveDataThen: ((String) throws -> Void)?
     var observeCachedDataCount = 0
-    var observeCacheDataThenAnswer: ((MockGetDataRequirements) -> Observable<String>)?
+    var observeCacheDataThenAnswer: ((MockRequirements) -> Observable<String>)?
     var isDataEmptyCount = 0
 
-    var maxAgeOfData: Period
+    var maxAgeOfCache: Period
     var fakeData: FakeData
 
-    init(fakeData: FakeData, maxAgeOfData: Period) {
+    init(fakeData: FakeData, maxAgeOfCache: Period) {
         self.fakeData = fakeData
-        self.maxAgeOfData = maxAgeOfData
+        self.maxAgeOfCache = maxAgeOfCache
     }
 
-    func fetchFreshData(requirements: MockGetDataRequirements) -> Single<FetchResponse<String>> {
+    func fetchFreshCache(requirements: MockRequirements) -> Single<FetchResponse<String>> {
         fetchFreshDataCount += 1
         fetchFreshDataRequirements = requirements
         return fakeData.fetchFreshData
     }
 
-    func saveData(_ fetchedData: String, requirements: MockRepositoryDataSource.MockGetDataRequirements) throws {
+    func saveCache(_ fetchedData: String, requirements: MockRepositoryDataSource.MockRequirements) throws {
         saveDataCount += 1
         saveDataFetchedData = fetchedData
         try saveDataThen?(fetchedData)
     }
 
-    func observeCachedData(requirements: MockGetDataRequirements) -> Observable<String> {
+    func observeCache(requirements: MockRequirements) -> Observable<String> {
         observeCachedDataCount += 1
         return observeCacheDataThenAnswer?(requirements) ?? fakeData.observeCachedData
     }
 
-    func isDataEmpty(_ cache: String, requirements: MockRepositoryDataSource.MockGetDataRequirements) -> Bool {
+    func isCacheEmpty(_ cache: String, requirements: MockRepositoryDataSource.MockRequirements) -> Bool {
         isDataEmptyCount += 1
         return fakeData.isDataEmpty
     }
@@ -52,8 +52,8 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
         var fetchFreshData: Single<FetchResponse<String>>
     }
 
-    struct MockGetDataRequirements: RepositoryGetDataRequirements, Equatable {
-        var tag: RepositoryGetDataRequirements.Tag = "MockGetDataRequirements"
+    struct MockRequirements: RepositoryRequirements, Equatable {
+        var tag: RepositoryRequirements.Tag = "MockRequirements"
 
         let randomString: String?
 
@@ -61,7 +61,7 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
             self.randomString = randomString
         }
 
-        static func == (lhs: MockGetDataRequirements, rhs: MockGetDataRequirements) -> Bool {
+        static func == (lhs: MockRequirements, rhs: MockRequirements) -> Bool {
             return lhs.tag == rhs.tag && lhs.randomString == rhs.randomString
         }
     }

@@ -1,4 +1,6 @@
 import Foundation
+import RxBlocking
+import RxSwift
 import Teller
 
 // This file only exists temporarily. It exists to make sure that the Teller Testing portion of the library is accessible to the public.
@@ -11,7 +13,7 @@ class PlaygroundTestingLib {
     }
 
     func test_DataStateTesting_noCache() {
-        let requirements = ReposRepositoryGetDataRequirements(username: "")
+        let requirements = ReposRepositoryRequirements(username: "")
 
         let _: DataState<String> = DataStateTesting.noCache(requirements: requirements) {
             $0.fetchingFirstTime()
@@ -23,7 +25,7 @@ class PlaygroundTestingLib {
     }
 
     func test_DataStateTesting_cache() {
-        let requirements = ReposRepositoryGetDataRequirements(username: "")
+        let requirements = ReposRepositoryRequirements(username: "")
 
         let _: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: Date()) {
             $0.successfulFetch(timeFetched: Date())
