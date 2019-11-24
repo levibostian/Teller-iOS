@@ -44,4 +44,17 @@ class RepositoryViewModelTest: XCTestCase {
         let actual = repository.requirementsInvocations[0]!.username
         XCTAssertEqual(given, actual)
     }
+
+    func test_refreshRepos_expectGetResultFromRefresh() {
+        viewModel.setReposToObserve(username: "username")
+        let expectedResult = RefreshResult.successful
+
+        repository.refreshClosure = { _ in
+            Single.just(expectedResult)
+        }
+
+        let actualResult = try! viewModel.refreshRepos().toBlocking().first()!
+
+        XCTAssertEqual(expectedResult, actualResult)
+    }
 }

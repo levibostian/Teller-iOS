@@ -17,4 +17,10 @@ class ReposViewModel {
     func setReposToObserve(username: String) {
         reposRepository.requirements = ReposRepositoryDataSource.Requirements(username: username)
     }
+
+    // Note: Make sure to only call this after `setReposToObserve()`. This won't be a problem if you only add the fresh UI elements when the list is repos is populated.
+    func refreshRepos() -> Single<RefreshResult> {
+        return try! reposRepository.refresh(force: true)
+            .observeOn(MainScheduler.instance)
+    }
 }

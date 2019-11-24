@@ -13,6 +13,7 @@ import Foundation
  */
 public struct DataState<DataType: Any> {
     let noCacheExists: Bool
+    var cacheExists: Bool { return !noCacheExists }
     let fetchingForFirstTime: Bool
     let cacheData: DataType?
     let lastTimeFetched: Date?
@@ -27,6 +28,10 @@ public struct DataState<DataType: Any> {
     let errorDuringFetch: Error?
     let justCompletedSuccessfullyFetchingFreshData: Bool
 
+    internal var isNone: Bool {
+        return cacheExists && lastTimeFetched == nil
+    }
+
     /**
      Used to change the state of data.
      */
@@ -38,6 +43,8 @@ public struct DataState<DataType: Any> {
 
     /**
      This constructor is meant to be more of a placeholder. It's having "no state".
+
+     No state means cache exists, but time last fetched is nil.
      */
     internal static func none() -> DataState {
         return DataState(noCacheExists: false,

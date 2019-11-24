@@ -5,9 +5,7 @@
 
 # Teller
 
-iOS library that manages the state of your app's data. Teller facilitates loading cached data and fetching fresh data so your app's data is always up-to-date.
-
-Teller works very well with MVVM and MVI design patterns (note the use of `Repository` subclasses in the library). However, you do not need to use these design patterns to use it.
+Building an iOS app that fetches data from a network? With Teller, you can add a cache to your iOS app in minutes! Faster apps for a better user experience.
 
 ![project logo](misc/logo.jpg)
 
@@ -17,29 +15,40 @@ Teller works very well with MVVM and MVI design patterns (note the use of `Repos
 
 ## What is Teller?
 
-The data used in your mobile app: user profiles, a collection of photos, list of friends, etc. *all have state*. Your data is in 1 of many different states:
+Caching the data that your app fetches from a network can make your app much more enjoyable to use. 
 
-* Being fetched for the first time (if it comes from an async network call)
-* The data is empty
-* Data exists in the device's storage (cached).
-* During the empty and data states, your app could also be fetching fresh data to replace the cached data on the device that is out of date.
+1. Less loading screens. When the user of your app opens the app, they can view the cache without having to sit through a loading screen. 
+2. Help your user perform tasks, faster. When your user opens up your app, they want to complete a task within seconds. By using a cache, you can show data to your user faster to allow them to complete tasks. 
+3. When you use a cache, you can take advantage of updating your app's data in the background so when your users open up your app again in the future, they will see the most up-to-date data. 
 
-Determining what state your data is in and managing it can be a big pain. That is where Teller comes in. All you need to do is tell Teller how to save your data, query your data, and how to fetch fresh data (probably with a network API call) and Teller facilities everything else for you. Teller will query your cached data, parse it to determine the state of it, fetch fresh data if the cached data is too old, and deliver the state of the data to listeners so you can update the UI to your users.
+However, adding a cache to your app takes work. You need to...
+
+1. Fetch, save, and query the cache from a network. 
+2. Parse the cache to determine what state it is in. 
+3. Make sure you do not unnecessary fetches to update the device fetch (to save user battery) but you also don't want to fetch too infrequent or the cache will be out-of-date. 
+
+Teller takes care of tasks 2 and 3 outlined above. All you need to do is tell Teller how to fetch, save, and query the device cache and Teller takes care of the rest. 
+
+This allows you to add a cache to your app within minutes without the boilerplate. 
 
 ## Why use Teller?
 
-When creating mobile apps that cache data (such as offline-first mobile apps), it is important to show in your app's UI the state of your cached data to the app user. Telling your app user how old data is, if your app is performing a network call, if there were any errors during network calls, if the data set is empty or not. These are all states that data can be in and notifying your user of these states helps your user trust your app and feel they are in control.
+Not only does Teller help you add a cache to your app quickly and easily, Teller also allows you to make your app more transparent to your users. You will easily be able to tell your users...
 
-Well, keeping track of the state of your data can be complex. Querying a database is easy. Performing an network API call is easy. Updating the UI of your app is easy. But tying all of that together can be difficult. That is why Teller was created. You take care of querying data, saving data, fetching fresh data via a network call and let Teller take care of everything else.
+1. Exactly how old the cache is
+2. If the local cache they are looking at is being updated now (via a network call) or not
+3. If there was a fetch, if there was an error or not
+4. If the cache has ever been fetched successfully before or not
 
-For example: If you are building a Twitter client app that is offline-first, when the user opens your app you should be showing them a list of cached tweets so that the user has something to interact with and not a loading screen saying "Loading tweets, please wait...". When you show this list of cached tweets, you may also be performing an API network call in the background to fetch the newest tweets for your user. In the UI of your app, you should be notifying your user that your app is fetching fresh tweets or else your user may think your app is broken. Keeping your user always informed about exactly what your app is doing is a good idea to follow. Teller helps you keep track of the state of your data and facilitates keeping it up to date.
+When you add a cache to your app it is important to be transparent about the cache so the user understands the state of the cache. Teller handles all of this for you. 
 
-Here are the added benefits of Teller:
+There are also some other benefits of Teller:
 
-* Small. The only dependency at this time is RxSwift ([follow this issue as I work to remove this 1 dependency and make it optional](https://github.com/levibostian/Teller-iOS/issues/6)). Teller is made to do 1 job and do it well. 
+* Small. The only dependency at this time is RxSwift ([follow this issue as I work to remove this 1 dependency and make it optional](https://github.com/levibostian/Teller-iOS/issues/6)). Teller is made to do 1 job and do it well and that is: caching data retrieved from a network. 
 * Built for Swift, by Swift. Teller is written in Swift which means you can expect a nice to use API.
 * Not opinionated. Teller does not care where your data is stored or how it is queried. You simply tell Teller when you're done fetching, saving, and querying and Teller takes care of delivering it to the listeners.
-* Well tested. Currently running in production apps. 
+* Well tested. Currently running in production apps and includes unit/integration tests around code base. 
+* ~~Full documentation~~ (coming soon. In the meantime, this README is all the documentation you need)
 
 ## Installation
 
@@ -51,29 +60,16 @@ pod 'Teller', '~> version-here'
 
 Replace `version-here` with: [![Version](https://img.shields.io/cocoapods/v/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller) as this is the latest version at this time. 
 
-**Note: Teller is in early development.** Even though it is used in production in my own apps, it is still early on in development as I use the library more and more, it will mature.
+**Note: Teller is under development.** Even though it is used in production in my own apps, the code base can change at anytime. 
 
-I plan to release the library in an alpha, beta, then stable release phase.
+After using Teller for a handful of years now, I have been able to mature the library as time goes on. The API is still considered Alpha as it may encounter drastic changes in the future. However, I do not forsee major changes at this time. 
 
-#### Stages:
-
-Alpha (where the library is at currently):
+TODO
 
 - [ ] Create example app on how to use it.
-- [X] Documentation for README created.
 - [ ] Make non-RxSwift version of the library to make it even smaller and more portable.
+- [ ] Split up the testing utilities into a separate module. 
 - [ ] Documentation in form of Jazzy Apple Doc created.
-- [X] Fixup the API for the library if needed.
-
-Beta:
-
-- [ ] Library API has been used enough that the API does not have any huge changes planned for it.
-- [X] Tests written (and passing 😉) for the library.
-- [ ] API for quickly and easily creating tests with Teller in your app using Teller such as mocking the Teller API and setting up the environment. 
-
-Stable:
-
-- [ ] Library has been running in many production apps. Library has proven to cover most appropriate use cases and issues have been resolved to the point library is considered stable. 
 
 # Getting started
 
@@ -170,48 +166,21 @@ repository
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
     .subscribe(onNext: { (dataState: DataState<[Repo]>) in
-        switch dataState.cacheState() {
-        case .cacheEmpty?:
-            // Cache is empty. Repos for this specific user has been fetched before, but they do not have any for their account.
+        switch dataState.state() {
+        case .none: break
+            // It is currently undetermined if there is a cache or not. This usually happens when switching requirements in a Repository. 
+        case .noCache(let fetching, let errorDuringFetch):
+            // Repos have never been fetched before for the GitHub user.
             break
-        case .cacheData(let repos, let dateReposWhereFetched)?:
-            // Here are the repos for the user!
-            // You can figure out how old the cached data is with `dateReposWhereFetched` as it's a Date.
-            break
-        case .none:
-            // the dataState has no cached state yet. This probably means that repos have never been fetched for this specific username before.
-            // Use the `noCacheState` to get more details on the state on not having a cache.
+        case .cache(let cache, let lastFetched, let firstCache, let fetching, let successfulFetch, let errorDuringFetch):
+            // Repos have been fetched before for the GitHub user.
+            // If `cache` is nil, the cache is empty.
             break
         }
-        switch dataState.noCacheState() {
-        case .noCache?:
-            // Repos have never been fetched before for the specific user. Cache data is not beging fetched at this time.
-            break
-        case .firstFetchOfData?:
-            // Repos have never been fetched before for the specific user. So, this state means that repos are being fetched for the very first time for this user.
-            break
-        case .finishedFirstFetchOfData(let errorDuringFetch)?:
-            // Repos have been fetched for the very first time for this specific user. A `cacheState()` will also be sent to the dataState. This state does *not* mean that the fetch was successful. It simply means that it is done.
-            
-            // If there was an error that happened during the fetch, errorDuringFetch will be populated.
-            
-            // Note: If there is an error on first fetch, you can call `observe()` again or `refresh()` on your `Repository` to try again. It is your responsibility to manually try the first fetch again.
-            break
-        case .none:
-            // The dataState has no first fetch state. This means that repos have been fetched before for this specific user so no first fetch is required.
-            break
-        }
-        switch dataState.fetchingFreshDataState() {
-        case .fetchingFreshCacheData?:
-            // The cached repos for the specific user is too old and new, fresh data is being fetched right now.
-            break
-        case .finishedFetchingFreshCacheData(let errorDuringFetch)?:
-            // Fresh repos have been fetched for this specific user. This state does *not* mean that the fetch was successful. It simply means that it is done.
-            
-            // If there was an error that happened during the fetch, errorDuringFetch will be populated.
-            break
-        case .none:
-            // The dataState has no fetch state. This means that the repos cache is not too old or repos have never been fetched before.
+                
+        switch dataState.fetchingState() {
+        case .fetching(let fetching, let noCache, let errorDuringFetch, let successfulFetch):
+            // A new cache could be fetching, just completed fetching, or is not fetching at all.
             break
         }
     })
