@@ -319,6 +319,98 @@ class RepositoryViewModelTest: XCTestCase {
 }
 ```
 
+## Write integration tests around Teller 
+
+Integration tests are a great way to make sure that many moving pieces of your code are working together correctly. Teller provides easy ways for you to write integration tests in your app that uses Teller. 
+
+The idea behind testing with Teller is to give Teller a pre-defined state to be in. Maybe you need to write an integration test for when the app starts up for the first time. Maybe you need to write a test where a cache already exists that Teller fetched. Let's get into how we do this in our tests. 
+
+1. Always clear Teller in the `setup()` test function:
+
+```swift
+import XCTest
+import Teller 
+
+class YourIntegrationTests: XCTestCase {    
+
+    override func setUp() {        
+        Teller.shared.clear()
+    }
+}
+```
+
+2. In your test function, give Teller an initial state:
+
+```swift
+import XCTest
+import Teller 
+
+class YourIntegrationTests: XCTestCase {    
+    private var dataSource: RepositoryDataSource<String, RepositoryRequirements, String>!
+    private var repository: Repository<RepositoryDataSource<String, RepositoryRequirements, String>>!
+
+    override func setUp() {
+        dataSource = RepositoryDataSource()
+        repository = Repository(dataSource: dataSource)
+        
+        Teller.shared.clear()
+    }
+
+    func test_tellerNoCach() {                
+        let requirements = RepositoryDataSource.Requirements(username: "")
+        
+        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+            $0.noCache()
+        }     
+
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has never fetched a cache successfully before. 
+
+        // Write the remainder of your integration test function here. 
+    }
+
+    func test_tellerCacheEmpty() {                
+        let requirements = RepositoryDataSource.Requirements(username: "")
+        
+        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+            $0.cacheEmpty() {
+                $0.cacheTooOld()
+            }            
+        }     
+
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has fetched a cache successfully, the cache is empty, and the cache is too old which means Teller will attempt to fetch a fresh cache the next time the `Repository` runs.
+
+        // There are other options for `$0.cacheEmpty()` such as:
+        //  $0.cacheEmpty() {
+        //    $0.cacheNotTooOld()
+        //  }         
+        // 
+        // $0.cacheEmpty() {
+        //    $0.lastFetched(Date.yesterday)
+        //  }
+
+        // Write the remainder of your integration test function here. 
+    }    
+
+    func test_tellerCacheNotEmpty() {
+        let requirements = RepositoryDataSource.Requirements(username: "")
+        let existingCache = "existing-cache"
+        
+        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+            $0.cache(existingCache) {
+                $0.cacheNotTooOld()
+            }
+        }     
+        // *Note: If your `DataSource.saveCache()` function needs to be executed on a background thread, use `Repository.testing.initStateAsync()` instead of `initState()` shown here. `initSync()` runs the `DataSource.saveCache()` on the thread that you call `initState()` on.*
+
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has fetched a cache successfully, the cache is not empty and contains "existing-cache", and the cache is not too old (the default behavior when a state is not given) which means Teller will not attempt to fetch a fresh cache the next time the `Repository` runs.
+
+        // There are other options for `$0.cache(existingCache)`. They are the same options as $0.cacheEmpty() described above.
+
+        // Write the remainder of your integration test function here. 
+    }
+}
+```
+
 ## Example app
 
 This library does *not* yet have a fully functional example iOS app created (yet). However, if you check out the directory: `Example/Teller/` you will see example code snippets that you can use to learn about how to use Teller, learn best practices, and compile inside of XCode. 

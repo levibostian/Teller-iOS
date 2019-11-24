@@ -21,6 +21,10 @@
 		F778B9EA238898C00005076E /* ReposViewModelTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9E9238898C00005076E /* ReposViewModelTest.swift */; };
 		F778B9EB2388991C0005076E /* ReposViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76A2D1A238892DD000A90AA /* ReposViewModel.swift */; };
 		F778B9EC238899290005076E /* PlaygroundTestingLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */; };
+		F778B9F22389A3390005076E /* RepositoryTestingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9F12389A3390005076E /* RepositoryTestingTest.swift */; };
+		F778B9F62389A9000005076E /* RepositoryDataSourceMockTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9F52389A9000005076E /* RepositoryDataSourceMockTest.swift */; };
+		F778B9F82389ABD10005076E /* RepositoryRequirementsForTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9F72389ABD10005076E /* RepositoryRequirementsForTesting.swift */; };
+		F778B9FB2389B28E0005076E /* XCTestExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F778B9FA2389B28E0005076E /* XCTestExtensions.swift */; };
 		F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */; };
 		F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */; };
 		F7818C53215143460050607E /* RepositoryDataSourceTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C52215143460050607E /* RepositoryDataSourceTest.swift */; };
@@ -92,6 +96,10 @@
 		F76131232387524400200FCE /* RepositoryMockTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryMockTest.swift; sourceTree = "<group>"; };
 		F76A2D1A238892DD000A90AA /* ReposViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReposViewModel.swift; sourceTree = "<group>"; };
 		F778B9E9238898C00005076E /* ReposViewModelTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReposViewModelTest.swift; sourceTree = "<group>"; };
+		F778B9F12389A3390005076E /* RepositoryTestingTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryTestingTest.swift; sourceTree = "<group>"; };
+		F778B9F52389A9000005076E /* RepositoryDataSourceMockTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDataSourceMockTest.swift; sourceTree = "<group>"; };
+		F778B9F72389ABD10005076E /* RepositoryRequirementsForTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryRequirementsForTesting.swift; sourceTree = "<group>"; };
+		F778B9FA2389B28E0005076E /* XCTestExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestExtensions.swift; sourceTree = "<group>"; };
 		F7818C44215074F70050607E /* TellerRepositorySyncStateManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerRepositorySyncStateManagerTest.swift; sourceTree = "<group>"; };
 		F7818C5021507B090050607E /* TellerUserDefaultsUtilTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerUserDefaultsUtilTest.swift; sourceTree = "<group>"; };
 		F7818C52215143460050607E /* RepositoryDataSourceTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDataSourceTest.swift; sourceTree = "<group>"; };
@@ -209,6 +217,7 @@
 		607FACE81AFB9204008FA782 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				F778B9F92389B2800005076E /* extensions */,
 				F778B9E8238898A80005076E /* ExampleApp */,
 				F782856B233187DE00CD7807 /* testing */,
 				F721D2102187C3C700C2C7E8 /* rxswift */,
@@ -221,6 +230,7 @@
 				607FACE91AFB9204008FA782 /* Supporting Files */,
 				F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */,
 				F7B66A6422D66AF60077CF50 /* TestConstants.swift */,
+				F778B9F72389ABD10005076E /* RepositoryRequirementsForTesting.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -278,6 +288,8 @@
 			isa = PBXGroup;
 			children = (
 				F76131232387524400200FCE /* RepositoryMockTest.swift */,
+				F778B9F12389A3390005076E /* RepositoryTestingTest.swift */,
+				F778B9F52389A9000005076E /* RepositoryDataSourceMockTest.swift */,
 			);
 			path = repository;
 			sourceTree = "<group>";
@@ -288,6 +300,14 @@
 				F778B9E9238898C00005076E /* ReposViewModelTest.swift */,
 			);
 			path = ExampleApp;
+			sourceTree = "<group>";
+		};
+		F778B9F92389B2800005076E /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F778B9FA2389B28E0005076E /* XCTestExtensions.swift */,
+			);
+			path = extensions;
 			sourceTree = "<group>";
 		};
 		F7818C43215074EA0050607E /* manager */ = {
@@ -631,13 +651,17 @@
 				F7818C912152CE440050607E /* DataState+StateTest.swift in Sources */,
 				F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
+				F778B9F22389A3390005076E /* RepositoryTestingTest.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */,
 				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
 				F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */,
+				F778B9F82389ABD10005076E /* RepositoryRequirementsForTesting.swift in Sources */,
 				F78285732332595B00CD7807 /* DataStateTestingTest.swift in Sources */,
+				F778B9FB2389B28E0005076E /* XCTestExtensions.swift in Sources */,
 				F7818C5D215172180050607E /* DataStateBehaviorSubjectTest.swift in Sources */,
 				F7DDEDA221B00A6A005ADF92 /* DataStateStateMachineTest.swift in Sources */,
 				F778B9EB2388991C0005076E /* ReposViewModel.swift in Sources */,
+				F778B9F62389A9000005076E /* RepositoryDataSourceMockTest.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,
 				F7818C53215143460050607E /* RepositoryDataSourceTest.swift in Sources */,
 				F778B9EA238898C00005076E /* ReposViewModelTest.swift in Sources */,
