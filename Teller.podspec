@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'Teller'
-  s.version          = '0.4.0-alpha'
+  s.version          = '0.5.0'
   s.summary          = "iOS library that manages your app's cached data with ease."
 
 # This description is used to generate tags and improve search results.
