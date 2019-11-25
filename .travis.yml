@@ -22,9 +22,11 @@ jobs:
   - stage: commit 
     script:
       - bundle exec fastlane scan
+      - pod lib lint
   - stage: pr
     script:
       - bundle exec fastlane scan
+      - pod lib lint
       - danger --fail-on-errors=true 
   - stage: deploy
     script: 
