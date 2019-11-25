@@ -1,3 +1,14 @@
+## [0.5.0] - 11-25-19
+
+### Added 
+- Utilities to write integration tests against Teller
+- Pre-built mock for Repository for unit testing
+
+### Changed
+- **Breaking Change** Changed DataState parsing switch statement to more simple API.
+- **Breaking Change** Remove need to subclass Repository in API!
+- **Breaking Change** Remove all local functionality. Teller only caches network fetches now. 
+
 ## [0.4.0-alpha] - 7-24-19
 
 ### Changed 
