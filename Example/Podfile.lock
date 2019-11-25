@@ -17,7 +17,7 @@ PODS:
     - RxSwift (~> 5)
   - SwiftFormat/CLI (0.40.14)
   - SwiftLint (0.37.0)
-  - Teller (0.4.0-alpha):
+  - Teller (0.5.0):
     - RxSwift (~> 5.0)
 
 DEPENDENCIES:
@@ -55,7 +55,7 @@ SPEC CHECKSUMS:
   RxTest: 4349afe98f564e0a9bc19063368904622d17d49a
   SwiftFormat: 21c9c3c748d5fcece493d8610eee23df15393458
   SwiftLint: c078a14d7d7ade75e5507795d185e3da41d844d2
-  Teller: e11dcbb99ae9ce61cb1efb41b1b166b1c1354eb1
+  Teller: c5fcfd9d4b502db58352952510bfe35452ee4d1b
 
 PODFILE CHECKSUM: d4248ba533b33cea1e19dd96533a503ff96e55e1
 
