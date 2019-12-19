@@ -17,9 +17,6 @@ public class Repository<DataSource: RepositoryDataSource> {
     internal let schedulersProvider: SchedulersProvider
 
     internal var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
-    internal let observeCacheQueue = DispatchQueue(label: "\(TellerConstants.namespace)_Repository_observeCacheQueue", qos: .userInitiated)
-
-    internal let saveFetchedDataSerialQueue = DispatchQueue(label: "\(TellerConstants.namespace)_Repository_saveFetchedDataQueue", qos: .background)
 
     internal var currentStateOfData: DataStateBehaviorSubject<DataSource.Cache> = DataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
 
@@ -126,6 +123,7 @@ public class Repository<DataSource: RepositoryDataSource> {
         // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            guard self.requirements?.tag == requirements.tag else { return }
 
             self.stopObservingCache()
 
@@ -134,6 +132,7 @@ public class Repository<DataSource: RepositoryDataSource> {
                 .observeOn(self.schedulersProvider.ui)
                 .subscribe(onNext: { [weak self, requirements] (cache: DataSource.Cache) in
                     guard let self = self else { return }
+                    guard self.requirements?.tag == requirements.tag else { return }
 
                     let needsToFetchFreshCache = self.syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: self.dataSource.maxAgeOfCache)
 
@@ -197,39 +196,37 @@ extension Repository: RepositoryRefreshManagerDelegate {
         switch response {
         case .success(let success):
             let timeFetched = Date()
-            saveFetchedDataSerialQueue.sync { // make sure that we don't call saveCache() in multiple threads
-                let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
+            let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
 
-                let newCache: DataSource.FetchResult = success as! DataSource.FetchResult // swiftlint:disable:this force_cast
+            let newCache: DataSource.FetchResult = success as! DataSource.FetchResult // swiftlint:disable:this force_cast
 
-                do {
-                    // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
-                    self.stopObservingCache()
+            do {
+                // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
+                stopObservingCache()
 
-                    try self.dataSource.saveCache(newCache, requirements: requirements)
-                    self.syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
+                try dataSource.saveCache(newCache, requirements: requirements)
+                syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
 
-                    /*
-                     Do after saving cache, successfully.
-                     This scenario could happen: first fetch -> save new cache -> cache data/empty -> successful first fetch.
-                     Even though it would be better to have "successful first fetch" notification before cache data/empty, this scenario is better then if saving cache fails and we get this:
-                     first fetch -> successful first fetch -> save new cache -> failed first fetch.
-                     We would need to backtrack and that doesn't sound like the best idea. It's best to only say the fetch is successful after it is confirmed successful. Also because
-                     */
-                    if !hasEverFetchedDataBefore {
-                        self.currentStateOfData.changeState { try! $0.successfulFirstFetch(timeFetched: timeFetched) }
-                    } else {
-                        self.currentStateOfData.changeState { try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) }
-                    }
+                /*
+                 Do after saving cache, successfully.
+                 This scenario could happen: first fetch -> save new cache -> cache data/empty -> successful first fetch.
+                 Even though it would be better to have "successful first fetch" notification before cache data/empty, this scenario is better then if saving cache fails and we get this:
+                 first fetch -> successful first fetch -> save new cache -> failed first fetch.
+                 We would need to backtrack and that doesn't sound like the best idea. It's best to only say the fetch is successful after it is confirmed successful. Also because
+                 */
+                if !hasEverFetchedDataBefore {
+                    currentStateOfData.changeState { try! $0.successfulFirstFetch(timeFetched: timeFetched) }
+                } else {
+                    currentStateOfData.changeState { try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) }
+                }
 
-                    // Begin observing cache again. We may be observing for the first time because this is the first fetch, or we begin observing again after we stopped observing before saving.
-                    self.beginObservingCachedData(requirements: requirements)
-                } catch {
-                    if !hasEverFetchedDataBefore {
-                        self.currentStateOfData.changeState { try! $0.errorFirstFetch(error: error) }
-                    } else {
-                        self.currentStateOfData.changeState { try! $0.failFetchingFreshCache(error) }
-                    }
+                // Begin observing cache again. We may be observing for the first time because this is the first fetch, or we begin observing again after we stopped observing before saving.
+                beginObservingCachedData(requirements: requirements)
+            } catch {
+                if !hasEverFetchedDataBefore {
+                    currentStateOfData.changeState { try! $0.errorFirstFetch(error: error) }
+                } else {
+                    currentStateOfData.changeState { try! $0.failFetchingFreshCache(error) }
                 }
             }
         case .failure(let fetchError):
