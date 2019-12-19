@@ -17,6 +17,7 @@ public class Repository<DataSource: RepositoryDataSource> {
     internal let schedulersProvider: SchedulersProvider
 
     internal var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
+    internal var refreshDisposeBag: CompositeDisposable = CompositeDisposable()
 
     internal var currentStateOfData: DataStateBehaviorSubject<DataSource.Cache> = DataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
 
@@ -47,7 +48,7 @@ public class Repository<DataSource: RepositoryDataSource> {
             } else {
                 currentStateOfData.resetToNoCacheState(requirements: requirements)
                 // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
-                _ = try! refresh(force: false)
+                refreshDisposeBag += try! refresh(force: false)
                     .subscribeOn(schedulersProvider.background)
                     .subscribe()
             }
@@ -82,6 +83,7 @@ public class Repository<DataSource: RepositoryDataSource> {
 
     deinit {
         refreshManager.cancelRefresh()
+        refreshDisposeBag.dispose()
 
         currentStateOfData.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
         currentStateOfData.subject.dispose()
@@ -143,7 +145,7 @@ public class Repository<DataSource: RepositoryDataSource> {
                     }
 
                     if needsToFetchFreshCache {
-                        _ = try! self.refresh(force: false)
+                        self.refreshDisposeBag += try! self.refresh(force: false)
                             .subscribeOn(self.schedulersProvider.background)
                             .subscribe()
                     }
@@ -163,7 +165,7 @@ public class Repository<DataSource: RepositoryDataSource> {
     public func observe() -> Observable<DataState<DataSource.Cache>> {
         if requirements != nil {
             // Trigger a refresh to help keep data up-to-date.
-            _ = try! refresh(force: false)
+            refreshDisposeBag += try! refresh(force: false)
                 .subscribeOn(schedulersProvider.background)
                 .subscribe()
         }
