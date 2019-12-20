@@ -5,9 +5,12 @@ import RxTest
 import XCTest
 
 class RepositoryRefreshManagerTest: XCTestCase {
-    private var refreshManager: AppRepositoryRefreshManager<String>!
+    private var refreshManager: AppRepositoryRefreshManager!
 
     private let schedulersProvider = TestsSchedulersProvider()
+    private let delegate = MockRepositoryRefreshManagerDelegate()
+
+    private let defaultRequirements = MockRepositoryDataSource.Requirements(randomString: nil)
 
     private var compositeDisposable = CompositeDisposable()
 
@@ -15,7 +18,8 @@ class RepositoryRefreshManagerTest: XCTestCase {
         super.setUp()
 
         compositeDisposable = CompositeDisposable()
-        refreshManager = AppRepositoryRefreshManager<String>()
+        refreshManager = AppRepositoryRefreshManager()
+        refreshManager.delegate = delegate
     }
 
     override func tearDown() {
@@ -48,14 +52,14 @@ class RepositoryRefreshManagerTest: XCTestCase {
 
         // We do not know which of the 2 async background threads will be executed first. That's why we only have 1 expectation above shared between both of the `observerXrefreshTask`s because either one could be subscribed to depending on the order below.
         DispatchQueue(label: "observer1").async {
-            let observer1RefreshManagerRefresh = self.refreshManager.refresh(task: observer1RefreshTask)
+            let observer1RefreshManagerRefresh = self.refreshManager.refresh(task: observer1RefreshTask, requirements: self.defaultRequirements)
 
             self.compositeDisposable += observer1RefreshManagerRefresh
                 .asObservable()
                 .subscribe(observer1)
         }
         DispatchQueue(label: "observer2").async {
-            let observer2RefreshManagerRefresh = self.refreshManager.refresh(task: observer2RefreshTask)
+            let observer2RefreshManagerRefresh = self.refreshManager.refresh(task: observer2RefreshTask, requirements: self.defaultRequirements)
 
             self.compositeDisposable += observer2RefreshManagerRefresh
                 .asObservable()
@@ -90,7 +94,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectObserver1ToComplete = expectation(description: "Expect observer1 to complete refresh after fetch response back.")
 
         let observer1 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observer1RefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observer1RefreshTask.asSingle(), requirements: defaultRequirements)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { refreshResult in
                 if refreshResult == .successful {
@@ -125,7 +129,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectObserver2ToComplete = expectation(description: "Expect observer2 to complete refresh after fetch response back.")
 
         let observer2 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observer2RefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observer2RefreshTask.asSingle(), requirements: defaultRequirements)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { refreshResult in
                 switch refreshResult {
@@ -175,7 +179,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after manager is cancelled.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle(), requirements: defaultRequirements)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { refreshResult in
                 if refreshResult == .skipped(reason: .cancelled) {
@@ -229,7 +233,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after manager is cancelled.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle(), requirements: defaultRequirements)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background)) // unique thread.
             .do(onSuccess: { refreshResult in
                 if refreshResult == .skipped(reason: .cancelled) {
@@ -277,7 +281,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle(), requirements: defaultRequirements)
             .asObservable()
             .subscribe(observer)
 
@@ -296,7 +300,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectObserverToComplete = expectation(description: "Expect observer to complete refresh after fetch call complete.")
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle(), requirements: defaultRequirements)
             .asObservable()
             .do(onNext: { refreshResult in
                 if refreshResult == .successful {
@@ -326,7 +330,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let fetchFail = Fail()
 
         let refreshObserver = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
-        compositeDisposable += refreshManager.refresh(task: refreshTask.asSingle())
+        compositeDisposable += refreshManager.refresh(task: refreshTask.asSingle(), requirements: defaultRequirements)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .do(onError: { error in
                 if error is Fail {

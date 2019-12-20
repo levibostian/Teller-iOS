@@ -28,7 +28,7 @@ class RepositoryTest: XCTestCase {
     private var repository: Repository<MockRepositoryDataSource>!
     private var dataSource: MockRepositoryDataSource!
     private var syncStateManager: MockRepositorySyncStateManager!
-    private var refreshManager: AnyRepositoryRefreshManager<String> = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
+    private var refreshManager: RepositoryRefreshManager!
 
     private var compositeDisposable: CompositeDisposable!
 
@@ -38,6 +38,8 @@ class RepositoryTest: XCTestCase {
         compositeDisposable = CompositeDisposable()
 
         TellerUserDefaultsUtil.shared.clear()
+
+        refreshManager = AppRepositoryRefreshManager()
         initDataSource(fakeData: getDataSourceFakeData())
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData())
         initRepository()
@@ -212,7 +214,7 @@ class RepositoryTest: XCTestCase {
     }
 
     func test_setNewRequirements_refreshGetsCancelled() {
-        let mockRefreshManager = MockRepositoryRefreshManager<String>()
+        let mockRefreshManager = MockRepositoryRefreshManager()
         let stubbedRefreshResultSubject = ReplaySubject<RefreshResult>.createUnbounded()
 
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin.")
@@ -224,7 +226,7 @@ class RepositoryTest: XCTestCase {
             })
 
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
-        refreshManager = AnyRepositoryRefreshManager(mockRefreshManager)
+        refreshManager = mockRefreshManager
 
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
@@ -357,7 +359,7 @@ class RepositoryTest: XCTestCase {
     }
 
     func test_neverFetchedData_setRequirements_refreshGetsTriggered() {
-        let mockRefreshManager = MockRepositoryRefreshManager<String>()
+        let mockRefreshManager = MockRepositoryRefreshManager()
         let stubbedRefreshResultSubject = ReplaySubject<RefreshResult>.createUnbounded()
 
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin.")
@@ -369,7 +371,7 @@ class RepositoryTest: XCTestCase {
             })
 
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
-        refreshManager = AnyRepositoryRefreshManager(mockRefreshManager)
+        refreshManager = mockRefreshManager
 
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
@@ -383,7 +385,7 @@ class RepositoryTest: XCTestCase {
     }
 
     func test_cacheExistsButIsTooOld_setRequirementsBeginsFetch() {
-        let mockRefreshManager = MockRepositoryRefreshManager<String>()
+        let mockRefreshManager = MockRepositoryRefreshManager()
         let stubbedRefreshResultSubject = ReplaySubject<RefreshResult>.createUnbounded()
 
         let expectRefreshToBegin = expectation(description: "Expect refresh to begin.")
@@ -395,7 +397,7 @@ class RepositoryTest: XCTestCase {
             })
 
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
-        refreshManager = AnyRepositoryRefreshManager(mockRefreshManager)
+        refreshManager = mockRefreshManager
 
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: Single.never()))
@@ -497,7 +499,7 @@ class RepositoryTest: XCTestCase {
     }
 
     func test_cacheExistsNotTooOld_skipRefresh() {
-        let mockRefreshManager = MockRepositoryRefreshManager<String>()
+        let mockRefreshManager = MockRepositoryRefreshManager()
         let stubbedRefreshResultSubject = ReplaySubject<RefreshResult>.createUnbounded()
 
         let expectRefreshToNotBegin = expectation(description: "Expect refresh to not begin.")
@@ -510,7 +512,7 @@ class RepositoryTest: XCTestCase {
             })
 
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
-        refreshManager = AnyRepositoryRefreshManager(mockRefreshManager)
+        refreshManager = mockRefreshManager
 
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: Single.never()))
@@ -755,7 +757,7 @@ class RepositoryTest: XCTestCase {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: firstFetchTime))
         let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         let firstDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
-        let firstRefreshManager: AnyRepositoryRefreshManager<String> = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
+        let firstRefreshManager: RepositoryRefreshManager = AppRepositoryRefreshManager()
 
         let firstRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: firstDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: firstRefreshManager)
 
@@ -785,7 +787,7 @@ class RepositoryTest: XCTestCase {
 
         let secondFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
         let secondDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
-        let secondRefreshManager: AnyRepositoryRefreshManager<String> = AnyRepositoryRefreshManager(AppRepositoryRefreshManager())
+        let secondRefreshManager: AppRepositoryRefreshManager = AppRepositoryRefreshManager()
 
         let secondRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: secondDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: secondRefreshManager)
         secondRepo.requirements = requirements

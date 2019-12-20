@@ -2,17 +2,15 @@ import Foundation
 import RxSwift
 
 internal protocol RepositoryRefreshManagerDelegate: AnyObject {
-    func refreshBegin()
+    func refreshBegin(requirements: RepositoryRequirements)
     // Meaning network call was completed. The `FetchResponse` could still have a failure inside.
     // If the refresh request gets cancelled or skipped for any reason, this does *not* get called.
-    func refreshComplete<FetchResponseData: Any>(_ response: FetchResponse<FetchResponseData>)
+    func refreshComplete<FetchResponseData: Any>(_ response: FetchResponse<FetchResponseData>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void)
 }
 
 internal protocol RepositoryRefreshManager {
-    associatedtype FetchResponseDataType
-
     var delegate: RepositoryRefreshManagerDelegate? { get set }
-    func refresh(task: Single<FetchResponse<FetchResponseDataType>>) -> Single<RefreshResult>
+    func refresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) -> Single<RefreshResult>
     func cancelRefresh()
 }
 
@@ -26,9 +24,7 @@ internal protocol RepositoryRefreshManager {
 
  The main inspiration for this class was that multiple threads can call `Repository.refresh()` at anytime, especially because `Repository.refresh()` gets called internally inside of `Repository`. There should *not* be multiple fetch calls happening at 1 given time. Only 1 should be happening. That is where the need for a thread safe refresh manager was born. Only run 1 refresh call, per instance, of this manager in a thread-safe way.
  */
-internal class AppRepositoryRefreshManager<FetchResponseData: Any>: RepositoryRefreshManager {
-    typealias FetchResponseDataType = FetchResponseData
-
+internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
     weak var delegate: RepositoryRefreshManagerDelegate?
 
     /*
@@ -41,7 +37,6 @@ internal class AppRepositoryRefreshManager<FetchResponseData: Any>: RepositoryRe
 
     fileprivate var refreshTaskDisposeBag: DisposeBag = DisposeBag()
 
-    // Queue for reading and writing `refreshSubject` in a thread-safe way. Serial queue to make sure that only 1 refresh can be started at one time.
     private let refreshSubjectQueue = DispatchQueue(label: "\(TellerConstants.namespace)_AppRepositoryRefreshManager_refreshSubjectQueue")
     // Serial queue to run refresh so only 1 refresh call is ever run at 1 time.
     private let runRefreshScheduler = SerialDispatchQueueScheduler(qos: .background, internalSerialQueueName: "\(TellerConstants.namespace)_AppRepositoryRefreshManager_runRefreshScheduler", leeway: DispatchTimeInterval.never)
@@ -52,7 +47,7 @@ internal class AppRepositoryRefreshManager<FetchResponseData: Any>: RepositoryRe
         cancelRefresh()
     }
 
-    func refresh(task: Single<FetchResponse<FetchResponseData>>) -> Single<RefreshResult> {
+    func refresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
         var refreshSubCopy: ReplaySubject<RefreshResult>!
 
         refreshSubjectQueue.sync {
@@ -63,27 +58,27 @@ internal class AppRepositoryRefreshManager<FetchResponseData: Any>: RepositoryRe
                 self.refreshSubject = newSubject
                 refreshSubCopy = newSubject
 
-                self._runRefresh(task: task)
+                self._runRefresh(task: task, requirements: requirements)
             }
         }
 
         return refreshSubCopy.asSingle()
     }
 
-    private func _runRefresh(task: Single<FetchResponse<FetchResponseData>>) {
+    private func _runRefresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) {
         task
             .do(onSubscribe: { [weak self] in // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
-                self?.delegate?.refreshBegin()
+                self?.delegate?.refreshBegin(requirements: requirements)
             })
             .subscribeOn(runRefreshScheduler)
             .subscribe(onSuccess: { [weak self] fetchResponse in
-                self?.delegate?.refreshComplete(fetchResponse)
-
-                switch fetchResponse {
-                case .success:
-                    self?.doneRefresh(result: .successful, failure: nil)
-                case .failure(let fetchError):
-                    self?.doneRefresh(result: .failedError(error: fetchError), failure: nil)
+                self?.delegate?.refreshComplete(fetchResponse, requirements: requirements) { [weak self] in
+                    switch fetchResponse {
+                    case .success:
+                        self?.doneRefresh(result: .successful, failure: nil)
+                    case .failure(let fetchError):
+                        self?.doneRefresh(result: .failedError(error: fetchError), failure: nil)
+                    }
                 }
             }, onError: { [weak self] error in
                 self?.doneRefresh(result: nil, failure: error)
