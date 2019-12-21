@@ -65,7 +65,7 @@ class DataStateBehaviorSubjectTest: XCTestCase {
         let observer = TestScheduler(initialClock: 0).createObserver(DataState<String>.self)
         compositeDisposable += subject.subject.subscribe(observer)
 
-        subject.changeState { try! $0.firstFetch() }
+        subject.changeState(requirements: requirements) { try! $0.firstFetch() }
 
         XCTAssertRecordedElements(observer.events, [
             DataStateStateMachine.noCacheExists(requirements: requirements),
@@ -77,17 +77,17 @@ class DataStateBehaviorSubjectTest: XCTestCase {
         let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         subject.resetStateToNone()
         subject.resetToNoCacheState(requirements: requirements)
-        subject.changeState { try! $0.firstFetch() }
+        subject.changeState(requirements: requirements) { try! $0.firstFetch() }
 
         let observer1 = TestScheduler(initialClock: 0).createObserver(DataState<String>.self)
         compositeDisposable += subject.subject.subscribe(observer1)
         let fetched = Date()
-        subject.changeState { try! $0.successfulFirstFetch(timeFetched: fetched) }
+        subject.changeState(requirements: requirements) { try! $0.successfulFirstFetch(timeFetched: fetched) }
         let observer2 = TestScheduler(initialClock: 0).createObserver(DataState<String>.self)
         compositeDisposable += subject.subject.subscribe(observer2)
 
         let data = "foo"
-        subject.changeState { try! $0.cachedData(data) }
+        subject.changeState(requirements: requirements) { try! $0.cachedData(data) }
 
         XCTAssertRecordedElements(observer1.events, [
             try! DataStateStateMachine

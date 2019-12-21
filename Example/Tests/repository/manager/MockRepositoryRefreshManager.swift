@@ -6,7 +6,7 @@ internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDel
     var invokedRefreshBegin = false
     var invokedRefreshBeginCount = 0
     var invokedRefreshBeginThen: (() -> Void)?
-    func refreshBegin() {
+    func refreshBegin(requirements: RepositoryRequirements) {
         invokedRefreshBegin = true
         invokedRefreshBeginCount += 1
         invokedRefreshBeginThen?()
@@ -15,14 +15,22 @@ internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDel
     var invokedRefreshComplete = false
     var invokedRefreshCompleteCount = 0
     var invokedRefreshCompleteThen: (() -> Void)?
-    func refreshComplete<String>(_ response: FetchResponse<String>) {
+    func refreshComplete<String>(_ response: FetchResponse<String>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
         invokedRefreshComplete = true
         invokedRefreshCompleteCount += 1
         invokedRefreshCompleteThen?()
+
+        onComplete()
     }
 }
 
-internal class MockRepositoryRefreshManager<FetchResponseDataType: Any>: RepositoryRefreshManager {
+internal class MockRepositoryRefreshManager: RepositoryRefreshManager {
+    init() {
+        // Set default delegate so that tests can complete, by default.
+        // func refreshComplete<String>(_ response: FetchResponse<String>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void), the onComplete() param needs to be called for the tests to complete.
+        self.delegate = MockRepositoryRefreshManagerDelegate()
+    }
+
     var invokedDelegateSetter = false
     var invokedDelegateSetterCount = 0
     var invokedDelegate: RepositoryRefreshManagerDelegate?
@@ -46,14 +54,14 @@ internal class MockRepositoryRefreshManager<FetchResponseDataType: Any>: Reposit
 
     var invokedRefresh = false
     var invokedRefreshCount = 0
-    var invokedRefreshParameters: (task: Single<FetchResponse<FetchResponseDataType>>, Void)?
-    var invokedRefreshParametersList = [(task: Single<FetchResponse<FetchResponseDataType>>, Void)]()
+    var invokedRefreshParameters: (task: Single<FetchResponse<String>>, Void)?
+    var invokedRefreshParametersList = [(task: Single<FetchResponse<String>>, Void)]()
     var stubbedRefreshResult: Single<RefreshResult>!
-    func refresh(task: Single<FetchResponse<FetchResponseDataType>>) -> Single<RefreshResult> {
+    func refresh<Fetch: Any>(task: Single<FetchResponse<Fetch>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
         invokedRefresh = true
         invokedRefreshCount += 1
-        invokedRefreshParameters = (task, ())
-        invokedRefreshParametersList.append((task, ()))
+        invokedRefreshParameters = (task, ()) as! (task: Single<FetchResponse<String>>, Void)
+        invokedRefreshParametersList.append((task as! Single<FetchResponse<String>>, ()))
         return stubbedRefreshResult
     }
 

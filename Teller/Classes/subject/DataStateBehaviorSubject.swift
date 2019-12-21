@@ -67,7 +67,19 @@ internal class DataStateBehaviorSubject<DataType: Any> {
         dataState = DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
     }
 
-    func changeState(_ change: (DataStateStateMachine<DataType>) -> DataState<DataType>) {
+    func changeState(requirements: RepositoryRequirements, change: (DataStateStateMachine<DataType>) -> DataState<DataType>) {
+        guard let existingRequirements = dataState.requirements else {
+            return
+        }
+
+        guard existingRequirements.tag == requirements.tag else {
+            return
+        }
+
+        guard !dataState.isNone else {
+            fatalError("data state cannot be none. Reset it to another state, then change it.")
+        }
+
         dataState = change(dataState.stateMachine!)
     }
 }

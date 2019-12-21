@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Period {
+public struct Period: Equatable {
     public let unit: Int
     public let component: Calendar.Component
 

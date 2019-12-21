@@ -71,8 +71,8 @@ class RepositoryDataSourceMockTest: XCTestCase {
         let firstActualMaxAgeOfCache = dataSource.maxAgeOfCache
         let secondActualMaxAgeOfCache = dataSource.maxAgeOfCache
 
-        XCTAssertEqualDate(firstActualMaxAgeOfCache.toDate(), expectedInvocations[0].toDate())
-        XCTAssertEqualDate(secondActualMaxAgeOfCache.toDate(), expectedInvocations[1].toDate())
+        XCTAssertEqual(firstActualMaxAgeOfCache, expectedInvocations[0])
+        XCTAssertEqual(secondActualMaxAgeOfCache, expectedInvocations[1])
     }
 
     // MARK: - fetchFreshCache

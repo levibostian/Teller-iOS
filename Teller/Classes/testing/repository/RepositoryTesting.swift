@@ -44,9 +44,7 @@ public class RepositoryTesting {
             setValues = SetValues(lastFetched: lastFetched)
 
             if let proposedCache = proposedState.cache {
-                let saveCacheQueue = repository.saveFetchedDataSerialQueue
-
-                saveCacheQueue.async {
+                DispatchQueue.global(qos: .background).async {
                     try! repository.dataSource.saveCache(proposedCache, requirements: requirements)
 
                     onComplete(setValues)
