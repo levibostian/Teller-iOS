@@ -1,3 +1,11 @@
+## [0.5.1] - 12-20-19
+
+### Fixed
+- Cache state machine crash, traveling to incorrect node. [Issue](https://github.com/levibostian/Teller-iOS/issues/64)
+
+### Changed 
+- Repository internal refresh calls added to Rx dispose bag to cancel on deinit. 
+
 ## [0.5.0] - 11-25-19
 
 ### Added 
