@@ -31,8 +31,8 @@ public class RepositoryDataSourceMock<Cache: Any, Requirements: RepositoryRequir
     }
 
     public var fetchFreshCacheInvocations: [Requirements] = []
-    public var fetchFreshCacheClosure: ((Requirements) -> Single<FetchResponse<FetchResult>>)?
-    public func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult>> {
+    public var fetchFreshCacheClosure: ((Requirements) -> Single<FetchResponse<FetchResult, Error>>)?
+    public func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult, Error>> {
         mockCalled = true
         fetchFreshCacheCallsCount += 1
         fetchFreshCacheInvocations.append(requirements)

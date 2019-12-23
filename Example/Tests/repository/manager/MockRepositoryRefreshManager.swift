@@ -15,7 +15,7 @@ internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDel
     var invokedRefreshComplete = false
     var invokedRefreshCompleteCount = 0
     var invokedRefreshCompleteThen: (() -> Void)?
-    func refreshComplete<String>(_ response: FetchResponse<String>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
+    func refreshComplete<String, Error>(_ response: FetchResponse<String, Error>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
         invokedRefreshComplete = true
         invokedRefreshCompleteCount += 1
         invokedRefreshCompleteThen?()
@@ -54,14 +54,14 @@ internal class MockRepositoryRefreshManager: RepositoryRefreshManager {
 
     var invokedRefresh = false
     var invokedRefreshCount = 0
-    var invokedRefreshParameters: (task: Single<FetchResponse<String>>, Void)?
-    var invokedRefreshParametersList = [(task: Single<FetchResponse<String>>, Void)]()
+    var invokedRefreshParameters: (task: Single<FetchResponse<String, Error>>, Void)?
+    var invokedRefreshParametersList = [(task: Single<FetchResponse<String, Error>>, Void)]()
     var stubbedRefreshResult: Single<RefreshResult>!
-    func refresh<Fetch: Any>(task: Single<FetchResponse<Fetch>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
+    func refresh<Fetch: Any, ErrorType: Error>(task: Single<FetchResponse<Fetch, ErrorType>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
         invokedRefresh = true
         invokedRefreshCount += 1
-        invokedRefreshParameters = (task, ()) as! (task: Single<FetchResponse<String>>, Void)
-        invokedRefreshParametersList.append((task as! Single<FetchResponse<String>>, ()))
+        invokedRefreshParameters = (task, ()) as! (task: Single<FetchResponse<String, Error>>, Void)
+        invokedRefreshParametersList.append((task as! Single<FetchResponse<String, Error>>, ()))
         return stubbedRefreshResult
     }
 

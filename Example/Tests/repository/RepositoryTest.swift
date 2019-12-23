@@ -94,7 +94,7 @@ class RepositoryTest: XCTestCase {
             .fetchingFreshCache()
     }
 
-    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String>> = Single.never()) -> MockRepositoryDataSource.FakeData {
+    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String, Error>> = Single.never()) -> MockRepositoryDataSource.FakeData {
         return MockRepositoryDataSource.FakeData(isDataEmpty: isDataEmpty, observeCachedData: observeCachedData, fetchFreshData: fetchFreshData)
     }
 
@@ -228,7 +228,7 @@ class RepositoryTest: XCTestCase {
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
         refreshManager = mockRefreshManager
 
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
@@ -332,7 +332,7 @@ class RepositoryTest: XCTestCase {
     }
 
     func test_saveCacheDataIsCalledOnBackgroundThread() {
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
@@ -373,7 +373,7 @@ class RepositoryTest: XCTestCase {
         mockRefreshManager.stubbedRefreshResult = stubbedRefreshResultObservable
         refreshManager = mockRefreshManager
 
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
         initDataSource(fakeData: getDataSourceFakeData(fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
@@ -415,7 +415,7 @@ class RepositoryTest: XCTestCase {
 
         let newlyFetchedCache = "new cache"
 
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: true, hasEverFetchedData: true, lastTimeFetchedData: existingCacheLastTimeFethed))
         let observeCacheDataObservable = BehaviorSubject<String>.init(value: existingCache)
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCacheDataObservable, fetchFreshData: fetchFreshDataSubject.asSingle()))
@@ -453,7 +453,7 @@ class RepositoryTest: XCTestCase {
         dataSource.saveDataThen = { newCache in
             observeCacheDataObservable.on(.next(newCache))
         }
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(newlyFetchedCache))
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.success(newlyFetchedCache))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: 1.0, handler: nil)
@@ -527,7 +527,7 @@ class RepositoryTest: XCTestCase {
 
     func test_forceRefreshStartsRefreshEvenIfDataNotTooOld() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
-        let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshData = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshData.asSingle()))
         initRepository()
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
@@ -544,7 +544,7 @@ class RepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshData.onNext(FetchResponse<String>.success("new data"))
+        fetchFreshData.onNext(FetchResponse<String, Error>.success("new data"))
         fetchFreshData.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -574,7 +574,7 @@ class RepositoryTest: XCTestCase {
     // when Repository.refresh() called and completed, you should be guaranteed that all operations are complete for the refresh, including saving of the cache.
     func test_refresh_expectAllOperationsDoneWhenRefreshComplete() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
-        let fetchFreshData = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshData = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just("cache"), fetchFreshData: fetchFreshData.asSingle()))
         initRepository()
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
@@ -598,14 +598,14 @@ class RepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshData.onNext(FetchResponse<String>.success(newlyFetchedData))
+        fetchFreshData.onNext(FetchResponse<String, Error>.success(newlyFetchedData))
         fetchFreshData.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_failedFirstFetchDoesNotBeginObservingCache() {
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         let firstFetchFail = Fail()
 
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
@@ -637,14 +637,14 @@ class RepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.failure(firstFetchFail))
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.failure(firstFetchFail))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_failUpdateExistingCache_continueToReceiveCacheUpdates() {
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         let fetchFail = Fail()
 
         let existingCache = "old cache"
@@ -685,14 +685,14 @@ class RepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.failure(fetchFail))
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.failure(fetchFail))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_successfulFirstFetch_beginObservingCache() {
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         let firstFetchData = "new cache"
         let firstFetchTime = Date()
         let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
@@ -745,7 +745,7 @@ class RepositoryTest: XCTestCase {
 
         repository.requirements = requirements
 
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(firstFetchData))
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.success(firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -755,7 +755,7 @@ class RepositoryTest: XCTestCase {
     func test_multipleRepositoryInstances_firstFetch() {
         let firstFetchTime = Date()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: false, lastTimeFetchedData: firstFetchTime))
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         let firstDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let firstRefreshManager: RepositoryRefreshManager = AppRepositoryRefreshManager()
 
@@ -785,7 +785,7 @@ class RepositoryTest: XCTestCase {
 
         wait(for: [expectFirstRepoToBeginFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
-        let secondFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let secondFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         let secondDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let secondRefreshManager: AppRepositoryRefreshManager = AppRepositoryRefreshManager()
 
@@ -813,20 +813,20 @@ class RepositoryTest: XCTestCase {
             true
         }
         let firstFetchData = "first fetch"
-        fetchFreshDataSubject.onNext(FetchResponse<String>.success(firstFetchData))
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.success(firstFetchData))
         fetchFreshDataSubject.onCompleted()
 
         wait(for: [expectFirstRepoToSuccessfullyFinishFirstFetch], timeout: TestConstants.AWAIT_DURATION)
 
         let secondFetchData = "second fetch"
-        secondFreshDataSubject.onNext(FetchResponse<String>.success(secondFetchData))
+        secondFreshDataSubject.onNext(FetchResponse<String, Error>.success(secondFetchData))
         secondFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     func test_firstFetch_failSavingNewCache_expectObserveError() {
-        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String>>.createUnbounded()
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false, lastTimeFetchedData: Date()))
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()

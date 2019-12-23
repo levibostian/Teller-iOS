@@ -6,6 +6,7 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
     typealias Cache = String
     typealias Requirements = MockRequirements
     typealias FetchResult = String
+    typealias FetchError = Error
 
     var fetchFreshDataCount = 0
     var fetchFreshDataRequirements: MockRequirements?
@@ -24,7 +25,7 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
         self.maxAgeOfCache = maxAgeOfCache
     }
 
-    func fetchFreshCache(requirements: MockRequirements) -> Single<FetchResponse<String>> {
+    func fetchFreshCache(requirements: MockRequirements) -> Single<FetchResponse<String, FetchError>> {
         fetchFreshDataCount += 1
         fetchFreshDataRequirements = requirements
         return fakeData.fetchFreshData
@@ -49,7 +50,7 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
     struct FakeData {
         var isDataEmpty: Bool
         var observeCachedData: Observable<String>
-        var fetchFreshData: Single<FetchResponse<String>>
+        var fetchFreshData: Single<FetchResponse<String, Error>>
     }
 
     struct MockRequirements: RepositoryRequirements, Equatable {

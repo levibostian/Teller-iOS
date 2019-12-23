@@ -202,7 +202,7 @@ extension Repository: RepositoryRefreshManagerDelegate {
     }
 
     // called on background thread
-    internal func refreshComplete<FetchResponseData>(_ response: FetchResponse<FetchResponseData>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
+    internal func refreshComplete<FetchResponseData, ErrorType>(_ response: FetchResponse<FetchResponseData, ErrorType>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
         let requirements = requirements as! DataSource.Requirements // swiftlint:disable:this force_cast
 
         switch response {

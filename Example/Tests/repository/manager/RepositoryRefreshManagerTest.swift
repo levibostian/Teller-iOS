@@ -35,7 +35,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         expectOnlyOneRefreshTaskToBeObserved.expectedFulfillmentCount = 1
         expectOnlyOneRefreshTaskToBeObserved.assertForOverFulfill = true
 
-        let observer1RefreshTask: Single<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observer1RefreshTask: Single<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
             .asSingle()
             .do(onSubscribe: {
                 expectOnlyOneRefreshTaskToBeObserved.fulfill()
@@ -44,7 +44,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let observer1 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
         let observer2 = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
 
-        let observer2RefreshTask: Single<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observer2RefreshTask: Single<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
             .asSingle()
             .do(onSubscribe: {
                 expectOnlyOneRefreshTaskToBeObserved.fulfill()
@@ -85,7 +85,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
 
         refreshManager.delegate = delegate
 
-        let observer1RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observer1RefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let expectObserver1ToSubscribeToRefresh = expectation(description: "Expect observer1 to subscribe to refresh observer.")
         let expectObserver1ToReceiveRefreshResultSuccessfulEvent = expectation(description: "Expect observer1 to receive successful sync result after fetch.")
@@ -118,7 +118,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
                    expectObserver1ToReceiveRefreshResultSuccessfulEvent,
                    expectObserver1ToComplete], timeout: TestConstants.AWAIT_DURATION)
 
-        let observer2RefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observer2RefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let fetchResponseError = Fail()
 
@@ -170,7 +170,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
 
         refreshManager.delegate = delegate
 
-        let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observerRefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let expectObserverToSubscribeToRefresh = expectation(description: "Expect observer to subscribe to refresh observer.")
         let expectObserverToReceiveRefreshResultSkippedEvent = expectation(description: "Expect observer to receive fetch response to be skipped.")
@@ -224,7 +224,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
 
         refreshManager.delegate = delegate
 
-        let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observerRefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let expectObserverToSubscribeToRefresh = expectation(description: "Expect observer to subscribe to refresh observer.")
         let expectObserverToReceiveRefreshResultSkippedEvent = expectation(description: "Expect observer to receive fetch response to be skipped.")
@@ -278,14 +278,14 @@ class RepositoryRefreshManagerTest: XCTestCase {
         }
         refreshManager.delegate = delegate
 
-        let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observerRefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
         compositeDisposable += refreshManager.refresh(task: observerRefreshTask.asSingle(), requirements: defaultRequirements)
             .asObservable()
             .subscribe(observer)
 
-        observerRefreshTask.onNext(FetchResponse<String>.success("cache"))
+        observerRefreshTask.onNext(FetchResponse<String, Error>.success("cache"))
         observerRefreshTask.onCompleted()
 
         wait(for: [expectDelegateRefreshBegin,
@@ -293,7 +293,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
     }
 
     func test_refresh_observerCallsInCorrectOrder() {
-        let observerRefreshTask: ReplaySubject<FetchResponse<String>> = ReplaySubject.createUnbounded()
+        let observerRefreshTask: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
 
         let expectObserverToSubscribeToRefresh = expectation(description: "Expect observer to subscribe to refresh observer.")
         let expectObserverToReceiveResultSuccessful = expectation(description: "Expect observer to receive fetch response to be successful.")
@@ -313,7 +313,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
             })
             .subscribe(observer)
 
-        observerRefreshTask.onNext(FetchResponse<String>.success("cache"))
+        observerRefreshTask.onNext(FetchResponse<String, Error>.success("cache"))
         observerRefreshTask.onCompleted()
 
         wait(for: [expectObserverToSubscribeToRefresh,
@@ -325,7 +325,7 @@ class RepositoryRefreshManagerTest: XCTestCase {
         let expectRefreshObserverToReceiveError = expectation(description: "Expect observer to receive error from fetch")
         let expectRefreshObserverToDispose = expectation(description: "Expct observer to dispose after error received.")
 
-        let refreshTask: PublishSubject<FetchResponse<String>> = PublishSubject()
+        let refreshTask: PublishSubject<FetchResponse<String, Error>> = PublishSubject()
 
         let fetchFail = Fail()
 

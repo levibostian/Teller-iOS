@@ -11,6 +11,7 @@ public protocol RepositoryDataSource {
     associatedtype Cache: Any
     associatedtype Requirements: RepositoryRequirements
     associatedtype FetchResult: Any
+    associatedtype FetchError: Error
 
     var maxAgeOfCache: Period { get }
 
@@ -21,7 +22,7 @@ public protocol RepositoryDataSource {
 
      **Called on a background thread.**
      */
-    func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult>>
+    func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult, FetchError>>
 
     /**
      * Save the cacheData to whatever storage method Repository chooses.
