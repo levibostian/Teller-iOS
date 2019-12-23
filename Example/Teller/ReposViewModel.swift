@@ -14,6 +14,18 @@ class ReposViewModel {
             .observeOn(MainScheduler.instance)
     }
 
+    func observeRepoNames() -> Observable<DataState<[String]>> {
+        return reposRepository.observe()
+            .map { (dataState) -> DataState<[String]> in
+                dataState.convert { (repos) -> [String]? in
+                    repos?.map { (repo) -> String in
+                        repo.name
+                    }
+                }
+            }
+            .observeOn(MainScheduler.instance)
+    }
+
     func setReposToObserve(username: String) {
         reposRepository.requirements = ReposRepositoryDataSource.Requirements(username: username)
     }

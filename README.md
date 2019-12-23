@@ -223,6 +223,22 @@ repository.refresh(force: true)
         .subscribe()
 ```
 
+## Convert cache type
+
+If you ever find yourself with an instance of `DataState<A>` and you want to convert it to type `DataState<B>`, this is what you do:
+
+```swift
+repository.observe()
+.map { (dataState) -> DataState<B> in
+    dataState.convert { (a) -> B? in
+        guard let a = a else { return nil }
+        B(a: a)
+    }
+}
+```
+
+Pretty simple. When you `observe()` a `Repository`, call `convert()` on the instance of `DataState` to change to a different cache type. 
+
 # Testing 
 
 Teller was built with unit/integration/UI testing in mind. Here is how to use Teller in your tests:

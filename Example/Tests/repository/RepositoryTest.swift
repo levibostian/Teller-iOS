@@ -873,5 +873,33 @@ class RepositoryTest: XCTestCase {
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
+    func test_observeCache_givenCache_castToOtherType_expectNewCache() {
+        let lastFetched = Date()
+        let existingCache = "1"
+        let expectedNewCache: Double = Double(existingCache)!
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: lastFetched))
+        initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache)))
+        initRepository()
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        let expectedCache = try! DataStateStateMachine<Double>.cacheExists(requirements: repository.requirements!, lastTimeFetched: lastFetched).change()
+            .cachedData(expectedNewCache)
+
+        let expectToObserveCache = expectation(description: "Expect to observe cache")
+        compositeDisposable += repository.observe()
+            .map { (cacheState) -> DataState<Double> in
+                cacheState.convert { (existingCache) -> Double? in
+                    expectedNewCache
+                }
+            }
+            .subscribe(onNext: { state in
+                if state == expectedCache {
+                    expectToObserveCache.fulfill()
+                }
+            })
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
+
     private class Fail: Error {}
 }

@@ -20,13 +20,33 @@ public struct DataState<DataType: Any> {
     let isFetchingFreshData: Bool
 
     let requirements: RepositoryRequirements?
-    let stateMachine: DataStateStateMachine<DataType>?
+    internal let stateMachine: DataStateStateMachine<DataType>?
 
     // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of data, the following properties should be set once in the constuctor and then for future state calls, negate them.
     let errorDuringFirstFetch: Error?
     let justCompletedSuccessfulFirstFetch: Bool
     let errorDuringFetch: Error?
     let justCompletedSuccessfullyFetchingFreshData: Bool
+
+    /**
+     Used to take a cache and use that to convert to a different type. *Not used internally* in the library. Only used when observing a cache and you want to be able to conver it to another type.
+     */
+    public func convert<NewDataType: Any>(_ convert: (DataType?) -> NewDataType?) -> DataState<NewDataType> {
+        let newCache: NewDataType? = convert(cacheData)
+
+        /// Notice that because this function is not used internally in the library, we provide `nil` as the state machine because that does not matter.
+        return DataState<NewDataType>(noCacheExists: noCacheExists,
+                                      fetchingForFirstTime: fetchingForFirstTime,
+                                      cacheData: newCache,
+                                      lastTimeFetched: lastTimeFetched,
+                                      isFetchingFreshData: isFetchingFreshData,
+                                      requirements: requirements,
+                                      stateMachine: nil,
+                                      errorDuringFirstFetch: errorDuringFirstFetch,
+                                      justCompletedSuccessfulFirstFetch: justCompletedSuccessfulFirstFetch,
+                                      errorDuringFetch: errorDuringFetch,
+                                      justCompletedSuccessfullyFetchingFreshData: justCompletedSuccessfullyFetchingFreshData)
+    }
 
     internal var isNone: Bool {
         return cacheExists && lastTimeFetched == nil
