@@ -1,3 +1,11 @@
+## [0.6.0] - 12-23-19
+
+### Added
+- Convert instances of `DataState` to another data type with `convert()`
+
+### Fixed
+- Allow `DataSource` instances to define Error type from fetching
+
 ## [0.5.1] - 12-20-19
 
 ### Fixed
