@@ -145,7 +145,7 @@ class RepositoryDataSourceMockTest: XCTestCase {
     }
 
     func test_fetchFreshCache_expectReturnsFromClosure() {
-        var givenInvocations: [FetchResponse<String>] = [
+        var givenInvocations: [FetchResponse<String, Error>] = [
             FetchResponse.success("first"),
             FetchResponse.success("second")
         ]
@@ -155,10 +155,10 @@ class RepositoryDataSourceMockTest: XCTestCase {
             Single.just(givenInvocations.removeFirst())
         }
 
-        let actualFirstResult: FetchResponse<String> = try! dataSource.fetchFreshCache(requirements: defaultRequirements).toBlocking().first()!
+        let actualFirstResult: FetchResponse<String, Error> = try! dataSource.fetchFreshCache(requirements: defaultRequirements).toBlocking().first()!
         XCTAssertEqual(try actualFirstResult.get(), try expectedInvocations[0].get())
 
-        let actualSecondResult: FetchResponse<String> = try! dataSource.fetchFreshCache(requirements: defaultRequirements).toBlocking().first()!
+        let actualSecondResult: FetchResponse<String, Error> = try! dataSource.fetchFreshCache(requirements: defaultRequirements).toBlocking().first()!
         XCTAssertEqual(try actualSecondResult.get(), try expectedInvocations[1].get())
     }
 

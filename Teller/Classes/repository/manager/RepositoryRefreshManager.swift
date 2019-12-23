@@ -5,12 +5,12 @@ internal protocol RepositoryRefreshManagerDelegate: AnyObject {
     func refreshBegin(requirements: RepositoryRequirements)
     // Meaning network call was completed. The `FetchResponse` could still have a failure inside.
     // If the refresh request gets cancelled or skipped for any reason, this does *not* get called.
-    func refreshComplete<FetchResponseData: Any>(_ response: FetchResponse<FetchResponseData>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void)
+    func refreshComplete<FetchResponseData: Any, ErrorType: Error>(_ response: FetchResponse<FetchResponseData, ErrorType>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void)
 }
 
 internal protocol RepositoryRefreshManager {
     var delegate: RepositoryRefreshManagerDelegate? { get set }
-    func refresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) -> Single<RefreshResult>
+    func refresh<FetchResponseData: Any, ErrorType: Error>(task: Single<FetchResponse<FetchResponseData, ErrorType>>, requirements: RepositoryRequirements) -> Single<RefreshResult>
     func cancelRefresh()
 }
 
@@ -47,7 +47,7 @@ internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
         cancelRefresh()
     }
 
-    func refresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
+    func refresh<FetchResponseData: Any, ErrorType: Error>(task: Single<FetchResponse<FetchResponseData, ErrorType>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
         var refreshSubCopy: ReplaySubject<RefreshResult>!
 
         refreshSubjectQueue.sync {
@@ -65,7 +65,7 @@ internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
         return refreshSubCopy.asSingle()
     }
 
-    private func _runRefresh<FetchResponseData: Any>(task: Single<FetchResponse<FetchResponseData>>, requirements: RepositoryRequirements) {
+    private func _runRefresh<FetchResponseData: Any, ErrorType: Error>(task: Single<FetchResponse<FetchResponseData, ErrorType>>, requirements: RepositoryRequirements) {
         task
             .do(onSubscribe: { [weak self] in // Do not use `onSubscribed` as it triggers the update *after* the fetch is complete in tests instead of before.
                 self?.delegate?.refreshBegin(requirements: requirements)
