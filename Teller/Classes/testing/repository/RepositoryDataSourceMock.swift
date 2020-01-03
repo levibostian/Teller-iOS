@@ -13,6 +13,19 @@ public class RepositoryDataSourceMock<Cache: Any, Requirements: RepositoryRequir
 
     public var mockCalled: Bool = false // if *any* interactions done on mock. Sets/gets or methods called.
 
+    public var automaticallyRefreshCallsCount = 0
+    public var automaticallyRefreshCalled: Bool {
+        return automaticallyRefreshCallsCount > 0
+    }
+
+    public var automaticallyRefreshClosure: (() -> Bool)?
+    public var automaticallyRefresh: Bool {
+        mockCalled = true
+        automaticallyRefreshCallsCount += 1
+        // return default value, just like the real RepositoryDataSource does.
+        return automaticallyRefreshClosure?() ?? true
+    }
+
     public var maxAgeOfCacheCallsCount = 0
     public var maxAgeOfCacheCalled: Bool {
         return maxAgeOfCacheCallsCount > 0

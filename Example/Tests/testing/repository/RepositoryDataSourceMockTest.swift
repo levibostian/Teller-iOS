@@ -75,6 +75,77 @@ class RepositoryDataSourceMockTest: XCTestCase {
         XCTAssertEqual(secondActualMaxAgeOfCache, expectedInvocations[1])
     }
 
+    // MARK: - automaticallyRefresh
+
+    func test_automaticallyRefresh_expectReturnDefaultValueWhenCalled() {
+        let expected = true
+        let actual = dataSource.automaticallyRefresh
+
+        XCTAssertEqual(expected, actual)
+    }
+
+    func test_automaticallyRefresh_expectMockOnlyAfterSet() {
+        dataSource.automaticallyRefreshClosure = {
+            true
+        }
+
+        XCTAssertFalse(dataSource.mockCalled)
+
+        _ = dataSource.automaticallyRefresh
+
+        XCTAssertTrue(dataSource.mockCalled)
+    }
+
+    func test_automaticallyRefresh_expectCalledOnlyAfterSet() {
+        dataSource.automaticallyRefreshClosure = {
+            true
+        }
+
+        XCTAssertFalse(dataSource.automaticallyRefreshCalled)
+
+        _ = dataSource.automaticallyRefresh
+
+        XCTAssertTrue(dataSource.automaticallyRefreshCalled)
+
+        _ = dataSource.automaticallyRefresh
+
+        XCTAssertTrue(dataSource.automaticallyRefreshCalled)
+    }
+
+    func test_automaticallyRefresh_expectCalledCountIncrementAfterSet() {
+        dataSource.automaticallyRefreshClosure = {
+            true
+        }
+
+        XCTAssertEqual(dataSource.automaticallyRefreshCallsCount, 0)
+
+        _ = dataSource.automaticallyRefresh
+
+        XCTAssertEqual(dataSource.automaticallyRefreshCallsCount, 1)
+
+        _ = dataSource.automaticallyRefresh
+
+        XCTAssertEqual(dataSource.automaticallyRefreshCallsCount, 2)
+    }
+
+    func test_automaticallyRefresh_expectGetResultFromClosure() {
+        var givenInvocations: [Bool] = [
+            false,
+            true
+        ]
+        let expectedInvocations = givenInvocations
+
+        dataSource.automaticallyRefreshClosure = {
+            givenInvocations.removeFirst()
+        }
+
+        let firstActualMaxAgeOfCache = dataSource.automaticallyRefresh
+        let secondActualMaxAgeOfCache = dataSource.automaticallyRefresh
+
+        XCTAssertEqual(firstActualMaxAgeOfCache, expectedInvocations[0])
+        XCTAssertEqual(secondActualMaxAgeOfCache, expectedInvocations[1])
+    }
+
     // MARK: - fetchFreshCache
 
     func test_fetchFreshCache_expectMockOnlyAfterSet() {
