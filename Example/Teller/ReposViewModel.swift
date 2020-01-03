@@ -14,6 +14,10 @@ class ReposViewModel {
             .observeOn(MainScheduler.instance)
     }
 
+    func assertReposCacheExists() -> Single<RefreshResult> {
+        return try! reposRepository.refreshIfNoCache()
+    }
+
     func observeRepoNames() -> Observable<DataState<[String]>> {
         return reposRepository.observe()
             .map { (dataState) -> DataState<[String]> in

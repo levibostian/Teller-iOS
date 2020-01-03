@@ -204,17 +204,39 @@ Teller provides a simple method to refresh your `Repository`'s cache while in th
 let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
 repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 
-repository.refresh(force: false)
+try! repository.refresh(force: false)
         .subscribe()
 ```
 
 *Note: You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically.*
 
+## Perform a refresh only when there is no existing cache
+
+If your app will not function without a cache, use the convenient `refreshIfNoCache()` function to perform a `refresh()` call *only if* a cache does not already exist for that data source. This is great when your app first starts up after fresh install to download a cache to make your app function. 
+
+Call `refreshIfNoCache()` and when the response is `.successful`, you know that a cache exists. `.successful` will be returned *instantly* if a cache already exists or asynchronously after a successful refresh is complete and the cache exists. 
+
+```swift
+let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
+
+try! repository.refreshIfNoCache()
+    .subscribe(onSuccess: { (refreshResult) in
+        if case .successful = refreshResult {
+            // Cache does exist.
+        } else {
+            // Cache does not exist. View the error in `refreshResult` to see why the refresh attempt failed.
+        }
+    })
+```
+
+*Note: A cache existing does not determine if a cache is empty or not. A cache exists if it has been successfully fetched at least 1 time before.*
+
 ## Manual refresh of cache
 
 Do you have a `UITableView` with pull-to-refresh enabled? Do you have a refresh button in your `UINavigationBar` that you want your users to refresh the data when it's pressed? 
 
-No problem. Tell your Teller `Repository` instance to force refresh:
+No problem. Tell your Teller `Repository` instance to *force* refresh:
 
 ```swift
 let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
