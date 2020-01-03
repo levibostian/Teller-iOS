@@ -120,6 +120,27 @@ public class Repository<DataSource: RepositoryDataSource> {
         return try _refresh(force: force, requirements: requirements)
     }
 
+    /**
+     ### Perform a refresh only if a cache does not yet exist.
+
+     Ideal in these scenarios:
+     * App opened for the first time and it cannot operate without a cache.
+
+     - Returns: A Single<RefreshResult> that notifies you asynchronously with how the refresh performed (successful or failed). If a cache exists, RefreshResult.successful will be returned. That way all you need to do is check for `RefreshResult.successful` if a cache exists or not.
+     - Throws: TellerError.objectPropertiesNotSet if you did not set `requirements` before calling this function.
+     */
+    public func refreshIfNoCache() throws -> Single<RefreshResult> {
+        guard let requirements = self.requirements else {
+            throw TellerError.objectPropertiesNotSet(["requirements"])
+        }
+
+        guard !syncStateManager.hasEverFetchedData(tag: requirements.tag) else {
+            return Single.just(RefreshResult.successful)
+        }
+
+        return try refresh(force: false)
+    }
+
     private func _refresh(force: Bool, requirements: DataSource.Requirements) throws -> Single<RefreshResult> {
         if force || !syncStateManager.hasEverFetchedData(tag: requirements.tag) || syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: dataSource.maxAgeOfCache) {
             return refreshManager.refresh(task: dataSource.fetchFreshCache(requirements: requirements), requirements: requirements)

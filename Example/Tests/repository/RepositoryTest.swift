@@ -124,6 +124,14 @@ class RepositoryTest: XCTestCase {
         XCTAssertThrowsError(try repository.refresh(force: true).asObservable().subscribe(observer).dispose())
     }
 
+    func test_refreshIfNoCache_requirementsNotSet_throwError() {
+        initRepository()
+        repository.requirements = nil
+
+        let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
+        XCTAssertThrowsError(try repository.refreshIfNoCache().asObservable().subscribe(observer).dispose())
+    }
+
     func test_init() {
         initDataSource(fakeData: getDataSourceFakeData())
         repository = Repository(dataSource: dataSource)
@@ -899,6 +907,39 @@ class RepositoryTest: XCTestCase {
             })
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
+
+    func test_refreshIfNoCache_givenCacheDoesNotExist_expectRefresh() {
+        let givenFailure = Fail()
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
+        initDataSource(fakeData: getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse<String, Error>.failure(givenFailure))))
+        initRepository()
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        syncStateManager.updateAgeOfDataListener = { () -> Bool? in
+            true
+        }
+
+        let actual = try! repository.refreshIfNoCache()
+            .toBlocking()
+            .first()!
+
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 2) // 2 refresh calls. One when set requirements, second when call `refreshIfNoCache()`
+        XCTAssertEqual(actual, RefreshResult.failedError(error: givenFailure))
+    }
+
+    func test_refreshIfNoCache_givenCacheDoesExist_expectNoRefresh() {
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: getDataSourceFakeData(fetchFreshData: Single.just(FetchResponse<String, Error>.success(""))))
+        initRepository()
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        let actual = try! repository.refreshIfNoCache()
+            .toBlocking()
+            .first()!
+
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 0)
+        XCTAssertEqual(actual, .successful)
     }
 
     private class Fail: Error {}

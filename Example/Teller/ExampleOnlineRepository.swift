@@ -101,4 +101,24 @@ class ExampleUsingOnlineRepository {
             })
             .disposed(by: disposeBag)
     }
+
+    func refreshIfNoCache() {
+        let disposeBag = DisposeBag()
+        let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+
+        let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
+        repository.requirements = reposGetDataRequirements
+        try! repository
+            .refreshIfNoCache()
+            .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribeOn(MainScheduler.instance)
+            .subscribe(onSuccess: { refreshResult in
+                if case .successful = refreshResult {
+                    // Cache does exist.
+                } else {
+                    // Cache does not exist. View the error in `refreshResult` to see why the refresh attempt failed.
+                }
+            })
+            .disposed(by: disposeBag)
+    }
 }
