@@ -1,3 +1,9 @@
+## [0.7.0] - 01-03-2020
+
+### Added 
+- Enable or disable automatic refresh in a Repository. [Issue](https://github.com/levibostian/Teller-iOS/issues/83)
+- Assert that a cache exists, or refresh. [Issue](https://github.com/levibostian/Teller-iOS/issues/82)
+
 ## [0.6.0] - 12-23-19
 
 ### Added
