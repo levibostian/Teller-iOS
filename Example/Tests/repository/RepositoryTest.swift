@@ -94,8 +94,8 @@ class RepositoryTest: XCTestCase {
             .fetchingFreshCache()
     }
 
-    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String, Error>> = Single.never()) -> MockRepositoryDataSource.FakeData {
-        return MockRepositoryDataSource.FakeData(isDataEmpty: isDataEmpty, observeCachedData: observeCachedData, fetchFreshData: fetchFreshData)
+    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String, Error>> = Single.never(), automaticallyRefresh: Bool = true) -> MockRepositoryDataSource.FakeData {
+        return MockRepositoryDataSource.FakeData(automaticallyRefresh: automaticallyRefresh, isDataEmpty: isDataEmpty, observeCachedData: observeCachedData, fetchFreshData: fetchFreshData)
     }
 
     private func getSyncStateManagerFakeData(isDataTooOld: Bool = false, hasEverFetchedData: Bool = false, lastTimeFetchedData: Date? = nil) -> MockRepositorySyncStateManager.FakeData {
@@ -390,6 +390,47 @@ class RepositoryTest: XCTestCase {
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
+    }
+
+    func test_givenAutomaticallyRefreshFalse_setRequirements_refreshDoesNotGetTriggered() {
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
+        initDataSource(fakeData: getDataSourceFakeData(automaticallyRefresh: false))
+        initRepository()
+
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 0)
+    }
+
+    func test_givenAutomaticallyRefreshFalse_observe_refreshDoesNotGetTriggered() {
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(hasEverFetchedData: false))
+        initDataSource(fakeData: getDataSourceFakeData(automaticallyRefresh: false))
+        initRepository()
+
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        _ = try! repository.observe()
+            .toBlocking()
+            .first()
+
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 0)
+    }
+
+    func test_givenAutomaticallyRefreshFalse_existingCacheUpdate_refreshDoesNotGetTriggered() {
+        let existingCache = "existing cache"
+        let observeCachedData = Observable.just(existingCache)
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: getDataSourceFakeData(observeCachedData: observeCachedData, automaticallyRefresh: false))
+        initRepository()
+
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+
+        _ = try! repository.observe()
+            .filter { $0.cacheData == existingCache }
+            .toBlocking()
+            .first()
+
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 0)
     }
 
     func test_cacheExistsButIsTooOld_setRequirementsBeginsFetch() {

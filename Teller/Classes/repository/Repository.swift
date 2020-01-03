@@ -59,9 +59,7 @@ public class Repository<DataSource: RepositoryDataSource> {
         } else {
             currentStateOfData.resetToNoCacheState(requirements: requirements)
             // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
-            refreshDisposeBag += try! _refresh(force: false, requirements: requirements)
-                .subscribeOn(schedulersProvider.background)
-                .subscribe()
+            performAutomaticRefresh(requirements: requirements)
         }
     }
 
@@ -141,6 +139,21 @@ public class Repository<DataSource: RepositoryDataSource> {
         return try refresh(force: false)
     }
 
+    /**
+     One of Teller's conveniences is that it performs `refresh(force: false)` calls for you periodically in times such as (1) when new requirements is set, (2) observe() is called, or (3) a cache update is triggered. This is convenient as it helps keep the cache always up-to-date.
+
+     This is where that functionality exists and will get skipped if the developer decides to opt-out of this behavior.
+     */
+    private func performAutomaticRefresh(requirements: DataSource.Requirements) {
+        guard dataSource.automaticallyRefresh else {
+            return
+        }
+
+        refreshDisposeBag += try! _refresh(force: false, requirements: requirements)
+            .subscribeOn(schedulersProvider.background)
+            .subscribe()
+    }
+
     private func _refresh(force: Bool, requirements: DataSource.Requirements) throws -> Single<RefreshResult> {
         if force || !syncStateManager.hasEverFetchedData(tag: requirements.tag) || syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: dataSource.maxAgeOfCache) {
             return refreshManager.refresh(task: dataSource.fetchFreshCache(requirements: requirements), requirements: requirements)
@@ -176,9 +189,7 @@ public class Repository<DataSource: RepositoryDataSource> {
                     }
 
                     if needsToFetchFreshCache {
-                        self.refreshDisposeBag += try! self._refresh(force: false, requirements: requirements)
-                            .subscribeOn(self.schedulersProvider.background)
-                            .subscribe()
+                        self.performAutomaticRefresh(requirements: requirements)
                     }
                 })
         }
@@ -196,9 +207,7 @@ public class Repository<DataSource: RepositoryDataSource> {
     public func observe() -> Observable<DataState<DataSource.Cache>> {
         if let requirements = requirements {
             // Trigger a refresh to help keep data up-to-date.
-            refreshDisposeBag += try! _refresh(force: false, requirements: requirements)
-                .subscribeOn(schedulersProvider.background)
-                .subscribe()
+            performAutomaticRefresh(requirements: requirements)
         }
 
         return currentStateOfData.subject

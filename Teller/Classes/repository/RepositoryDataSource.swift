@@ -15,6 +15,8 @@ public protocol RepositoryDataSource {
 
     var maxAgeOfCache: Period { get }
 
+    var automaticallyRefresh: Bool { get }
+
     /**
      Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
 
@@ -52,4 +54,17 @@ public protocol RepositoryDataSource {
      **Called on main UI thread.**
      */
     func isCacheEmpty(_ cache: Cache, requirements: Requirements) -> Bool
+}
+
+public extension RepositoryDataSource {
+    /**
+     Enable Teller automatically performing refresh calls on your behalf when the Repository is observed or new requirements are set.
+
+     If `false` is returned, it's the responsibility of the developer to manually call `Repository.refresh()` to keep the cache up-to-date.
+
+     Default is `true`.
+     */
+    var automaticallyRefresh: Bool {
+        return true
+    }
 }

@@ -34,6 +34,11 @@ class ReposRepositoryDataSource: RepositoryDataSource {
 
     var maxAgeOfCache: Period = Period(unit: 5, component: .hour)
 
+    // override default value.
+    var automaticallyRefresh: Bool {
+        return false
+    }
+
     func fetchFreshCache(requirements: ReposRepositoryRequirements) -> Single<FetchResponse<[Repo], FetchError>> {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
@@ -69,7 +74,7 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     }
 }
 
-class ExampleUsingOnlineRepository {
+class ExampleUsingRepository {
     func observe() {
         let disposeBag = DisposeBag()
         let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())

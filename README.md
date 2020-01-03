@@ -262,6 +262,25 @@ repository.observe()
 
 Pretty simple. When you `observe()` a `Repository`, call `convert()` on the instance of `DataState` to change to a different cache type. 
 
+## Enable and disable automatic refresh feature 
+
+One of Teller's conveniences is that it performs `Repository.refresh(force: false)` (notice the automatic refresh is *not* forced to respect the `maxAgeOfCache` to keep network calls to a minimum) calls for you periodically in times such as (1) when new requirements is set on an instance of `RepositoryDataSource`, (2) `Repository.observe()` is called, or (3) a cache update is triggered from the `RepositoryDataSource`. This is convenient as it helps keep the cache always up-to-date.
+
+Because this is convenient, Teller enabled this functionality by default. However, if you wish to disable this feature, you can do so in your `RepositoryDataSource`:
+
+```swift
+class ReposRepositoryDataSource: RepositoryDataSource {
+    // override default value.
+    var automaticallyRefresh: Bool {
+        return false
+    }
+}
+```
+
+It's recommended to keep the default functionality of enabling this feature. However, sometimes you may need control of how often network calls are performed. These scenarios are the scenarios when you would disable this feature. 
+
+*Note: It's your responsibility to keep your `RepositoryDataSource`'s cache up-to-date by manually calling `Repository.refresh()` periodically in your app if you decide to disable this automatic refresh feature.*
+
 # Testing 
 
 Teller was built with unit/integration/UI testing in mind. Here is how to use Teller in your tests:

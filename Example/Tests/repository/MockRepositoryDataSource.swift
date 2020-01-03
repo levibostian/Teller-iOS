@@ -20,6 +20,10 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
     var maxAgeOfCache: Period
     var fakeData: FakeData
 
+    var automaticallyRefresh: Bool {
+        return fakeData.automaticallyRefresh
+    }
+
     init(fakeData: FakeData, maxAgeOfCache: Period) {
         self.fakeData = fakeData
         self.maxAgeOfCache = maxAgeOfCache
@@ -48,6 +52,7 @@ internal class MockRepositoryDataSource: RepositoryDataSource {
     }
 
     struct FakeData {
+        var automaticallyRefresh: Bool
         var isDataEmpty: Bool
         var observeCachedData: Observable<String>
         var fetchFreshData: Single<FetchResponse<String, Error>>
