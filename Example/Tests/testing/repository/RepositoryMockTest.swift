@@ -148,6 +148,72 @@ class RepositoryMockTest: XCTestCase {
         XCTAssertEqual(actualSecondResult, expectedInvocations[1])
     }
 
+    // MARK: - refreshIfNoCache
+
+    func test_refreshIfNoCache_expectMockOnlyAfterSet() {
+        repository.refreshIfNoCacheClosure = {
+            Single.just(RefreshResult.successful)
+        }
+
+        XCTAssertFalse(repository.mockCalled)
+
+        _ = try! repository.refreshIfNoCache()
+
+        XCTAssertTrue(repository.mockCalled)
+    }
+
+    func test_refreshIfNoCache_expectCalledOnlyAfterSet() {
+        repository.refreshIfNoCacheClosure = {
+            Single.just(RefreshResult.successful)
+        }
+
+        XCTAssertFalse(repository.refreshIfNoCacheCalled)
+
+        _ = try! repository.refreshIfNoCache()
+
+        XCTAssertTrue(repository.refreshIfNoCacheCalled)
+
+        _ = try! repository.refreshIfNoCache()
+
+        XCTAssertTrue(repository.refreshIfNoCacheCalled)
+    }
+
+    func test_refreshIfNoCache_expectCalledCountIncrementAfterSet() {
+        repository.refreshIfNoCacheClosure = {
+            Single.just(RefreshResult.successful)
+        }
+
+        XCTAssertEqual(repository.refreshIfNoCacheCallsCount, 0)
+
+        _ = try! repository.refreshIfNoCache()
+
+        XCTAssertEqual(repository.refreshIfNoCacheCallsCount, 1)
+
+        _ = try! repository.refreshIfNoCache()
+
+        XCTAssertEqual(repository.refreshIfNoCacheCallsCount, 2)
+    }
+
+    func test_refreshIfNoCache_expectReturnsFromClosure() {
+        var givenInvocations: [RefreshResult] = [
+            RefreshResult.successful,
+            RefreshResult.skipped(reason: .cancelled)
+        ]
+        let expectedInvocations = givenInvocations
+
+        repository.refreshIfNoCacheClosure = {
+            Single.just(givenInvocations.removeFirst())
+        }
+
+        let actualFirstResult = try! repository.refreshIfNoCache().toBlocking().first()!
+
+        XCTAssertEqual(actualFirstResult, expectedInvocations[0])
+
+        let actualSecondResult = try! repository.refreshIfNoCache().toBlocking().first()!
+
+        XCTAssertEqual(actualSecondResult, expectedInvocations[1])
+    }
+
     // MARK: - observe
 
     func test_observe_expectMockOnlyAfterSet() {
