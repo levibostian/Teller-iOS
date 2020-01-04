@@ -43,6 +43,19 @@ public class RepositoryMock<DataSource: RepositoryDataSource>: Repository<DataSo
         return refreshClosure!(force)
     }
 
+    public var refreshIfNoCacheCallsCount = 0
+    public var refreshIfNoCacheCalled: Bool {
+        return refreshIfNoCacheCallsCount > 0
+    }
+
+    public var refreshIfNoCacheClosure: (() -> Single<RefreshResult>)?
+
+    public override func refreshIfNoCache() throws -> Single<RefreshResult> {
+        mockCalled = true
+        refreshIfNoCacheCallsCount += 1
+        return refreshIfNoCacheClosure!()
+    }
+
     public var observeCallsCount = 0
     public var observeCalled: Bool {
         return observeCallsCount > 0
