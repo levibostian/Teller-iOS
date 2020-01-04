@@ -1,3 +1,10 @@
+## [0.7.1] - 01-04-2020
+
+Forgot to add `refreshIfNoCache` functionality to `RepositoryMock` from 0.7.0 release. 
+
+### Added 
+- Added `refreshIfNoCache` functionality to `RepositoryMock`. 
+
 ## [0.7.0] - 01-03-2020
 
 ### Added 
