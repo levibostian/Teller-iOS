@@ -5,6 +5,7 @@ import XCTest
 
 class RepositoryMockTest: XCTestCase {
     var repository: RepositoryMock<ReposRepositoryDataSource>!
+    let defaultRequirements = ReposRepositoryDataSource.Requirements(username: "")
 
     override func setUp() {
         repository = RepositoryMock(dataSource: ReposRepositoryDataSource())
@@ -68,12 +69,14 @@ class RepositoryMockTest: XCTestCase {
 
         XCTAssertFalse(repository.mockCalled)
 
+        repository.requirements = defaultRequirements
         _ = try! repository.refresh(force: false)
 
         XCTAssertTrue(repository.mockCalled)
     }
 
     func test_refresh_expectCalledOnlyAfterSet() {
+        repository.requirements = defaultRequirements
         repository.refreshClosure = { _ in
             Single.just(RefreshResult.successful)
         }
@@ -90,6 +93,7 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_refresh_expectCalledCountIncrementAfterSet() {
+        repository.requirements = defaultRequirements
         repository.refreshClosure = { _ in
             Single.just(RefreshResult.successful)
         }
@@ -106,6 +110,7 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_refresh_expectInvocationsAppendsAfterSet() {
+        repository.requirements = defaultRequirements
         var givenInvocations: [Bool] = [
             false,
             true
@@ -129,6 +134,7 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_refresh_expectReturnsFromClosure() {
+        repository.requirements = defaultRequirements
         var givenInvocations: [RefreshResult] = [
             RefreshResult.successful,
             RefreshResult.skipped(reason: .cancelled)
@@ -148,6 +154,10 @@ class RepositoryMockTest: XCTestCase {
         XCTAssertEqual(actualSecondResult, expectedInvocations[1])
     }
 
+    func test_refresh_givenNoRequirements_expectThrows() {
+        XCTAssertThrowsError(_ = try repository.refreshIfNoCache().toBlocking().first())
+    }
+
     // MARK: - refreshIfNoCache
 
     func test_refreshIfNoCache_expectMockOnlyAfterSet() {
@@ -157,12 +167,14 @@ class RepositoryMockTest: XCTestCase {
 
         XCTAssertFalse(repository.mockCalled)
 
+        repository.requirements = defaultRequirements
         _ = try! repository.refreshIfNoCache()
 
         XCTAssertTrue(repository.mockCalled)
     }
 
     func test_refreshIfNoCache_expectCalledOnlyAfterSet() {
+        repository.requirements = defaultRequirements
         repository.refreshIfNoCacheClosure = {
             Single.just(RefreshResult.successful)
         }
@@ -179,6 +191,7 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_refreshIfNoCache_expectCalledCountIncrementAfterSet() {
+        repository.requirements = defaultRequirements
         repository.refreshIfNoCacheClosure = {
             Single.just(RefreshResult.successful)
         }
@@ -195,6 +208,7 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_refreshIfNoCache_expectReturnsFromClosure() {
+        repository.requirements = defaultRequirements
         var givenInvocations: [RefreshResult] = [
             RefreshResult.successful,
             RefreshResult.skipped(reason: .cancelled)
@@ -212,6 +226,10 @@ class RepositoryMockTest: XCTestCase {
         let actualSecondResult = try! repository.refreshIfNoCache().toBlocking().first()!
 
         XCTAssertEqual(actualSecondResult, expectedInvocations[1])
+    }
+
+    func test_refreshIfNoCache_givenNoRequirements_expectThrows() {
+        XCTAssertThrowsError(_ = try repository.refreshIfNoCache().toBlocking().first())
     }
 
     // MARK: - observe

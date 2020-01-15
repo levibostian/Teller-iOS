@@ -37,6 +37,8 @@ public class RepositoryMock<DataSource: RepositoryDataSource>: Repository<DataSo
     public var refreshClosure: ((Bool) -> Single<RefreshResult>)?
 
     public override func refresh(force: Bool) throws -> Single<RefreshResult> {
+        _ = try refreshAssert()
+
         mockCalled = true
         refreshCallsCount += 1
         refreshInvocations.append(force)
@@ -51,6 +53,8 @@ public class RepositoryMock<DataSource: RepositoryDataSource>: Repository<DataSo
     public var refreshIfNoCacheClosure: (() -> Single<RefreshResult>)?
 
     public override func refreshIfNoCache() throws -> Single<RefreshResult> {
+        _ = try refreshAssert()
+
         mockCalled = true
         refreshIfNoCacheCallsCount += 1
         return refreshIfNoCacheClosure!()
