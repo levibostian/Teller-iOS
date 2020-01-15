@@ -97,6 +97,14 @@ public class Repository<DataSource: RepositoryDataSource> {
         stopObservingCache()
     }
 
+    internal func refreshAssert() throws -> DataSource.Requirements {
+        guard let requirements = self.requirements else {
+            throw TellerError.objectPropertiesNotSet(["requirements"])
+        }
+
+        return requirements
+    }
+
     /**
      ### Manually perform a refresh of the cached data.
 
@@ -111,11 +119,9 @@ public class Repository<DataSource: RepositoryDataSource> {
      - Throws: TellerError.objectPropertiesNotSet if you did not set `requirements` before calling this function.
      */
     public func refresh(force: Bool) throws -> Single<RefreshResult> {
-        guard let requirements = self.requirements else {
-            throw TellerError.objectPropertiesNotSet(["requirements"])
-        }
+        let requirements = try refreshAssert()
 
-        return try _refresh(force: force, requirements: requirements)
+        return _refresh(force: force, requirements: requirements)
     }
 
     /**
@@ -128,9 +134,7 @@ public class Repository<DataSource: RepositoryDataSource> {
      - Throws: TellerError.objectPropertiesNotSet if you did not set `requirements` before calling this function.
      */
     public func refreshIfNoCache() throws -> Single<RefreshResult> {
-        guard let requirements = self.requirements else {
-            throw TellerError.objectPropertiesNotSet(["requirements"])
-        }
+        let requirements = try refreshAssert()
 
         guard !syncStateManager.hasEverFetchedData(tag: requirements.tag) else {
             return Single.just(RefreshResult.successful)
@@ -149,12 +153,12 @@ public class Repository<DataSource: RepositoryDataSource> {
             return
         }
 
-        refreshDisposeBag += try! _refresh(force: false, requirements: requirements)
+        refreshDisposeBag += _refresh(force: false, requirements: requirements)
             .subscribeOn(schedulersProvider.background)
             .subscribe()
     }
 
-    private func _refresh(force: Bool, requirements: DataSource.Requirements) throws -> Single<RefreshResult> {
+    private func _refresh(force: Bool, requirements: DataSource.Requirements) -> Single<RefreshResult> {
         if force || !syncStateManager.hasEverFetchedData(tag: requirements.tag) || syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: dataSource.maxAgeOfCache) {
             return refreshManager.refresh(task: dataSource.fetchFreshCache(requirements: requirements), requirements: requirements)
         } else {
