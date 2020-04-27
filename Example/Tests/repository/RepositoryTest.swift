@@ -25,7 +25,7 @@ import XCTest
  So because of the flakiness, we use expectations instead. If an event does *not* happen, the `wait()` statement will fail which results in the failed test. This method of testing that events come in 1 by 1 is more code, but not flaky.
  */
 class RepositoryTest: XCTestCase {
-    private var repository: Repository<MockRepositoryDataSource>!
+    private var repository: TellerRepository<MockRepositoryDataSource>!
     private var dataSource: MockRepositoryDataSource!
     private var syncStateManager: MockRepositorySyncStateManager!
     private var refreshManager: RepositoryRefreshManager!
@@ -113,7 +113,7 @@ class RepositoryTest: XCTestCase {
     }
 
     private func initRepository() {
-        repository = Repository(dataSource: dataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: refreshManager) // Use AppSchedulersProvider to test on read multi-threading. Bugs in Teller have been missed from using a single threaded environment.
+        repository = TellerRepository(dataSource: dataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: refreshManager) // Use AppSchedulersProvider to test on read multi-threading. Bugs in Teller have been missed from using a single threaded environment.
     }
 
     func test_refresh_requirementsNotSet_throwError() {
@@ -130,13 +130,6 @@ class RepositoryTest: XCTestCase {
 
         let observer = TestScheduler(initialClock: 0).createObserver(RefreshResult.self)
         XCTAssertThrowsError(try repository.refreshIfNoCache().asObservable().subscribe(observer).dispose())
-    }
-
-    func test_init() {
-        initDataSource(fakeData: getDataSourceFakeData())
-        repository = Repository(dataSource: dataSource)
-
-        XCTAssertNotNil(repository.refreshManager.delegate)
     }
 
     func test_dataSourceGetObservableCacheData_calledOnMainThread() {
@@ -241,17 +234,22 @@ class RepositoryTest: XCTestCase {
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.never(), fetchFreshData: fetchFreshDataSubject.asSingle()))
         initRepository()
 
+        // We expect the repository has only been initialized thus far. It has not changed the requirements yet.
+        XCTAssertNil(repository.requirements)
+        XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 0)
+
         // Set requirements for first time starts the first refresh
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
-        XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 1)
+        // We have not yet cancelled the previous request because the requirements has been only nil thus far.
+        XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 0)
 
         wait(for: [expectRefreshToBegin], timeout: TestConstants.AWAIT_DURATION)
 
         // Set requirements for second time will cancel the previous refresh call
         repository.requirements = nil
 
-        XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 2)
+        XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 1)
     }
 
     func test_setRequirementsNil_observeNoneStateOfData() {
@@ -808,7 +806,7 @@ class RepositoryTest: XCTestCase {
         let firstDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let firstRefreshManager: RepositoryRefreshManager = AppRepositoryRefreshManager()
 
-        let firstRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: firstDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: firstRefreshManager)
+        let firstRepo: TellerRepository<MockRepositoryDataSource> = TellerRepository(dataSource: firstDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: firstRefreshManager)
 
         let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
         firstRepo.requirements = requirements
@@ -838,7 +836,7 @@ class RepositoryTest: XCTestCase {
         let secondDataSource = MockRepositoryDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: secondFreshDataSubject.asSingle()), maxAgeOfCache: Period(unit: 1, component: Calendar.Component.second))
         let secondRefreshManager: AppRepositoryRefreshManager = AppRepositoryRefreshManager()
 
-        let secondRepo: Repository<MockRepositoryDataSource> = Repository(dataSource: secondDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: secondRefreshManager)
+        let secondRepo: TellerRepository<MockRepositoryDataSource> = TellerRepository(dataSource: secondDataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: secondRefreshManager)
         secondRepo.requirements = requirements
 
         let expectSecondRepoToBeginFirstFetch = expectation(description: "Expect second repo to begin first fetch of data.")
@@ -870,6 +868,54 @@ class RepositoryTest: XCTestCase {
         let secondFetchData = "second fetch"
         secondFreshDataSubject.onNext(FetchResponse<String, Error>.success(secondFetchData))
         secondFreshDataSubject.onCompleted()
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
+
+    /**
+     `TellerRepository` has a shared instance of refresh manager. That means that refresh calls are shared between different repository instances. We expect each repository to recieve all of the same calls such as fetching status and delegate calls.
+     */
+    func test_multipleRepositoryInstances_refresh_givenFirstRepositoryStartsRefreshBeforeSecondRepoInit_expectBothRepositoriesGetSameBehaviors() {
+        let firstFetchTime = Date()
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: firstFetchTime))
+        let fetchFreshDataSubject = ReplaySubject<FetchResponse<String, Error>>.createUnbounded()
+        initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(""), fetchFreshData: fetchFreshDataSubject.asSingle()))
+
+        let firstRepo: TellerRepository<MockRepositoryDataSource> = TellerRepository(dataSource: dataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: refreshManager)
+
+        let requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
+        firstRepo.requirements = requirements
+
+        let expectFirstRepoRefreshSuccessful = expectation(description: "Expect first repo refresh success")
+
+        compositeDisposable += try! firstRepo.refresh(force: true)
+            .do(onSuccess: { refreshResult in
+                switch refreshResult {
+                case .successful: expectFirstRepoRefreshSuccessful.fulfill()
+                case .failedError(error: _): XCTFail()
+                case .skipped(reason: _): XCTFail()
+                }
+            })
+            .subscribe()
+
+        let secondRepo: TellerRepository<MockRepositoryDataSource> = TellerRepository(dataSource: dataSource, syncStateManager: syncStateManager, schedulersProvider: AppSchedulersProvider(), refreshManager: refreshManager)
+        secondRepo.requirements = requirements
+
+        let expectSecondRepoRefreshSuccessful = expectation(description: "Expect second repo refresh success")
+
+        compositeDisposable += try! firstRepo.refresh(force: true)
+            .do(onSuccess: { refreshResult in
+                switch refreshResult {
+                case .successful: expectSecondRepoRefreshSuccessful.fulfill()
+                case .failedError(error: _): XCTFail()
+                case .skipped(reason: _): XCTFail()
+                }
+            })
+            .subscribe()
+
+        let fetchData = "shared fetch complete"
+        fetchFreshDataSubject.onNext(FetchResponse<String, Error>.success(fetchData))
+        fetchFreshDataSubject.onCompleted()
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }

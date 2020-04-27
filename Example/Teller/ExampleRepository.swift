@@ -77,7 +77,7 @@ class ReposRepositoryDataSource: RepositoryDataSource {
 class ExampleUsingRepository {
     func observe() {
         let disposeBag = DisposeBag()
-        let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+        let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 
         let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements
@@ -109,7 +109,7 @@ class ExampleUsingRepository {
 
     func refreshIfNoCache() {
         let disposeBag = DisposeBag()
-        let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+        let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 
         let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements

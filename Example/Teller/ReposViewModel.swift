@@ -3,9 +3,9 @@ import RxSwift
 import Teller
 
 class ReposViewModel {
-    private let reposRepository: Repository<ReposRepositoryDataSource>
+    private let reposRepository: TellerRepository<ReposRepositoryDataSource>
 
-    init(reposRepository: Repository<ReposRepositoryDataSource>) {
+    init(reposRepository: TellerRepository<ReposRepositoryDataSource>) {
         self.reposRepository = reposRepository
     }
 

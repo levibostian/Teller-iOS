@@ -159,7 +159,7 @@ class ReposRepositoryDataSource: RepositoryDataSource {
 
 ```swift 
 let disposeBag = DisposeBag()
-let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 
 repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 repository
@@ -190,7 +190,7 @@ repository
 
 Done! You are using Teller!
 
-In order for Teller to do it's magic, you need to (1) initialize the `requirements` property and (2) `observe()` the `Repository` instance. This gives Teller the information it needs to begin. 
+In order for Teller to do it's magic, you need to (1) initialize the `requirements` property and (2) `observe()` the `TellerRepository` instance. This gives Teller the information it needs to begin. 
 
 Enjoy!
 
@@ -198,17 +198,17 @@ Enjoy!
 
 When users open up your app, they want to see fresh data. Not data that is out dated. To do this, it's best to perform background refreshes while your app is in the background. 
 
-Teller provides a simple method to refresh your `Repository`'s cache while in the background. Run this function as often as you wish. Teller will only perform a new fetch for fresh cache is the cache is outdated. 
+Teller provides a simple method to refresh your `TellerRepository`'s cache while in the background. Run this function as often as you wish. Teller will only perform a new fetch for fresh cache is the cache is outdated. 
 
 ```swift
-let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 
 try! repository.refresh(force: false)
         .subscribe()
 ```
 
-*Note: You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `Repository`s periodically.*
+*Note: You can use the [Background app refresh](https://developer.apple.com/documentation/uikit/core_app/managing_your_app_s_life_cycle/preparing_your_app_to_run_in_the_background/updating_your_app_with_background_app_refresh) feature in iOS to run `refresh` on a set of `TellerRepository`s periodically.*
 
 ## Perform a refresh only when there is no existing cache
 
@@ -217,7 +217,7 @@ If your app will not function without a cache, use the convenient `refreshIfNoCa
 Call `refreshIfNoCache()` and when the response is `.successful`, you know that a cache exists. `.successful` will be returned *instantly* if a cache already exists or asynchronously after a successful refresh is complete and the cache exists. 
 
 ```swift
-let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 
 try! repository.refreshIfNoCache()
@@ -236,10 +236,10 @@ try! repository.refreshIfNoCache()
 
 Do you have a `UITableView` with pull-to-refresh enabled? Do you have a refresh button in your `UINavigationBar` that you want your users to refresh the data when it's pressed? 
 
-No problem. Tell your Teller `Repository` instance to *force* refresh:
+No problem. Tell your Teller `TellerRepository` instance to *force* refresh:
 
 ```swift
-let repository: Repository = Repository(dataSource: ReposRepositoryDataSource())
+let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
 repository.requirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
 
 repository.refresh(force: true)
@@ -260,11 +260,11 @@ repository.observe()
 }
 ```
 
-Pretty simple. When you `observe()` a `Repository`, call `convert()` on the instance of `DataState` to change to a different cache type. 
+Pretty simple. When you `observe()` a `TellerRepository`, call `convert()` on the instance of `DataState` to change to a different cache type. 
 
 ## Enable and disable automatic refresh feature 
 
-One of Teller's conveniences is that it performs `Repository.refresh(force: false)` (notice the automatic refresh is *not* forced to respect the `maxAgeOfCache` to keep network calls to a minimum) calls for you periodically in times such as (1) when new requirements is set on an instance of `RepositoryDataSource`, (2) `Repository.observe()` is called, or (3) a cache update is triggered from the `RepositoryDataSource`. This is convenient as it helps keep the cache always up-to-date.
+One of Teller's conveniences is that it performs `TellerRepository.refresh(force: false)` (notice the automatic refresh is *not* forced to respect the `maxAgeOfCache` to keep network calls to a minimum) calls for you periodically in times such as (1) when new requirements is set on an instance of `RepositoryDataSource`, (2) `TellerRepository.observe()` is called, or (3) a cache update is triggered from the `RepositoryDataSource`. This is convenient as it helps keep the cache always up-to-date.
 
 Because this is convenient, Teller enabled this functionality by default. However, if you wish to disable this feature, you can do so in your `RepositoryDataSource`:
 
@@ -279,7 +279,7 @@ class ReposRepositoryDataSource: RepositoryDataSource {
 
 It's recommended to keep the default functionality of enabling this feature. However, sometimes you may need control of how often network calls are performed. These scenarios are the scenarios when you would disable this feature. 
 
-*Note: It's your responsibility to keep your `RepositoryDataSource`'s cache up-to-date by manually calling `Repository.refresh()` periodically in your app if you decide to disable this automatic refresh feature.*
+*Note: It's your responsibility to keep your `RepositoryDataSource`'s cache up-to-date by manually calling `TellerRepository.refresh()` periodically in your app if you decide to disable this automatic refresh feature.*
 
 # Testing 
 
@@ -289,11 +289,11 @@ Teller was built with unit/integration/UI testing in mind. Here is how to use Te
 
 Your implementations of `RepositoryDataSource` should be no problem. `RepositoryDataSource` is just a protocol. You can unit test your implementation using dependency injection, for example, to test all of the functions of `RepositoryDataSource`. 
 
-## Write unit tests for code that depends on `Repository`
+## Write unit tests for code that depends on `TellerRepository`
 
-For your app's code that uses the Teller `Repository` class, use the pre-built `Repository` mock for your unit tests. Inject the mock into your class under test using dependency injection. 
+For your app's code that uses the Teller `TellerRepository` class, use the pre-built `TellerRepository` mock for your unit tests. Inject the mock into your class under test using dependency injection. 
 
-Here is an example XCTest for unit testing a class that depends on Teller's `Repository`. 
+Here is an example XCTest for unit testing a class that depends on Teller's `TellerRepository`. 
 
 ```swift
 import RxBlocking
@@ -374,11 +374,11 @@ import Teller
 
 class YourIntegrationTests: XCTestCase {    
     private var dataSource: RepositoryDataSource<String, RepositoryRequirements, String>!
-    private var repository: Repository<RepositoryDataSource<String, RepositoryRequirements, String>>!
+    private var repository: TellerRepository<RepositoryDataSource<String, RepositoryRequirements, String>>!
 
     override func setUp() {
         dataSource = RepositoryDataSource()
-        repository = Repository(dataSource: dataSource)
+        repository = TellerRepository(dataSource: dataSource)
         
         Teller.shared.clear()
     }
@@ -386,11 +386,11 @@ class YourIntegrationTests: XCTestCase {
     func test_tellerNoCach() {                
         let requirements = RepositoryDataSource.Requirements(username: "")
         
-        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+        _ = TellerRepository.testing.initState(repository: repository, requirements: requirements) {
             $0.noCache()
         }     
 
-        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has never fetched a cache successfully before. 
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `TellerRepository` has never fetched a cache successfully before. 
 
         // Write the remainder of your integration test function here. 
     }
@@ -398,13 +398,13 @@ class YourIntegrationTests: XCTestCase {
     func test_tellerCacheEmpty() {                
         let requirements = RepositoryDataSource.Requirements(username: "")
         
-        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+        _ = TellerRepository.testing.initState(repository: repository, requirements: requirements) {
             $0.cacheEmpty() {
                 $0.cacheTooOld()
             }            
         }     
 
-        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has fetched a cache successfully, the cache is empty, and the cache is too old which means Teller will attempt to fetch a fresh cache the next time the `Repository` runs.
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `TellerRepository` has fetched a cache successfully, the cache is empty, and the cache is too old which means Teller will attempt to fetch a fresh cache the next time the `TellerRepository` runs.
 
         // There are other options for `$0.cacheEmpty()` such as:
         //  $0.cacheEmpty() {
@@ -422,14 +422,14 @@ class YourIntegrationTests: XCTestCase {
         let requirements = RepositoryDataSource.Requirements(username: "")
         let existingCache = "existing-cache"
         
-        _ = Repository.testing.initState(repository: repository, requirements: requirements) {
+        _ = TellerRepository.testing.initState(repository: repository, requirements: requirements) {
             $0.cache(existingCache) {
                 $0.cacheNotTooOld()
             }
         }     
-        // *Note: If your `DataSource.saveCache()` function needs to be executed on a background thread, use `Repository.testing.initStateAsync()` instead of `initState()` shown here. `initSync()` runs the `DataSource.saveCache()` on the thread that you call `initState()` on.*
+        // *Note: If your `DataSource.saveCache()` function needs to be executed on a background thread, use `TellerRepository.testing.initStateAsync()` instead of `initState()` shown here. `initSync()` runs the `DataSource.saveCache()` on the thread that you call `initState()` on.*
 
-        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `Repository` has fetched a cache successfully, the cache is not empty and contains "existing-cache", and the cache is not too old (the default behavior when a state is not given) which means Teller will not attempt to fetch a fresh cache the next time the `Repository` runs.
+        // Teller is all setup! When your app's code uses the `repository`, it will behave just like the `TellerRepository` has fetched a cache successfully, the cache is not empty and contains "existing-cache", and the cache is not too old (the default behavior when a state is not given) which means Teller will not attempt to fetch a fresh cache the next time the `TellerRepository` runs.
 
         // There are other options for `$0.cache(existingCache)`. They are the same options as $0.cacheEmpty() described above.
 

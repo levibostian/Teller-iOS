@@ -6,7 +6,7 @@ import RxSwift
 
  Note: Unit tests will not fully test your implementation of Teller in your app. Create a mix of unit and integration tests in order to get good test coverage.
  */
-public class RepositoryMock<DataSource: RepositoryDataSource>: Repository<DataSource> {
+public class RepositoryMock<DataSource: RepositoryDataSource>: TellerRepository<DataSource> {
     public var mockCalled: Bool = false // if *any* interactions done on mock. Sets/gets or methods called.
 
     public var requirementsCallsCount = 0

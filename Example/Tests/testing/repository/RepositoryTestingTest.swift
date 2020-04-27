@@ -7,7 +7,7 @@ import XCTest
 class RepositoryTestingTest: XCTestCase {
     private let defaultRequirements = RepositoryRequirementsForTesting(foo: "")
     private var dataSource: RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>!
-    private var repository: Repository<RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>>!
+    private var repository: TellerRepository<RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>>!
     private var syncStateManager: RepositorySyncStateManager!
 
     override func setUp() {
@@ -16,7 +16,7 @@ class RepositoryTestingTest: XCTestCase {
 
     private func resetTests() {
         dataSource = RepositoryDataSourceMock()
-        repository = Repository(dataSource: dataSource)
+        repository = TellerRepository(dataSource: dataSource)
         syncStateManager = TellerRepositorySyncStateManager()
 
         Teller.shared.clear()
@@ -36,7 +36,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertFalse(dataSource.saveCacheCalled)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.noCache()
         }
 
@@ -45,7 +45,7 @@ class RepositoryTestingTest: XCTestCase {
         // async
         resetTests()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -71,7 +71,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertFalse(dataSource.saveCacheCalled)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cacheEmpty()
         }
 
@@ -81,7 +81,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -108,7 +108,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertEqual(dataSource.saveCacheInvocations[0].0, newCache)
         }
 
-        _ = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        _ = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cache(newCache)
         }
 
@@ -118,7 +118,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult()
 
             expectToComplete.fulfill()
@@ -143,7 +143,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertEqualDate(actualSetValues.lastFetched!, actualLastFetched)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cache(newCache)
         }
 
@@ -153,7 +153,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -180,7 +180,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertFalse(dataSource.saveCacheCalled)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cacheEmpty {
                 $0.cacheTooOld()
             }
@@ -192,7 +192,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -221,7 +221,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertFalse(dataSource.saveCacheCalled)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cacheEmpty {
                 $0.cacheNotTooOld()
             }
@@ -233,7 +233,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -259,7 +259,7 @@ class RepositoryTestingTest: XCTestCase {
             XCTAssertFalse(dataSource.saveCacheCalled)
         }
 
-        let actualSetValues = Repository.testing.initState(repository: repository, requirements: defaultRequirements) {
+        let actualSetValues = TellerRepository.testing.initState(repository: repository, requirements: defaultRequirements) {
             $0.cacheEmpty {
                 $0.lastFetched(lastFetchedOneMonthAgo)
             }
@@ -271,7 +271,7 @@ class RepositoryTestingTest: XCTestCase {
         resetTests()
         setupTest()
         let expectToComplete = expectation(description: "Expect to complete")
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { actualSetValues in
             assertResult(actualSetValues: actualSetValues)
 
             expectToComplete.fulfill()
@@ -296,7 +296,7 @@ class RepositoryTestingTest: XCTestCase {
             expectToComplete.fulfill()
         }
 
-        Repository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { setValues in
+        TellerRepository.testing.initStateAsync(repository: repository, requirements: defaultRequirements, onComplete: { setValues in
             expectToComplete.fulfill()
         }) {
             $0.cache(newCache)

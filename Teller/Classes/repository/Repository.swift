@@ -1,6 +1,14 @@
 import Foundation
 import RxSwift
 
+internal protocol Repository {
+    associatedtype DataSource: RepositoryDataSource
+
+    func refresh(force: Bool) throws -> Single<RefreshResult>
+    func refreshIfNoCache() throws -> Single<RefreshResult>
+    func observe() -> Observable<DataState<DataSource.Cache>>
+}
+
 /**
  Use in your app: 1 instance per 1 instance of RepositoryDataSource, to observe a RepositoryDataSource.
 
@@ -10,7 +18,9 @@ import RxSwift
 
  Repository is thread safe. Actions called upon for Repository can be performed on any thread.
  */
-public class Repository<DataSource: RepositoryDataSource> {
+public class TellerRepository<DS: RepositoryDataSource>: Repository {
+    public typealias DataSource = DS
+
     internal let dataSource: DataSource
 
     internal let syncStateManager: RepositorySyncStateManager
@@ -30,16 +40,21 @@ public class Repository<DataSource: RepositoryDataSource> {
         willSet {
             let oldValue = requirements
 
-            if let newValue = newValue {
-                // We only want to do something when the old and new are not the same. Else, they are the same and ignore the request.
-                if oldValue?.tag != newValue.tag {
-                    newRequirementsSet(newValue)
-                }
-            } else {
+            if let oldValue = oldValue {
+                refreshManager.cancelRefresh(tag: oldValue.tag, requester: self)
+            }
+
+            if newValue == nil {
                 // When set requirements to nil, we make the repo "dead"
                 stopObservingCache()
-                refreshManager.cancelRefresh()
+
                 currentStateOfData.resetStateToNone()
+            }
+        }
+        didSet {
+            if let newValue = self.requirements {
+                // This function requires that self.requirements is set to a value. So, we must call it in didSet
+                newRequirementsSet(newValue)
             }
         }
     }
@@ -50,7 +65,6 @@ public class Repository<DataSource: RepositoryDataSource> {
         // 3. Set curentStateOfData to something so anyone observing does not think they are still observing old requirements (old data).
         // 4. Start everything up again.
 
-        refreshManager.cancelRefresh()
         stopObservingCache()
 
         if syncStateManager.hasEverFetchedData(tag: requirements.tag) {
@@ -67,7 +81,7 @@ public class Repository<DataSource: RepositoryDataSource> {
         self.dataSource = dataSource
         self.syncStateManager = TellerRepositorySyncStateManager()
         self.schedulersProvider = AppSchedulersProvider()
-        self.refreshManager = AppRepositoryRefreshManager()
+        self.refreshManager = AppRepositoryRefreshManager.shared
 
         postInit()
     }
@@ -83,12 +97,13 @@ public class Repository<DataSource: RepositoryDataSource> {
         postInit()
     }
 
-    private func postInit() {
-        refreshManager.delegate = self
-    }
+    private func postInit() {}
 
     deinit {
-        refreshManager.cancelRefresh()
+        if let requirements = requirements {
+            refreshManager.cancelRefresh(tag: requirements.tag, requester: self)
+        }
+
         refreshDisposeBag.dispose()
 
         currentStateOfData.subject.on(.completed) // By disposing below, `.completed` does not get sent automatically. We must send ourselves. Alert whoever is observing this repository to know the sequence has completed.
@@ -160,7 +175,7 @@ public class Repository<DataSource: RepositoryDataSource> {
 
     private func _refresh(force: Bool, requirements: DataSource.Requirements) -> Single<RefreshResult> {
         if force || !syncStateManager.hasEverFetchedData(tag: requirements.tag) || syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: dataSource.maxAgeOfCache) {
-            return refreshManager.refresh(task: dataSource.fetchFreshCache(requirements: requirements), requirements: requirements)
+            return refreshManager.getRefresh(task: dataSource.fetchFreshCache(requirements: requirements), tag: requirements.tag, requester: self)
         } else {
             return Single.just(.skipped(reason: .dataNotTooOld))
         }
@@ -223,9 +238,13 @@ public class Repository<DataSource: RepositoryDataSource> {
     }
 }
 
-extension Repository: RepositoryRefreshManagerDelegate {
+extension TellerRepository: RepositoryRefreshManagerDelegate {
     // called on background thread
-    internal func refreshBegin(requirements: RepositoryRequirements) {
+    internal func refreshBegin(tag: RepositoryRequirements.Tag) {
+        // User may have changed requirements
+        guard let requirements = self.requirements else { return }
+        guard requirements.tag == tag else { return }
+
         let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
 
         if !hasEverFetchedDataBefore {
@@ -236,53 +255,47 @@ extension Repository: RepositoryRefreshManagerDelegate {
     }
 
     // called on background thread
-    internal func refreshComplete<FetchResponseData, ErrorType>(_ response: FetchResponse<FetchResponseData, ErrorType>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
-        let requirements = requirements as! DataSource.Requirements // swiftlint:disable:this force_cast
+    internal func refreshSuccessful<FetchResponseData, ErrorType>(_ response: FetchResponse<FetchResponseData, ErrorType>, tag: RepositoryRequirements.Tag) {
+        // User may have changed requirements
+        guard let requirements = self.requirements else { return }
+        guard requirements.tag == tag else { return }
 
         switch response {
         case .success(let success):
             let newCache: DataSource.FetchResult = success as! DataSource.FetchResult // swiftlint:disable:this force_cast
 
-            DispatchQueue.global(qos: .background).async { [weak self] in
-                guard let self = self else {
-                    return
+            let timeFetched = Date()
+            let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+
+            do {
+                // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
+                stopObservingCache()
+
+                try dataSource.saveCache(newCache, requirements: requirements)
+                syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
+
+                /*
+                 Do after saving cache, successfully.
+                 This scenario could happen: first fetch -> save new cache -> cache data/empty -> successful first fetch.
+                 Even though it would be better to have "successful first fetch" notification before cache data/empty, this scenario is better then if saving cache fails and we get this:
+                 first fetch -> successful first fetch -> save new cache -> failed first fetch.
+                 We would need to backtrack and that doesn't sound like the best idea. It's best to only say the fetch is successful after it is confirmed successful. Also because
+                 */
+                if !hasEverFetchedDataBefore {
+                    currentStateOfData.changeState(requirements: requirements) { try! $0.successfulFirstFetch(timeFetched: timeFetched) }
+                } else {
+                    currentStateOfData.changeState(requirements: requirements) { try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) }
                 }
 
-                let timeFetched = Date()
-                let hasEverFetchedDataBefore = !self.currentStateOfData.currentState.noCacheExists
-
-                do {
-                    // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
-                    self.stopObservingCache()
-
-                    try self.dataSource.saveCache(newCache, requirements: requirements)
-                    self.syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
-
-                    /*
-                     Do after saving cache, successfully.
-                     This scenario could happen: first fetch -> save new cache -> cache data/empty -> successful first fetch.
-                     Even though it would be better to have "successful first fetch" notification before cache data/empty, this scenario is better then if saving cache fails and we get this:
-                     first fetch -> successful first fetch -> save new cache -> failed first fetch.
-                     We would need to backtrack and that doesn't sound like the best idea. It's best to only say the fetch is successful after it is confirmed successful. Also because
-                     */
-                    if !hasEverFetchedDataBefore {
-                        self.currentStateOfData.changeState(requirements: requirements) { try! $0.successfulFirstFetch(timeFetched: timeFetched) }
-                    } else {
-                        self.currentStateOfData.changeState(requirements: requirements) { try! $0.successfulFetchingFreshCache(timeFetched: timeFetched) }
-                    }
-
-                    // Note: Only begin observing after a successful fetch because you could be in the scenario of never fetching before and that state throws an error when calling beginObservingCachedData()
-                    // Begin observing cache again. We may be observing for the first time because this is the first fetch, or we begin observing again after we stopped observing before saving.
-                    self.beginObservingCachedData(requirements: requirements)
-                } catch {
-                    if !hasEverFetchedDataBefore {
-                        self.currentStateOfData.changeState(requirements: requirements) { try! $0.errorFirstFetch(error: error) }
-                    } else {
-                        self.currentStateOfData.changeState(requirements: requirements) { try! $0.failFetchingFreshCache(error) }
-                    }
+                // Note: Only begin observing after a successful fetch because you could be in the scenario of never fetching before and that state throws an error when calling beginObservingCachedData()
+                // Begin observing cache again. We may be observing for the first time because this is the first fetch, or we begin observing again after we stopped observing before saving.
+                beginObservingCachedData(requirements: requirements)
+            } catch {
+                if !hasEverFetchedDataBefore {
+                    currentStateOfData.changeState(requirements: requirements) { try! $0.errorFirstFetch(error: error) }
+                } else {
+                    currentStateOfData.changeState(requirements: requirements) { try! $0.failFetchingFreshCache(error) }
                 }
-
-                onComplete()
             }
         case .failure(let fetchError):
             let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
@@ -292,8 +305,6 @@ extension Repository: RepositoryRefreshManagerDelegate {
             } else {
                 currentStateOfData.changeState(requirements: requirements) { try! $0.failFetchingFreshCache(fetchError) }
             }
-
-            onComplete()
         }
     }
 }
