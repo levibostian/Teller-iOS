@@ -1,24 +1,24 @@
 PODS:
-  - Alamofire (5.0.0-beta.7)
-  - Moya/Core (14.0.0-alpha.2):
-    - Alamofire (= 5.0.0-beta.7)
-  - Moya/RxSwift (14.0.0-alpha.2):
+  - Alamofire (5.1.0)
+  - Moya/Core (14.0.0):
+    - Alamofire (~> 5.0)
+  - Moya/RxSwift (14.0.0):
     - Moya/Core
     - RxSwift (~> 5.0)
-  - RxBlocking (5.0.0):
+  - RxBlocking (5.1.1):
     - RxSwift (~> 5)
-  - RxCocoa (5.0.0):
+  - RxCocoa (5.1.1):
     - RxRelay (~> 5)
     - RxSwift (~> 5)
-  - RxRelay (5.0.0):
+  - RxRelay (5.1.1):
     - RxSwift (~> 5)
-  - RxSwift (5.0.0)
-  - RxTest (5.0.0):
+  - RxSwift (5.1.1)
+  - RxTest (5.1.1):
     - RxSwift (~> 5)
-  - SwiftFormat/CLI (0.40.14)
-  - SwiftLint (0.37.0)
+  - SwiftFormat/CLI (0.44.7)
+  - SwiftLint (0.39.2)
   - Teller (0.7.1):
-    - RxSwift (~> 5.0)
+    - RxSwift (~> 5.1)
 
 DEPENDENCIES:
   - Moya/RxSwift (~> 14.0.0-alpha.2)
@@ -46,16 +46,16 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: bd07938ceecad59d2492aeecb1f785a8f2721160
-  Moya: a6f1894cf6baec301aa02b0ecf10e5d8ade556ae
-  RxBlocking: c67185d26498ea3cbe3e121917c3c16739e43123
-  RxCocoa: fcf32050ac00d801f34a7f71d5e8e7f23026dcd8
-  RxRelay: 4f7409406a51a55cd88483f21ed898c234d60f18
-  RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
-  RxTest: 4349afe98f564e0a9bc19063368904622d17d49a
-  SwiftFormat: 21c9c3c748d5fcece493d8610eee23df15393458
-  SwiftLint: c078a14d7d7ade75e5507795d185e3da41d844d2
-  Teller: 7694cbcadca2db5dda44a2f5dcd2804576f449f2
+  Alamofire: 9d5c5f602928e512395b30950c5984eca840093c
+  Moya: 5b45dacb75adb009f97fde91c204c1e565d31916
+  RxBlocking: 5f700a78cad61ce253ebd37c9a39b5ccc76477b4
+  RxCocoa: 32065309a38d29b5b0db858819b5bf9ef038b601
+  RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
+  RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
+  RxTest: 711632d5644dffbeb62c936a521b5b008a1e1faa
+  SwiftFormat: fd97e27b8de5a46c9d1988bf1db1dc92e79f86a3
+  SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
+  Teller: 66b1a6b244ca711a24c0d2608b343d927c2e15d5
 
 PODFILE CHECKSUM: d4248ba533b33cea1e19dd96533a503ff96e55e1
 

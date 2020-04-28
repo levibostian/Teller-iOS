@@ -36,7 +36,7 @@ Determining what state your data is in and managing it can be a big pain. That i
   s.social_media_url = 'https://twitter.com/levibostian'
 
   s.ios.deployment_target = '10.0'
-  s.swift_version = '5.0'
+  s.swift_version = '5.2'
 
   s.source_files = 'Teller/Classes/**/*'
   
@@ -46,5 +46,5 @@ Determining what state your data is in and managing it can be a big pain. That i
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'  
-  s.dependency 'RxSwift', '~> 5.0'
+  s.dependency 'RxSwift', '~> 5.1'
 end

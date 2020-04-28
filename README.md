@@ -1,7 +1,7 @@
 [![Version](https://img.shields.io/cocoapods/v/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
 [![License](https://img.shields.io/cocoapods/l/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
 [![Platform](https://img.shields.io/cocoapods/p/Teller.svg?style=flat)](https://cocoapods.org/pods/Teller)
-![Swift 5.0.x](https://img.shields.io/badge/Swift-5.0.x-orange.svg)
+![Swift 5.2.x](https://img.shields.io/badge/Swift-5.2.x-orange.svg)
 
 # Teller
 
@@ -62,14 +62,7 @@ Replace `version-here` with: [![Version](https://img.shields.io/cocoapods/v/Tell
 
 **Note: Teller is under development.** Even though it is used in production in my own apps, the code base can change at anytime. 
 
-After using Teller for a handful of years now, I have been able to mature the library as time goes on. The API is still considered Alpha as it may encounter drastic changes in the future. However, I do not forsee major changes at this time. 
-
-TODO
-
-- [ ] Create example app on how to use it.
-- [ ] Make non-RxSwift version of the library to make it even smaller and more portable.
-- [ ] Split up the testing utilities into a separate module. 
-- [ ] Documentation in form of Jazzy Apple Doc created.
+After using Teller for a handful of years now, I have been able to mature the library as time goes on. The API is still considered Alpha as it may encounter drastic changes in the future. 
 
 # Getting started
 
@@ -450,7 +443,7 @@ If you read the README and still have questions, please, [create an issue](https
 
 ## Are you building an offline-first mobile app?
 
-Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy-iOS](https://github.com/levibostian/wendy-ios) (there is an [Android version too](https://github.com/levibostian/wendy-android)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at `GET` calls for your network API, Wendy is really good at `PUT, POST, DELETE` network API calls. Teller *pulls* data, Wendy *pushes* data. These 2 libraries work really nicely together! 
+Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy](https://github.com/levibostian/wendy-ios) (there is an [Android version too](https://github.com/levibostian/wendy-android)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at `GET` calls for your network API, Wendy is really good at `PUT, POST, DELETE` network API calls. Teller *pulls* data, Wendy *pushes* data. These 2 libraries work really nicely together! 
 
 ## Development 
 
