@@ -20,15 +20,20 @@ class ReposRepositoryRequirements: RepositoryRequirements {
     }
 }
 
+struct ReposPagingRequirements: PagingRepositoryRequirements {
+    let pageNumber: Int
+}
+
 // Struct used to represent the JSON data pulled from the GitHub API.
 struct Repo: Codable, Equatable {
     var id: Int!
     var name: String!
 }
 
-class ReposRepositoryDataSource: RepositoryDataSource {
+class ReposRepositoryDataSource: PagingRepositoryDataSource {
     typealias Cache = [Repo]
     typealias Requirements = ReposRepositoryRequirements
+    typealias PagingRequirements = ReposPagingRequirements
     typealias FetchResult = [Repo]
     typealias FetchError = Error
 
@@ -39,11 +44,12 @@ class ReposRepositoryDataSource: RepositoryDataSource {
         return false
     }
 
-    func fetchFreshCache(requirements: ReposRepositoryRequirements) -> Single<FetchResponse<[Repo], FetchError>> {
+    func persistOnlyFirstPage(requirements: ReposRepositoryRequirements) {}
+
+    func fetchFreshCache(requirements: ReposRepositoryRequirements, pagingRequirements: PagingRequirements) -> Single<FetchResponse<[Repo], Error>> {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
-
-        return MoyaProvider<GitHubService>().rx.request(.listRepos(user: requirements.username))
+        return MoyaProvider<GitHubService>().rx.request(.listRepos(user: requirements.username, pageNumber: pagingRequirements.pageNumber))
             .map { (response) -> FetchResponse<[Repo], FetchError> in
                 let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
 
@@ -53,13 +59,13 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     }
 
     // Note: Teller runs this function from a background thread.
-    func saveCache(_ fetchedData: [Repo], requirements: ReposRepositoryRequirements) throws {
+    func saveCache(_ cache: [Repo], requirements: ReposRepositoryRequirements, pagingRequirements: PagingRequirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
         // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
 
     // Note: Teller runs this function from the UI thread
-    func observeCache(requirements: ReposRepositoryRequirements) -> Observable<[Repo]> {
+    func observeCache(requirements: ReposRepositoryRequirements, pagingRequirements: ReposPagingRequirements) -> Observable<[Repo]> {
         // Return Observable that is observing the cached data.
         //
         // When any of the repos in the database have been changed, we want to trigger an Observable update.
@@ -69,7 +75,7 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     }
 
     // Note: Teller runs this function from the same thread as `observeCachedData()`
-    func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements) -> Bool {
+    func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements, pagingRequirements: ReposPagingRequirements) -> Bool {
         return cache.isEmpty
     }
 }

@@ -16,37 +16,9 @@ internal class Atomic<DataType: Any> {
         }
     }
 
-    func get<T: Any>(_ getValue: (DataType) -> T) -> T {
-        return queue.sync {
-            getValue(value)
-        }
-    }
-
     func set(_ newValue: DataType) {
         queue.sync {
             value = newValue
-        }
-    }
-
-    func set(handler: (DataType) -> DataType) -> DataType {
-        return queue.sync {
-            let currentValue = value
-            let newValue = handler(currentValue)
-
-            value = newValue
-
-            return newValue
-        }
-    }
-
-    func setMap<Return: Any>(handler: (DataType) -> (newValue: DataType, return: Return)) -> Return {
-        return queue.sync {
-            let currentValue = value
-            let newValue = handler(currentValue)
-
-            value = newValue.newValue
-
-            return newValue.return
         }
     }
 }

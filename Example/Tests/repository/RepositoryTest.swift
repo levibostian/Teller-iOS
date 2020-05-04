@@ -705,28 +705,39 @@ class RepositoryTest: XCTestCase {
         initRepository()
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
-        let expectToBeginObserving = expectation(description: "Expect to begin observing")
-        let expectToReceiveExistingCacheAndFetchingFresh = expectation(description: "Expect to receive existing cache and fetching fresh cache")
-        let expectToReceiveExistingCacheAndFailedFetch = expectation(description: "Expect to receive existing cache and failed fetching fresh cache")
+        /**
+         We can't test exact cache states in the observer. That's because the repository's observing of a cache and fetching data are both async operations that jump between differnet threads. We mostly care that (1) we are observing caches and (2) a fetch failed and we are able to continue observing data after.
+
+         Therefore, we pull apart the cache state with separate expectations to respect the async operations updating the cache state.
+         */
+        let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
+        expectToReceiveExistingCache.assertForOverFulfill = false
+
+        let expectToReceiveFailedFetch = expectation(description: "Expect to receive failed fetching fresh cache")
+        expectToReceiveFailedFetch.assertForOverFulfill = false
+
         let expectToNotDispose = expectation(description: "Expect to not dispose")
         expectToNotDispose.isInverted = true
 
-        let existingCacheAndFetchingFreshCacheState = try! getCacheExistsRefreshingEvent(lastTimeFetched: existingCacheLastTimeFethed).change()
-            .cachedData(existingCache)
-        let existingCacheAndFailedFetch = try! getCacheExistsRefreshingEvent(lastTimeFetched: existingCacheLastTimeFethed).change()
-            .cachedData(existingCache).change()
-            .failFetchingFreshCache(fetchFail)
+        // This will prove that we can receive updates after the fetch failed.
+        let expectToReceiveCacheUpdateAfterFailedFetch = expectation(description: "Expect to receive cache update after failed fetch")
+        expectToReceiveCacheUpdateAfterFailedFetch.assertForOverFulfill = false
+
+        let cacheAfterFetch = "cache after fetch"
 
         compositeDisposable += repository.observe()
             .do(onNext: { state in
-                if state == existingCacheAndFetchingFreshCacheState {
-                    expectToReceiveExistingCacheAndFetchingFresh.fulfill()
+                if state.cacheData == existingCache {
+                    expectToReceiveExistingCache.fulfill()
                 }
-                if state == existingCacheAndFailedFetch {
-                    expectToReceiveExistingCacheAndFailedFetch.fulfill()
+
+                if state.errorDuringFetch != nil {
+                    expectToReceiveFailedFetch.fulfill()
                 }
-            }, onSubscribe: {
-                expectToBeginObserving.fulfill()
+
+                if state.cacheData == cacheAfterFetch {
+                    expectToReceiveCacheUpdateAfterFailedFetch.fulfill()
+                }
             }, onDispose: {
                 expectToNotDispose.fulfill()
             })
@@ -734,6 +745,12 @@ class RepositoryTest: XCTestCase {
 
         fetchFreshDataSubject.onNext(FetchResponse<String, Error>.failure(fetchFail))
         fetchFreshDataSubject.onCompleted()
+
+        wait(for: [
+            expectToReceiveExistingCache, expectToReceiveFailedFetch
+        ], timeout: TestConstants.AWAIT_DURATION)
+
+        observeCacheData.onNext(cacheAfterFetch)
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
@@ -760,7 +777,7 @@ class RepositoryTest: XCTestCase {
             .firstFetch()
 
         func getFirstCacheEvent() -> DataState<String>? {
-            guard let timeFetched = self.syncStateManager.updateAgeOfData_age else {
+            guard let timeFetched = syncStateManager.updateAgeOfData_age else {
                 return nil
             }
             return try! DataStateStateMachine
@@ -787,7 +804,7 @@ class RepositoryTest: XCTestCase {
             .subscribe()
 
         syncStateManager.updateAgeOfDataListener = {
-            return true
+            true
         }
 
         repository.requirements = requirements

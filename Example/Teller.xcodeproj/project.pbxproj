@@ -42,6 +42,10 @@
 		F782856A23317D3500CD7807 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */; };
 		F78285732332595B00CD7807 /* DataStateTestingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78285722332595B00CD7807 /* DataStateTestingTest.swift */; };
+		F7841A85246086F0001315FE /* PagingRepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A84246086F0001315FE /* PagingRepositoryTest.swift */; };
+		F7841A8724608731001315FE /* MockPagingRepositoryDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */; };
+		F7841A892460C205001315FE /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* TableViewCell.swift */; };
+		F7841A8A2460C205001315FE /* TableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* TableViewCell.swift */; };
 		F7909F1521BB2EF60034055D /* MockRepositoryRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */; };
 		F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* DataStateTest.swift */; };
 		F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */; };
@@ -111,6 +115,9 @@
 		F7818C902152CE440050607E /* DataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataState+StateTest.swift"; sourceTree = "<group>"; };
 		F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTestingLib.swift; sourceTree = "<group>"; };
 		F78285722332595B00CD7807 /* DataStateTestingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStateTestingTest.swift; sourceTree = "<group>"; };
+		F7841A84246086F0001315FE /* PagingRepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryTest.swift; sourceTree = "<group>"; };
+		F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPagingRepositoryDataSource.swift; sourceTree = "<group>"; };
+		F7841A882460C205001315FE /* TableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewCell.swift; sourceTree = "<group>"; };
 		F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositoryRefreshManager.swift; sourceTree = "<group>"; };
 		F7AFBDEB21505339008ECB51 /* DataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateTest.swift; sourceTree = "<group>"; };
 		F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshResultTest.swift; sourceTree = "<group>"; };
@@ -201,6 +208,7 @@
 				F7D27547216687D400D89CA5 /* GitHubService.swift */,
 				F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */,
 				F76A2D1A238892DD000A90AA /* ReposViewModel.swift */,
+				F7841A882460C205001315FE /* TableViewCell.swift */,
 			);
 			name = "Example for Teller";
 			path = Teller;
@@ -381,6 +389,8 @@
 				F7818C5E21517C220050607E /* RepositoryTest.swift */,
 				F7818C6021517C820050607E /* MockRepositoryDataSource.swift */,
 				F7818C43215074EA0050607E /* manager */,
+				F7841A84246086F0001315FE /* PagingRepositoryTest.swift */,
+				F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */,
 			);
 			path = repository;
 			sourceTree = "<group>";
@@ -623,6 +633,7 @@
 				F76A2D1B238892DD000A90AA /* ReposViewModel.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				F7841A892460C205001315FE /* TableViewCell.swift in Sources */,
 				F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -631,6 +642,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7841A8724608731001315FE /* MockPagingRepositoryDataSource.swift in Sources */,
 				F782856623317D2B00CD7807 /* ViewController.swift in Sources */,
 				F76131242387524400200FCE /* RepositoryMockTest.swift in Sources */,
 				F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */,
@@ -642,6 +654,7 @@
 				F7818C5F21517C220050607E /* RepositoryTest.swift in Sources */,
 				F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */,
 				F7909F1521BB2EF60034055D /* MockRepositoryRefreshManager.swift in Sources */,
+				F7841A85246086F0001315FE /* PagingRepositoryTest.swift in Sources */,
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
 				F7EC6AB821B7230F002D272A /* RepositoryRefreshManagerTest.swift in Sources */,
 				F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */,
@@ -652,6 +665,7 @@
 				F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
 				F778B9F22389A3390005076E /* RepositoryTestingTest.swift in Sources */,
+				F7841A8A2460C205001315FE /* TableViewCell.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */,
 				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
 				F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */,

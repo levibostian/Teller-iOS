@@ -45,33 +45,33 @@ internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
         // Check if a refresh is already running for the tag. If not, start a refresh for it.
         // Check if the requester is already registered for the refresh task. If not, add it as a requester.
         // Return an observable to observe the status of the refresh request.
+        Sync.lock(self)
+        defer { Sync.unlock(self) }
 
-        let refreshListener = refreshItems.setMap { (refreshItems) -> (newValue: [String: RefreshTaskItem], return: RefreshRequester) in
-            var refreshItems = refreshItems // to make it mutable
-
-            if let existingRefreshItem = refreshItems[tag] {
-                // A refresh has begun. Let's see if the delegate is registered yet as a listener
-                if !existingRefreshItem.containsRequester(requester) {
-                    requester.refreshBegin(tag: tag)
-
-                    refreshItems[tag] = existingRefreshItem.addRequester(requester)
-                }
-            } else {
-                /**
-                 There is currently not a refresh happening for this tag. Start a new refresh
-
-                 Calling delegate here as _runRefresh does not call it for us since we have a lock to the delegates in this function.
-                 */
+        var refreshItems = self.refreshItems.get
+        if let existingRefreshItem = refreshItems[tag] {
+            // A refresh has begun. Let's see if the delegate is registered yet as a listener
+            if !existingRefreshItem.containsRequester(requester) {
                 requester.refreshBegin(tag: tag)
 
-                let newRefreshStatus = ReplaySubject<RefreshResult>.create(bufferSize: 1)
-                refreshItems[tag] = RefreshTaskItem(taskDisposable: _runRefresh(task: task, tag: tag), refreshStatus: newRefreshStatus, requesters: [
-                    RefreshRequester(requester: requester, refreshStatus: newRefreshStatus)
-                ])
+                refreshItems[tag] = existingRefreshItem.addRequester(requester)
             }
+        } else {
+            /**
+             There is currently not a refresh happening for this tag. Start a new refresh
 
-            return (refreshItems, refreshItems[tag]!.getRequester(requester)!)
+             Calling delegate here as _runRefresh does not call it for us since we have a lock to the delegates in this function.
+             */
+            requester.refreshBegin(tag: tag)
+
+            let newRefreshStatus = ReplaySubject<RefreshResult>.create(bufferSize: 1)
+            refreshItems[tag] = RefreshTaskItem(taskDisposable: _runRefresh(task: task, tag: tag), refreshStatus: newRefreshStatus, requesters: [
+                RefreshRequester(requester: requester, refreshStatus: newRefreshStatus)
+            ])
         }
+
+        let refreshListener = refreshItems[tag]!.getRequester(requester)!
+        self.refreshItems.set(refreshItems)
 
         return refreshListener.refreshStatus.asSingle()
     }
@@ -81,36 +81,28 @@ internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
             .subscribe(onSuccess: { [weak self] fetchResponse in
                 guard let self = self else { return }
 
-                _ = self.refreshItems.set { (refreshItems) -> [String: RefreshTaskItem] in
-                    var refreshItems = refreshItems
-
-                    self.updateDelegates(refreshItem: refreshItems[tag]) { delegate in
-                        delegate.refreshSuccessful(fetchResponse, tag: tag)
-                    }
-
-                    switch fetchResponse {
-                    case .success:
-                        self.doneRefresh(refreshTaskItem: refreshItems[tag], result: RefreshResult.successful, failure: nil)
-                    case .failure(let failure):
-                        self.doneRefresh(refreshTaskItem: refreshItems[tag], result: RefreshResult.failedError(error: failure), failure: nil)
-                    }
-
-                    refreshItems.removeValue(forKey: tag)
-
-                    return refreshItems
+                var refreshItems = self.refreshItems.get
+                self.updateDelegates(refreshItem: refreshItems[tag]) { delegate in
+                    delegate.refreshSuccessful(fetchResponse, tag: tag)
                 }
+
+                switch fetchResponse {
+                case .success:
+                    self.doneRefresh(refreshTaskItem: refreshItems[tag], result: RefreshResult.successful, failure: nil)
+                case .failure(let failure):
+                    self.doneRefresh(refreshTaskItem: refreshItems[tag], result: RefreshResult.failedError(error: failure), failure: nil)
+                }
+
+                refreshItems.removeValue(forKey: tag)
+                self.refreshItems.set(refreshItems)
             }, onError: { [weak self] error in
                 guard let self = self else { return }
 
-                _ = self.refreshItems.set { (refreshItems) -> [String: RefreshTaskItem] in
-                    var refreshItems = refreshItems
+                var refreshItems = self.refreshItems.get
+                self.doneRefresh(refreshTaskItem: refreshItems[tag], result: nil, failure: error)
 
-                    self.doneRefresh(refreshTaskItem: refreshItems[tag], result: nil, failure: error)
-
-                    refreshItems.removeValue(forKey: tag)
-
-                    return refreshItems
-                }
+                refreshItems.removeValue(forKey: tag)
+                self.refreshItems.set(refreshItems)
             })
     }
 
@@ -145,51 +137,47 @@ internal class AppRepositoryRefreshManager: RepositoryRefreshManager {
      * The [Single] returned from [refresh] will receive a [Repository.RefreshResult.SkippedReason.CANCELLED] event on cancel.
      */
     func cancelRefresh(tag: RepositoryRequirements.Tag, requester: RepositoryRefreshManagerDelegate) {
-        _ = refreshItems.set { (refreshItems) -> [String: RefreshTaskItem] in
-            var refreshItems = refreshItems
+        var refreshItems = self.refreshItems.get
+        if let refreshItem = refreshItems[tag] {
+            var refreshRequestersToCancel: [RefreshRequester] = []
 
-            if let refreshItem = refreshItems[tag] {
-                var refreshRequestersToCancel: [RefreshRequester] = []
+            if let refreshRequester = refreshItem.getRequester(requester) {
+                refreshRequestersToCancel.append(refreshRequester)
+            }
+            /**
+             The Repository instance may be nil, but the observer who is observing Repository.refresh() may still be observing the refresh call. We need to cancel those requests as well.
+             */
+            refreshRequestersToCancel.append(contentsOf: refreshItem.getNilRequesters())
 
-                if let refreshRequester = refreshItem.getRequester(requester) {
-                    refreshRequestersToCancel.append(refreshRequester)
-                }
-                /**
-                 The Repository instance may be nil, but the observer who is observing Repository.refresh() may still be observing the refresh call. We need to cancel those requests as well.
-                 */
-                refreshRequestersToCancel.append(contentsOf: refreshItem.getNilRequesters())
+            refreshRequestersToCancel.forEach { refreshRequester in
+                let status = refreshRequester.refreshStatus
+                status.onNext(RefreshResult.skipped(reason: .cancelled))
+                status.onCompleted()
 
-                refreshRequestersToCancel.forEach { refreshRequester in
-                    let status = refreshRequester.refreshStatus
-                    status.onNext(RefreshResult.skipped(reason: .cancelled))
-                    status.onCompleted()
+                let updatedRefreshItem = refreshItem.removeRequester(requester)
+                refreshItems[tag] = updatedRefreshItem
 
-                    let updatedRefreshItem = refreshItem.removeRequester(requester)
-                    refreshItems[tag] = updatedRefreshItem
+                if updatedRefreshItem.requesters.isEmpty {
+                    refreshItem.cancel()
 
-                    if updatedRefreshItem.requesters.isEmpty {
-                        refreshItem.cancel()
-
-                        refreshItems.removeValue(forKey: tag)
-                    }
+                    refreshItems.removeValue(forKey: tag)
                 }
             }
-
-            return refreshItems
         }
+
+        self.refreshItems.set(refreshItems)
     }
 
     func cancelAll() {
-        _ = refreshItems.set { (refreshItems) -> [String: RefreshTaskItem] in
-            refreshItems.forEach { arg0 in
-                let (_, value) = arg0
+        let refreshItems = self.refreshItems.get
+        refreshItems.forEach { arg0 in
+            let (_, value) = arg0
 
-                value.successfulComplete(RefreshResult.skipped(reason: .cancelled))
-                value.taskDisposable.dispose()
-            }
-
-            return [:]
+            value.successfulComplete(RefreshResult.skipped(reason: .cancelled))
+            value.taskDisposable.dispose()
         }
+
+        self.refreshItems.set([:])
     }
 
     /**

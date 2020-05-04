@@ -2,7 +2,7 @@ import Foundation
 import Moya
 
 enum GitHubService {
-    case listRepos(user: String)
+    case listRepos(user: String, pageNumber: Int)
 }
 
 extension GitHubService: TargetType {
@@ -10,7 +10,7 @@ extension GitHubService: TargetType {
 
     var path: String {
         switch self {
-        case .listRepos(let user):
+        case .listRepos(let user, _):
             return "/users/\(user)/repos"
         }
     }
@@ -23,9 +23,13 @@ extension GitHubService: TargetType {
     }
 
     var task: Task {
+        func queryEncoding(_ params: [String: Any]) -> Task {
+            return Task.requestParameters(parameters: params, encoding: URLEncoding.default)
+        }
+
         switch self {
-        case .listRepos:
-            return .requestPlain
+        case .listRepos(_, let pageNumber):
+            return queryEncoding(["per_page": 50, "page": pageNumber])
         }
     }
 
