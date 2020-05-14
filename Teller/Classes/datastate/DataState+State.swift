@@ -1,21 +1,17 @@
 import Foundation
 
-extension DataState {
+extension CacheState {
     /**
      Parse the `DataState` for you to more easily display the state of the cache in your UI.
      */
     public enum State {
-        /**
-         It is undetermined if there is a cache that exists or not. This is usually the case for when just setting requirements on a `Repository`.
-         */
-        case none
         /**
          A cache has not been successfully fetched before.
 
          fetching - is a cache being fetched right now
          errorDuringFetch - a fetch just finished but there was an error.
          */
-        case noCache(fetching: Bool, errorDuringFetch: Error?)
+        case noCache
         /**
          A cache has been successfully fetched before.
 
@@ -26,56 +22,30 @@ extension DataState {
          successfulFetch - if a fetch just finished and it was successful
          errorDuringFetch - a fetch just finished but there was an error.
          */
-        case cache(cache: DataType?, lastFetched: Date, firstCache: Bool, fetching: Bool, successfulFetch: Bool, errorDuringFetch: Error?)
+        case cache(cache: CacheType?, cacheAge: Date)
     }
 
-    /**
-     Parse the `DataState` for you to more easily display the fetching state of the cache in your UI.
-     */
-    public enum FetchingState {
-        /**
-         There is a fetch currently happening or a fetch just completeted.
-
-         fetching - indicates if a fetch is happening right now
-         noCache - if true, a cache has not been successfully fetched before
-         errorDuringFetch - a fetch just finished but there was an error.
-         successfulFetch - if a fetch just finished and it was successful
-         */
-        case fetching(fetching: Bool, noCache: Bool, errorDuringFetch: Error?, successfulFetch: Bool)
-    }
-
-    public func state() -> State {
+    public var state: State {
         if isNone {
-            return State.none
+            fatalError("Should not happen. Observing of a cache state should ignore none states")
         }
 
-        if noCacheExists {
-            return State.noCache(fetching: fetchingForFirstTime, errorDuringFetch: errorDuringFirstFetch)
+        if !cacheExists {
+            return State.noCache
         } else {
-            return State.cache(cache: cacheData, lastFetched: lastTimeFetched!, firstCache: justCompletedSuccessfulFirstFetch, fetching: isFetchingFreshData, successfulFetch: justCompletedSuccessfullyFetchingFreshData, errorDuringFetch: errorDuringFetch)
+            return State.cache(cache: cache, cacheAge: cacheAge!)
         }
-    }
-
-    public func fetchingState() -> FetchingState {
-        return FetchingState.fetching(fetching: isFetchingFreshData || fetchingForFirstTime, noCache: noCacheExists, errorDuringFetch: errorDuringFirstFetch ?? errorDuringFetch, successfulFetch: justCompletedSuccessfulFirstFetch || justCompletedSuccessfullyFetchingFreshData)
     }
 }
 
-extension DataState.State: Equatable where DataType: Equatable {
-    public static func == (lhs: DataState<DataType>.State, rhs: DataState<DataType>.State) -> Bool {
+extension CacheState.State: Equatable where CacheType: Equatable {
+    public static func == (lhs: CacheState<CacheType>.State, rhs: CacheState<CacheType>.State) -> Bool {
         switch (lhs, rhs) {
-        case (.none, .none):
+        case (let .noCache, .noCache):
             return true
-        case (let .noCache(fetching1, errorDuringFetch1), .noCache(let fetching2, let errorDuringFetch2)):
-            return fetching1 == fetching2 &&
-                ErrorsUtil.areErrorsEqual(lhs: errorDuringFetch1, rhs: errorDuringFetch2)
-        case (let .cache(cache1, lastFetched1, firstCache1, fetching1, successfulFetch1, errorDuringFetch1), .cache(let cache2, let lastFetched2, let firstCache2, let fetching2, let successfulFetch2, let errorDuringFetch2)):
-            return cache1 == cache2 &&
-                lastFetched1.timeIntervalSince1970 == lastFetched2.timeIntervalSince1970 &&
-                firstCache1 == firstCache2 &&
-                fetching1 == fetching2 &&
-                successfulFetch1 == successfulFetch2 &&
-                ErrorsUtil.areErrorsEqual(lhs: errorDuringFetch1, rhs: errorDuringFetch2)
+        case (let .cache(state1), .cache(let state2)):
+            return state1.cache == state2.cache &&
+                state1.cacheAge.timeIntervalSince1970 == state2.cacheAge.timeIntervalSince1970
         default:
             return false
         }

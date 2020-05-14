@@ -2,11 +2,30 @@ import Foundation
 import RxSwift
 
 /**
- Mock Teller's `Repository`. Meant to be used with unit tests where you use `Repository`.
+ Mock Teller's `PagingRepository`. Meant to be used with unit tests where you use `PagingRepository`.
 
  Note: Unit tests will not fully test your implementation of Teller in your app. Create a mix of unit and integration tests in order to get good test coverage.
  */
-public class TellerRepositoryMock<DataSource: RepositoryDataSource>: TellerRepository<DataSource> {
+public class TellerPagingRepositoryMock<DataSource: PagingRepositoryDataSource>: TellerPagingRepository<DataSource> {
+    public var pagingRequirementsCallsCount = 0
+    public var pagingRequirementsCalled: Bool {
+        return pagingRequirementsCallsCount > 0
+    }
+
+    public var pagingRequirementsInvocations: [DataSource.PagingRequirements] = []
+
+    override public var pagingRequirements: DataSource.PagingRequirements {
+        didSet {
+            mockCalled = true
+            pagingRequirementsCallsCount += 1
+            pagingRequirementsInvocations.append(pagingRequirements)
+        }
+    }
+
+    /**
+     Below is a direct copy/paste from Repository mock.
+     */
+
     public var mockCalled: Bool = false // if *any* interactions done on mock. Sets/gets or methods called.
 
     public var requirementsCallsCount = 0

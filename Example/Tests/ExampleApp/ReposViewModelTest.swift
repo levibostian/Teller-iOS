@@ -5,21 +5,21 @@ import XCTest
 
 class RepositoryViewModelTest: XCTestCase {
     var viewModel: ReposViewModel!
-    var repository: RepositoryMock<ReposRepositoryDataSource>!
+    var repository: TellerPagingRepositoryMock<ReposRepositoryDataSource>!
 
     override func setUp() {
         // Create an instance of `RepositoryMock`
-        repository = RepositoryMock(dataSource: ReposRepositoryDataSource())
+        repository = TellerPagingRepositoryMock(dataSource: ReposRepositoryDataSource(), firstPageRequirements: ReposRepositoryDataSource.PagingRequirements(pageNumber: 1))
         // Provide the repository mock to your code under test with dependency injection
-        viewModel = ReposViewModel(reposRepository: repository)
+        viewModel = ReposViewModel(repository: repository)
     }
 
     func test_observeRepos_givenReposRepositoryObserve_expectReceiveCacheFromReposRepository() {
         // 1. Setup the mock
-        let given: DataState<[Repo]> = DataState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: "username"), lastTimeFetched: Date()) {
-            $0.cache([
+        let given: CacheState<PagedCache<[Repo]>> = CacheState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: "username"), lastTimeFetched: Date()) {
+            $0.cache(PagedCache(areMorePages: false, cache: [
                 Repo(id: 1, name: "repo-name")
-            ])
+            ]))
         }
         repository.observeClosure = {
             Observable.just(given)

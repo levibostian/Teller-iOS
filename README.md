@@ -159,8 +159,8 @@ repository
     .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
-    .subscribe(onNext: { (dataState: DataState<[Repo]>) in
-        switch dataState.state() {
+    .subscribe(onNext: { (dataState: CacheState<[Repo]>) in
+        switch dataState.state {
         case .none: break
             // It is currently undetermined if there is a cache or not. This usually happens when switching requirements in a Repository. 
         case .noCache(let fetching, let errorDuringFetch):
@@ -169,12 +169,6 @@ repository
         case .cache(let cache, let lastFetched, let firstCache, let fetching, let successfulFetch, let errorDuringFetch):
             // Repos have been fetched before for the GitHub user.
             // If `cache` is nil, the cache is empty.
-            break
-        }
-                
-        switch dataState.fetchingState() {
-        case .fetching(let fetching, let noCache, let errorDuringFetch, let successfulFetch):
-            // A new cache could be fetching, just completed fetching, or is not fetching at all.
             break
         }
     })
@@ -241,11 +235,11 @@ repository.refresh(force: true)
 
 ## Convert cache type
 
-If you ever find yourself with an instance of `DataState<A>` and you want to convert it to type `DataState<B>`, this is what you do:
+If you ever find yourself with an instance of `CacheState<A>` and you want to convert it to type `CacheState<B>`, this is what you do:
 
 ```swift
 repository.observe()
-.map { (dataState) -> DataState<B> in
+.map { (dataState) -> CacheState<B> in
     dataState.convert { (a) -> B? in
         guard let a = a else { return nil }
         B(a: a)
@@ -307,7 +301,7 @@ class RepositoryViewModelTest: XCTestCase {
     
     func test_observeRepos_givenReposRepositoryObserve_expectReceiveCacheFromReposRepository() {
         // 1. Setup the mock
-        let given: DataState<[Repo]> = DataState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: "username"), lastTimeFetched: Date()) {
+        let given: CacheState<[Repo]> = DataState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: "username"), lastTimeFetched: Date()) {
             $0.cache([
                 Repo(id: 1, name: "repo-name")
             ])

@@ -15,7 +15,7 @@ PODS:
   - RxSwift (5.1.1)
   - RxTest (5.1.1):
     - RxSwift (~> 5)
-  - SwiftFormat/CLI (0.44.7)
+  - SwiftFormat/CLI (0.44.10)
   - SwiftLint (0.39.2)
   - Teller (0.7.1):
     - RxSwift (~> 5.1)
@@ -53,7 +53,7 @@ SPEC CHECKSUMS:
   RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
   RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
   RxTest: 711632d5644dffbeb62c936a521b5b008a1e1faa
-  SwiftFormat: fd97e27b8de5a46c9d1988bf1db1dc92e79f86a3
+  SwiftFormat: b72e592ea0979aeee53f6052abff291181364933
   SwiftLint: 22ccbbe3b8008684be5955693bab135e0ed6a447
   Teller: 66b1a6b244ca711a24c0d2608b343d927c2e15d5
 

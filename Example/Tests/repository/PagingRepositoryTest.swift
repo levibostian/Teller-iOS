@@ -32,7 +32,7 @@ class PagingRepositoryTest: XCTestCase {
         compositeDisposable = nil
     }
 
-    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String, Error>> = Single.never(), automaticallyRefresh: Bool = true) -> MockPagingRepositoryDataSource.FakeData {
+    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<PagedFetchResponse<String, Void>, Error>> = Single.never(), automaticallyRefresh: Bool = true) -> MockPagingRepositoryDataSource.FakeData {
         return MockPagingRepositoryDataSource.FakeData(automaticallyRefresh: automaticallyRefresh, isDataEmpty: isDataEmpty, observeCachedData: observeCachedData, fetchFreshData: fetchFreshData)
     }
 
@@ -61,9 +61,10 @@ class PagingRepositoryTest: XCTestCase {
 
         // Order matters in this test. We are testing both ways.
         repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 2)
-
         XCTAssertEqual(dataSource.fetchFreshDataCount, 1)
+
+        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 2)
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 2)
     }
 
     func test_pagingRequirements_givenNotYetSetRequirements_expectPerformAutomaticFetchAfterSetRequirements() {
@@ -73,37 +74,24 @@ class PagingRepositoryTest: XCTestCase {
 
         // Order matters in this test. We are testing both ways.
         repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 2)
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 0) // have not yet set requirements so no refresh yet.
         repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
-
         XCTAssertEqual(dataSource.fetchFreshDataCount, 1)
     }
 
-    // Because Teller only checks if the cache is too old for the first page of the cache, we need to force Teller to refresh for all pages > page 1, even if the data is not too old.
-    func test_pagingRequirements_givenDataNotTooOld_givenSetNewPagingRequirements_expectPerformAutomaticFetchAfterSetRequirements() {
-        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
-        initRepository()
-        repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
-
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 2)
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 3)
-
-        XCTAssertEqual(dataSource.fetchFreshDataCount, 2) // 2 times because we are setting a new paging requirement twice that is not the first page.
-    }
-
-    func test_pagingRequirements_givenSetOnlyFirstPageOfData_expectNoFetch() {
+    func test_pagingRequirements_givenSetNewPagingRequirements_expectRefreshOnEachSet() {
         // We want to test that the paging repository forces automatic refreshes
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         initRepository()
         repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 1)
 
         repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 2)
         repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 3)
         repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
-        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements()
-
-        XCTAssertEqual(dataSource.fetchFreshDataCount, 0)
+        XCTAssertEqual(dataSource.fetchFreshDataCount, 4)
     }
 
     /**
@@ -121,8 +109,8 @@ class PagingRepositoryTest: XCTestCase {
      Baseline scenarios when the data state should not be told to persist only the first pages of cache.
      */
     func test_refresh_givenNoRefresh_givenNotFirstPage_givenCacheNotTooOld_expectDoNotOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.never(), fetchFreshData: refresh.asSingle(), automaticallyRefresh: true))
@@ -139,8 +127,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenNoRefresh_givenNotFirstPage_givenCacheTooOld_expectDoNotOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.never(), fetchFreshData: refresh.asSingle(), automaticallyRefresh: true))
@@ -157,8 +145,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenForceRefresh_expectForceRefreshPersistsOnlyFirstPageCache() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         // Check to make sure save called on background thread.
@@ -180,8 +168,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenNoForceRefresh_givenObserveFirstPage_expectOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         let existingCache = "existing cache"
@@ -196,7 +184,7 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == existingCache {
+                if dataState.cache?.cache == existingCache {
                     expectToGetCache.fulfill()
                 }
             })
@@ -225,14 +213,14 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == "first" {
+                if dataState.cache?.cache == "first" {
                     expectObserveCache.fulfill()
                 }
             })
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
 
-        XCTAssertEqual(dataSource.persistOnlyFirstPageCount, 1)
+        XCTAssertGreaterThanOrEqual(dataSource.persistOnlyFirstPageCount, 1) // may call multiple times but the refreshing is done async so we cannot be for sure how many times. only concerned it happened at least once.
     }
 
     func test_observe_notGivenFirstPageOfCache_expectDoNotTellDelegateToPersistOnlyFirstPage() {
@@ -249,7 +237,7 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == "first" {
+                if dataState.cache?.cache == "first" {
                     expectObserveCache.fulfill()
                 }
             })
@@ -257,6 +245,105 @@ class PagingRepositoryTest: XCTestCase {
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
 
         XCTAssertEqual(dataSource.persistOnlyFirstPageCount, 0)
+    }
+
+    func test_givenFetchWithMorePagesAvailable_expectNextRefreshWhenGoToNextPage() {
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: true, nextPageRequirements: Void(), fetchResponse: "")))
+        refresh.onCompleted()
+
+        let observe = ReplaySubject<String>.createUnbounded()
+        observe.onNext("first")
+
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observe.asObservable(), fetchFreshData: refresh.asSingle()))
+        initRepository()
+
+        let expectToGoToNextPage = expectation(description: "Expect to go to next page")
+        var hasFirstFetchHappened = false
+
+        compositeDisposable += repository.observe()
+            .subscribe(onNext: { dataState in
+                guard dataState.cache != nil else {
+                    return
+                }
+
+                if dataState.cache!.cache == "first", dataState.cache!.areMorePages, !dataState.isRefreshing { // first fetch done.
+                    // Setup next fetch.
+                    let secondRefresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+                    secondRefresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
+                    secondRefresh.onCompleted()
+                    self.dataSource.fakeData.fetchFreshData = secondRefresh.asSingle()
+
+                    hasFirstFetchHappened = true
+                    self.repository.goToNextPage()
+
+                    return
+                }
+
+                if hasFirstFetchHappened && !dataState.isRefreshing { // second refresh is done.
+                    XCTAssertFalse(dataState.cache!.areMorePages)
+
+                    expectToGoToNextPage.fulfill()
+
+                    return
+                }
+            })
+
+        // do not trigger refresh until last. setup test code first to avoid flaky
+        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 1)
+        repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
+    }
+
+    func test_givenFetchWithNoMorePagesAvailable_expectIgnoreRequestWhenGoToNextPage() {
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
+        refresh.onCompleted()
+
+        let observe = ReplaySubject<String>.createUnbounded()
+        observe.onNext("first")
+
+        initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
+        initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observe.asObservable(), fetchFreshData: refresh.asSingle()))
+        initRepository()
+
+        let expectToGoToNextPage = expectation(description: "Expect to go to next page")
+        expectToGoToNextPage.assertForOverFulfill = false // it needs to be called at least once. we don't mind more then that for this specific test.
+        let expectToNotGoToNextPage = expectation(description: "Expect to *not* go to next page")
+        expectToNotGoToNextPage.isInverted = true
+
+        compositeDisposable += repository.observe()
+            .subscribe(onNext: { dataState in
+                guard dataState.cache != nil else {
+                    return
+                }
+
+                if self.dataSource.fetchFreshDataCount == 1 && !dataState.isRefreshing { // first refresh is done.
+                    XCTAssertFalse(dataState.cache!.areMorePages)
+
+                    // Attempt to go to next page even though we hope it does not happen.
+                    let secondRefresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+                    secondRefresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
+                    secondRefresh.onCompleted()
+                    self.dataSource.fakeData.fetchFreshData = secondRefresh.asSingle()
+
+                    self.repository.goToNextPage()
+
+                    expectToGoToNextPage.fulfill()
+                }
+
+                if self.dataSource.fetchFreshDataCount == 2, !dataState.isRefreshing { // second refresh is done
+                    expectToNotGoToNextPage.fulfill()
+                }
+        })
+
+        // do not trigger refresh until last. setup test code first to avoid flaky
+        repository.pagingRequirements = MockPagingRepositoryDataSource.PagingRequirements(pageNumber: 1)
+        repository.requirements = MockPagingRepositoryDataSource.Requirements(randomString: nil)
+
+        waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
     }
 
     /**

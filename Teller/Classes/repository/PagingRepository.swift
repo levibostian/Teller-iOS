@@ -3,6 +3,13 @@ import RxSwift
 
 /**
  `TellerRepository` meant specifically for paging pages of cached data.
+
+ Notes about this class:
+ # We always want to perform a refresh. Do not check the age of the cache with paging.
+
+ Why? When you call this function, you are either:
+ 1. Querying the cache after opening the screen of the app for the first time. When we are paging the cache, we are only displaying the first page of the cache and we delete all of the rest. Because we deleted the old data, we need to always perform a refresh. Two bad scenarios can happen if you do not refresh the first page. 1. the paging repository generates a cache state saying there is no more pages of cache available when that might not be true or 2. the user scrolls, we fetch the 2nd page which now means the 2nd page is up-to-date but the first page is always out of date.
+ 2. For all page numbers 2+, we always fetch because the way pagination works is to delete all of the cache except the first page of the cache so if you set the page requirements, that means the user has scrolled. Because they have scrolled, we need to fetch the next page and put into the cache to show.
  */
 public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepository<DS> {
     /**
@@ -11,6 +18,13 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
     private let _pagingRequirements: Atomic<DS.PagingRequirements>
     private let firstPageRequirements: DS.PagingRequirements
     internal let pagingDataSource: DS
+    // nil when (1) a successful fetch has never happened before, (2) when there are no more pages to load.
+    internal var nextPageRequirements: DS.NextPageRequirements?
+    public private(set) var areMorePagesAvailable: Bool = false
+
+    override var dataSourceAdapter: AnyRepositoryDataSourceAdapter<DS> {
+        return AnyRepositoryDataSourceAdapter(PagingRepositoryDataSourceAdapter(dataSource: dataSource, repository: self))
+    }
 
     public init(dataSource: DS, firstPageRequirements: DS.PagingRequirements) {
         self.pagingDataSource = dataSource
@@ -30,7 +44,7 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
         super.init(dataSource: dataSource, syncStateManager: syncStateManager, schedulersProvider: schedulersProvider, refreshManager: refreshManager)
     }
 
-    internal override func newRequirementsSet(_ requirements: DataSource.Requirements) {
+    override internal func newRequirementsSet(_ requirements: DataSource.Requirements) {
         super.newRequirementsSet(requirements)
 
         // Re-set the paging requirements to trigger the set function
@@ -41,7 +55,7 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
     /**
      * Requirements specifically to determine what page of data we are requesting.
      *
-     * *Note: When the paging requirements are set, a fetch will be executed no matter what. No check if data too old. Checking if a cache is old is only done by Teller for the first page of the cache. All future pages are fetched because the way pagination works is to delete all of the cache except the first page of the cache so if you set the page requirements, that means the user has scrolled. Because they have scrolled, we need to fetch the next page and put into the cache to show.*
+     * We always want to perform an automatic refresh. See class documentation to learn why.
      */
     public var pagingRequirements: DataSource.PagingRequirements {
         set {
@@ -57,26 +71,29 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
         }
     }
 
+    /**
+     Goes to the next page. Request will only succeed if a successful fetch has happened and there are more pages to load.
+     */
+    public func goToNextPage() {
+        guard areMorePagesAvailable else {
+            return // Ignore request. This is better then throwing an error because when the app opens up and loads cache, you can immediately scroll to the end of the list and call this before a fetch response comes in. You shouldn't need to handle that scenario.
+        }
+
+        pagingRequirements = pagingDataSource.getNextPagePagingRequirements(currentPagingRequirements: pagingRequirements, nextPageRequirements: nextPageRequirements)
+    }
+
     private var isFirstPage: Bool {
         return pagingRequirements == firstPageRequirements
     }
 
-    internal override func _fetchFreshCache(requirements: DataSource.Requirements) -> Single<FetchResponse<DataSource.FetchResult, DataSource.FetchError>> {
-        return pagingDataSource.fetchFreshCache(requirements: requirements, pagingRequirements: pagingRequirements)
-    }
-
     /**
-     * Checking if a cache is old is only done by Teller for the first page of the cache. All future pages are fetched because the way pagination works is to delete all of the cache except the first page of the cache so if you set the page requirements, that means the user has scrolled. Because they have scrolled, we need to fetch the next page and put into the cache to show.*
+     * We always want to perform a refresh. See class documentation to learn why.
      */
-    internal override func needsARefresh(requirements: DataSource.Requirements) -> Bool {
-        if !isFirstPage {
-            return true
-        } else {
-            return super.needsARefresh(requirements: requirements)
-        }
+    override internal func needsARefresh(requirements: DataSource.Requirements) -> Bool {
+        return true
     }
 
-    internal override func _backgroundTaskBeforeRefresh(forceRefresh: Bool, requirements: DataSource.Requirements) {
+    override internal func _backgroundTaskBeforeRefresh(forceRefresh: Bool, requirements: DataSource.Requirements) {
         /**
          * If a refresh needs to happen you are:
          * 1. Performing a *force* refresh by doing a pull-to-refresh in the UI in which case you want to get the first page anyway.
@@ -92,11 +109,7 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
         }
     }
 
-    internal override func _isCacheEmpty(cache: DataSource.Cache, requirements: DS.Requirements) -> Bool {
-        return pagingDataSource.isCacheEmpty(cache, requirements: requirements, pagingRequirements: pagingRequirements)
-    }
-
-    internal override func _backgroundTaskBeforeObserveCache(requirements: DataSource.Requirements) {
+    override internal func _backgroundTaskBeforeObserveCache(requirements: DataSource.Requirements) {
         /**
          * If you are observing the cache, you are beginning to read the cache. You have not yet shown the cache in the UI yet. Because of that, we need to delete the old cache beyond the first page so that the page number aligns with how much data is in the cache.
          * But, deleting data needs to be asynchronous in case you need to run it in the UI thread or background thread. You choose. So, delete the old cache and then begin observing.
@@ -108,11 +121,42 @@ public class TellerPagingRepository<DS: PagingRepositoryDataSource>: TellerRepos
         }
     }
 
-    internal override func _observeCache(requirements: DataSource.Requirements) -> Observable<DataSource.Cache> {
-        return pagingDataSource.observeCache(requirements: requirements, pagingRequirements: pagingRequirements)
-    }
+    class PagingRepositoryDataSourceAdapter: RepositoryDataSourceAdapter {
+        typealias DataSource = DS
 
-    internal override func _saveCache(newCache: DataSource.FetchResult, requirements: DS.Requirements) throws {
-        try pagingDataSource.saveCache(newCache, requirements: requirements, pagingRequirements: pagingRequirements)
+        let dataSource: DS
+        let repository: TellerPagingRepository
+
+        init(dataSource: DS, repository: TellerPagingRepository) {
+            self.dataSource = dataSource
+            self.repository = repository
+        }
+
+        func fetchFreshCache(requirements: DS.Requirements) -> Single<FetchResponse<DS.FetchResult, DS.FetchError>> {
+            return dataSource.fetchFreshCache(requirements: requirements, pagingRequirements: repository.pagingRequirements)
+        }
+
+        func saveCache(newCache: DS.FetchResult, requirements: DS.Requirements) throws {
+            // If this new cache is the first page of cache, we want to completely replace the cache. So, Teller will ask you to delete the old cache first and then you will insert the new cache.
+            if repository.isFirstPage {
+                dataSource.deleteCache(requirements)
+            }
+
+            repository.nextPageRequirements = newCache.nextPageRequirements
+            repository.areMorePagesAvailable = newCache.areMorePages
+
+            try dataSource.saveCache(newCache.fetchResponse, requirements: requirements, pagingRequirements: repository.pagingRequirements)
+        }
+
+        func isCacheEmpty(cache: DS.Cache, requirements: DS.Requirements) -> Bool {
+            return dataSource.isCacheEmpty(cache.cache, requirements: requirements, pagingRequirements: repository.pagingRequirements)
+        }
+
+        func observeCache(requirements: DS.Requirements) -> Observable<DS.Cache> {
+            return dataSource.observeCache(requirements: requirements, pagingRequirements: repository.pagingRequirements)
+                .map { (pagingCache) -> DS.Cache in
+                    PagedCache(areMorePages: self.repository.areMorePagesAvailable, cache: pagingCache)
+                }
+        }
     }
 }

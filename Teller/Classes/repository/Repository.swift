@@ -6,7 +6,7 @@ internal protocol Repository {
 
     func refresh(force: Bool) throws -> Single<RefreshResult>
     func refreshIfNoCache() throws -> Single<RefreshResult>
-    func observe() -> Observable<DataState<DataSource.Cache>>
+    func observe() -> Observable<CacheState<DataSource.Cache>>
 }
 
 /**
@@ -22,6 +22,10 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
     public typealias DataSource = DS
 
     internal let dataSource: DataSource
+
+    var dataSourceAdapter: AnyRepositoryDataSourceAdapter<DS> {
+        return AnyRepositoryDataSourceAdapter(TellerRepositoryDataSourceAdapter(dataSource: dataSource))
+    }
 
     internal let syncStateManager: RepositorySyncStateManager
     internal let schedulersProvider: SchedulersProvider
@@ -200,7 +204,7 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
 
                 self.stopObservingCache()
 
-                self.observeCacheDisposeBag += self._observeCache(requirements: requirements)
+                self.observeCacheDisposeBag += self.dataSourceAdapter.observeCache(requirements: requirements)
                     .subscribeOn(self.schedulersProvider.ui)
                     .observeOn(self.schedulersProvider.ui)
                     .subscribe(onNext: { [weak self, requirements] (cache: DataSource.Cache) in
@@ -208,7 +212,7 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
 
                         let needsToFetchFreshCache = self.syncStateManager.isCacheTooOld(tag: requirements.tag, maxAgeOfCache: self.dataSource.maxAgeOfCache)
 
-                        if self._isCacheEmpty(cache: cache, requirements: requirements) {
+                        if self.dataSourceAdapter.isCacheEmpty(cache: cache, requirements: requirements) {
                             self.currentStateOfData.changeState(requirements: requirements) { try! $0.cacheIsEmpty() }
                         } else {
                             self.currentStateOfData.changeState(requirements: requirements) { try! $0.cachedData(cache) }
@@ -229,15 +233,16 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
      * The state of the Observable returned from this function is maintained by the Repository. When the Repository `deinit` is called, all observers will be disposed.
      * When you subscribe to the returned `Observable`, you will receive a result immediately with the current state of the data when you subscribe (even if there is "no state").
 
-     - Returns: A RxSwift Observable<DataState<Cache>> instance that gets notified when the state of the cached data changes.
+     - Returns: A RxSwift Observable<CacheState<Cache>> instance that gets notified when the state of the cached data changes.
      */
-    public func observe() -> Observable<DataState<DataSource.Cache>> {
+    public func observe() -> Observable<CacheState<DataSource.Cache>> {
         if let requirements = requirements {
             // Trigger a refresh to help keep data up-to-date.
             performAutomaticRefresh(requirements: requirements)
         }
 
         return currentStateOfData.subject
+            .filter { !$0.isNone }
     }
 
     private func stopObservingCache() {
@@ -245,9 +250,6 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
         observeCacheDisposeBag = CompositeDisposable()
     }
 
-    /**
-     Simple functions that are can be overriden by child classes. These functions are meant to be small with not much logic.
-     */
     private func getRefresh(force: Bool, requirements: DataSource.Requirements) -> Single<RefreshResult> {
         let runBeforeRefresh: Completable = Completable.create { [weak self] (observer) -> Disposable in
             self?._backgroundTaskBeforeRefresh(forceRefresh: force, requirements: requirements)
@@ -258,22 +260,10 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
         }.subscribeOn(schedulersProvider.background)
 
         if force || needsARefresh(requirements: requirements) {
-            return runBeforeRefresh.andThen(refreshManager.getRefresh(task: _fetchFreshCache(requirements: requirements), tag: requirements.tag, requester: self))
+            return runBeforeRefresh.andThen(refreshManager.getRefresh(task: dataSourceAdapter.fetchFreshCache(requirements: requirements), tag: requirements.tag, requester: self))
         } else {
             return Single.just(.skipped(reason: .dataNotTooOld))
         }
-    }
-
-    internal func _saveCache(newCache: DataSource.FetchResult, requirements: DS.Requirements) throws {
-        try dataSource.saveCache(newCache, requirements: requirements)
-    }
-
-    internal func _isCacheEmpty(cache: DataSource.Cache, requirements: DS.Requirements) -> Bool {
-        return dataSource.isCacheEmpty(cache, requirements: requirements)
-    }
-
-    internal func _observeCache(requirements: DataSource.Requirements) -> Observable<DataSource.Cache> {
-        return dataSource.observeCache(requirements: requirements)
     }
 
     /**
@@ -286,8 +276,31 @@ public class TellerRepository<DS: RepositoryDataSource>: Repository {
      */
     internal func _backgroundTaskBeforeRefresh(forceRefresh: Bool, requirements: DataSource.Requirements) {}
 
-    internal func _fetchFreshCache(requirements: DataSource.Requirements) -> Single<FetchResponse<DataSource.FetchResult, DataSource.FetchError>> {
-        return dataSource.fetchFreshCache(requirements: requirements)
+    class TellerRepositoryDataSourceAdapter: RepositoryDataSourceAdapter {
+        typealias DataSource = DS
+        typealias ObserveCacheState = DS.Cache
+
+        let dataSource: DS
+
+        init(dataSource: DS) {
+            self.dataSource = dataSource
+        }
+
+        func fetchFreshCache(requirements: DS.Requirements) -> Single<FetchResponse<DS.FetchResult, DS.FetchError>> {
+            return dataSource.fetchFreshCache(requirements: requirements)
+        }
+
+        func saveCache(newCache: DS.FetchResult, requirements: DS.Requirements) throws {
+            try dataSource.saveCache(newCache, requirements: requirements)
+        }
+
+        func isCacheEmpty(cache: DS.Cache, requirements: DS.Requirements) -> Bool {
+            return dataSource.isCacheEmpty(cache, requirements: requirements)
+        }
+
+        func observeCache(requirements: DS.Requirements) -> Observable<ObserveCacheState> {
+            return dataSource.observeCache(requirements: requirements)
+        }
     }
 }
 
@@ -298,7 +311,7 @@ extension TellerRepository: RepositoryRefreshManagerDelegate {
         guard let requirements = self.requirements else { return }
         guard requirements.tag == tag else { return }
 
-        let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+        let hasEverFetchedDataBefore = currentStateOfData.currentState.cacheExists
 
         if !hasEverFetchedDataBefore {
             currentStateOfData.changeState(requirements: requirements) { try! $0.firstFetch() }
@@ -318,13 +331,13 @@ extension TellerRepository: RepositoryRefreshManagerDelegate {
             let newCache: DataSource.FetchResult = success as! DataSource.FetchResult // swiftlint:disable:this force_cast
 
             let timeFetched = Date()
-            let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+            let hasEverFetchedDataBefore = currentStateOfData.currentState.cacheExists
 
             do {
                 // We need to stop observing cache before saving. saveData() will trigger an onNext() from the cache observable in the dataSource because data is being saved and Observables are supposed to trigger updates like that. The problem is that when we are observing cache in the repository, we trigger a refresh depending on the age of the cache. But as you can see from comments below, we don't want to update the age of the cache until after the save is successful. So, we need to have control over when the cache is observed. We want to read the cache after it is successfully saved and then after we update the state machine and age of cache. Then, the state machine will be in the correct state and the age of cache will not trigger a refresh update automatically.
                 stopObservingCache()
 
-                try _saveCache(newCache: newCache, requirements: requirements)
+                try dataSourceAdapter.saveCache(newCache: newCache, requirements: requirements)
                 syncStateManager.updateAgeOfData(tag: requirements.tag, age: timeFetched)
 
                 /*
@@ -351,7 +364,7 @@ extension TellerRepository: RepositoryRefreshManagerDelegate {
                 }
             }
         case .failure(let fetchError):
-            let hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+            let hasEverFetchedDataBefore = currentStateOfData.currentState.cacheExists
             // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
             if !hasEverFetchedDataBefore {
                 currentStateOfData.changeState(requirements: requirements) { try! $0.errorFirstFetch(error: fetchError) }
