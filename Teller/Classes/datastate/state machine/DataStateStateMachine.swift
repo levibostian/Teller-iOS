@@ -29,84 +29,76 @@ internal class DataStateStateMachine<Data: Any> {
 
     // MARK: - Constructors. The 2 starting nodes in state machine.
 
-    class func noCacheExists(requirements: RepositoryRequirements) -> DataState<Data> {
+    class func noCacheExists(requirements: RepositoryRequirements) -> CacheState<Data> {
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: NoCacheStateMachine.noCacheExists(), cacheExistsStateMachine: nil, fetchingFreshCacheStateMachine: nil)
 
-        return DataState(noCacheExists: true,
-                         fetchingForFirstTime: false,
-                         cacheData: nil,
-                         lastTimeFetched: nil,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: false,
+                          cache: nil,
+                          cacheAge: nil,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
-    class func cacheExists(requirements: RepositoryRequirements, lastTimeFetched: Date) -> DataState<Data> {
+    class func cacheExists(requirements: RepositoryRequirements, lastTimeFetched: Date) -> CacheState<Data> {
         let cacheExistsStateMachine = CacheStateMachine<Data>.cacheEmpty() // Empty is a placeholder for now but it indicates that a cache does exist for future calls to the state machine.
         let fetchingFreshCacheStateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: lastTimeFetched)
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: nil, cacheExistsStateMachine: cacheExistsStateMachine, fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine)
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: nil,
-                         lastTimeFetched: lastTimeFetched,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: nil,
+                          cacheAge: lastTimeFetched,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
     // MARK: - Functions to change nodes in state machine
 
-    func firstFetch() throws -> DataState<Data> {
-        guard let noCacheStateMachine = self.noCacheExistsStateMachine else {
+    func firstFetch() throws -> CacheState<Data> {
+        guard let noCacheStateMachine = noCacheExistsStateMachine else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: noCacheStateMachine.fetching(), cacheExistsStateMachine: nil, fetchingFreshCacheStateMachine: nil)
 
-        return DataState(noCacheExists: true,
-                         fetchingForFirstTime: true,
-                         cacheData: nil,
-                         lastTimeFetched: nil,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: false,
+                          cache: nil,
+                          cacheAge: nil,
+                          isRefreshing: true,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
-    func errorFirstFetch(error: Error) throws -> DataState<Data> {
-        guard let noCacheStateMachine = self.noCacheExistsStateMachine, noCacheStateMachine.isFetching else {
+    func errorFirstFetch(error: Error) throws -> CacheState<Data> {
+        guard let noCacheStateMachine = noCacheExistsStateMachine, noCacheStateMachine.isFetching else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
         let dataStateMachine = DataStateStateMachine(requirements: requirements, noCacheExistsStateMachine: noCacheStateMachine.failedFetching(error: error), cacheExistsStateMachine: nil, fetchingFreshCacheStateMachine: nil)
 
-        return DataState(noCacheExists: true,
-                         fetchingForFirstTime: false,
-                         cacheData: nil,
-                         lastTimeFetched: nil,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: error,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: false,
+                          cache: nil,
+                          cacheAge: nil,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: error)
     }
 
-    func successfulFirstFetch(timeFetched: Date) throws -> DataState<Data> {
-        guard let noCacheStateMachine = self.noCacheExistsStateMachine, noCacheStateMachine.isFetching else {
+    func successfulFirstFetch(timeFetched: Date) throws -> CacheState<Data> {
+        guard let noCacheStateMachine = noCacheExistsStateMachine, noCacheStateMachine.isFetching else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
@@ -115,20 +107,18 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: CacheStateMachine.cacheEmpty(), // empty is like a placeholder.
                                                      fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine.notFetching(lastTimeFetched: timeFetched))
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: nil,
-                         lastTimeFetched: timeFetched,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: true,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: nil,
+                          cacheAge: timeFetched,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: true,
+                          justFinishedFirstFetch: true,
+                          refreshError: nil)
     }
 
-    func cacheIsEmpty() throws -> DataState<Data> {
+    func cacheIsEmpty() throws -> CacheState<Data> {
         guard cacheExistsStateMachine != nil, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
@@ -138,20 +128,18 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: CacheStateMachine.cacheEmpty(),
                                                      fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine)
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: nil,
-                         lastTimeFetched: fetchingFreshCacheStateMachine.lastTimeFetched,
-                         isFetchingFreshData: fetchingFreshCacheStateMachine.isFetching,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: nil,
+                          cacheAge: fetchingFreshCacheStateMachine.lastTimeFetched,
+                          isRefreshing: fetchingFreshCacheStateMachine.isFetching,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
-    func cachedData(_ cache: Data) throws -> DataState<Data> {
+    func cachedData(_ cache: Data) throws -> CacheState<Data> {
         guard cacheExistsStateMachine != nil, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
@@ -161,21 +149,19 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: CacheStateMachine.cacheExists(cache),
                                                      fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine)
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: cache,
-                         lastTimeFetched: fetchingFreshCacheStateMachine.lastTimeFetched,
-                         isFetchingFreshData: fetchingFreshCacheStateMachine.isFetching,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: cache,
+                          cacheAge: fetchingFreshCacheStateMachine.lastTimeFetched,
+                          isRefreshing: fetchingFreshCacheStateMachine.isFetching,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
-    func fetchingFreshCache() throws -> DataState<Data> {
-        guard let cacheStateMachine = self.cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine else {
+    func fetchingFreshCache() throws -> CacheState<Data> {
+        guard let cacheStateMachine = cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
@@ -184,21 +170,19 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: cacheStateMachine,
                                                      fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine.fetching())
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: cacheStateMachine.cache,
-                         lastTimeFetched: fetchingFreshCacheStateMachine.lastTimeFetched,
-                         isFetchingFreshData: true,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: cacheStateMachine.cache,
+                          cacheAge: fetchingFreshCacheStateMachine.lastTimeFetched,
+                          isRefreshing: true,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 
-    func failFetchingFreshCache(_ error: Error) throws -> DataState<Data> {
-        guard let cacheStateMachine = self.cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine, fetchingFreshCacheStateMachine.isFetching else {
+    func failFetchingFreshCache(_ error: Error) throws -> CacheState<Data> {
+        guard let cacheStateMachine = cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine, fetchingFreshCacheStateMachine.isFetching else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
@@ -207,21 +191,19 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: cacheStateMachine,
                                                      fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine.failedFetching(error))
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: cacheStateMachine.cache,
-                         lastTimeFetched: fetchingFreshCacheStateMachine.lastTimeFetched,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: error,
-                         justCompletedSuccessfullyFetchingFreshData: false)
+        return CacheState(cacheExists: true,
+                          cache: cacheStateMachine.cache,
+                          cacheAge: fetchingFreshCacheStateMachine.lastTimeFetched,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: false,
+                          justFinishedFirstFetch: false,
+                          refreshError: error)
     }
 
-    func successfulFetchingFreshCache(timeFetched: Date) throws -> DataState<Data> {
-        guard let cacheStateMachine = self.cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine, fetchingFreshCacheStateMachine.isFetching else {
+    func successfulFetchingFreshCache(timeFetched: Date) throws -> CacheState<Data> {
+        guard let cacheStateMachine = cacheExistsStateMachine, let fetchingFreshCacheStateMachine = self.fetchingFreshCacheStateMachine, fetchingFreshCacheStateMachine.isFetching else {
             throw DataStateStateMachineError.nodeNotPossiblePathInStateMachine(stateOfMachine: description)
         }
 
@@ -230,17 +212,15 @@ internal class DataStateStateMachine<Data: Any> {
                                                      cacheExistsStateMachine: cacheStateMachine,
                                                      fetchingFreshCacheStateMachine: fetchingFreshCacheStateMachine.successfulFetch(timeFetched: timeFetched))
 
-        return DataState(noCacheExists: false,
-                         fetchingForFirstTime: false,
-                         cacheData: cacheStateMachine.cache,
-                         lastTimeFetched: timeFetched,
-                         isFetchingFreshData: false,
-                         requirements: requirements,
-                         stateMachine: dataStateMachine,
-                         errorDuringFirstFetch: nil,
-                         justCompletedSuccessfulFirstFetch: false,
-                         errorDuringFetch: nil,
-                         justCompletedSuccessfullyFetchingFreshData: true)
+        return CacheState(cacheExists: true,
+                          cache: cacheStateMachine.cache,
+                          cacheAge: timeFetched,
+                          isRefreshing: false,
+                          requirements: requirements,
+                          stateMachine: dataStateMachine,
+                          justFinishedSuccessfulRefresh: true,
+                          justFinishedFirstFetch: false,
+                          refreshError: nil)
     }
 }
 

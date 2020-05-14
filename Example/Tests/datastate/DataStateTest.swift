@@ -2,7 +2,7 @@
 import XCTest
 
 class DataStateTest: XCTestCase {
-    private var dataState: DataState<String>!
+    private var dataState: CacheState<String>!
     let getDataRequirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
     override func setUp() {
@@ -16,23 +16,20 @@ class DataStateTest: XCTestCase {
     }
 
     func test_none_setsCorrectProperties() {
-        dataState = DataState.none()
+        dataState = CacheState.none()
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertNil(dataState.lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertNil(dataState.cacheAge)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertNil(dataState.requirements)
         XCTAssertNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_cast_expectSetPropertiesCorrectly() {
-        dataState = DataState.none()
+        dataState = CacheState.none()
         let given = dataState
 
         let expectedNewCache: Double = 1
@@ -40,14 +37,11 @@ class DataStateTest: XCTestCase {
             expectedNewCache
         }
 
-        XCTAssertEqual(actual.cacheData, expectedNewCache)
-        XCTAssertEqual(actual.noCacheExists, given?.noCacheExists)
-        XCTAssertEqual(actual.fetchingForFirstTime, given?.fetchingForFirstTime)
-        XCTAssertEqual(actual.lastTimeFetched, given?.lastTimeFetched)
-        XCTAssertEqual(actual.isFetchingFreshData, given?.isFetchingFreshData)
-        XCTAssertNil(actual.errorDuringFirstFetch)
-        XCTAssertEqual(actual.justCompletedSuccessfulFirstFetch, given?.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(actual.errorDuringFetch)
-        XCTAssertEqual(actual.justCompletedSuccessfullyFetchingFreshData, given?.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertEqual(actual.cache, expectedNewCache)
+        XCTAssertEqual(actual.cacheExists, given?.cacheExists)
+        XCTAssertEqual(actual.cacheAge, given?.cacheAge)
+        XCTAssertEqual(actual.isRefreshing, given?.isRefreshing)
+        XCTAssertEqual(actual.justFinishedSuccessfulRefresh, given?.justFinishedSuccessfulRefresh)
+        XCTAssertNil(actual.refreshError)
     }
 }

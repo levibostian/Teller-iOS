@@ -28,21 +28,21 @@ class DataState_StateTest: XCTestCase {
      7. Cache, fetching
      8. Cache, successful fetch (not first)
      9. Cache not successful, error
-     10. None
+     10. None (cannot test, it's a fatal)
      */
 
     // 1
     func test_state_givenNoCache_expectEqual() {
-        let expectedState = DataState<String>.State.noCache(fetching: false, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.noCache(requirements: defaultRequirements).state()
+        let expectedState = CacheState<String>.State.noCache(state: (fetching: false, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.noCache(requirements: defaultRequirements).state()
 
         XCTAssertEqual(expectedState, actual)
     }
 
     // 2
     func test_state_givenNoCacheFetching_expectEqual() {
-        let expectedState = DataState<String>.State.noCache(fetching: true, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.noCache(requirements: defaultRequirements) {
+        let expectedState = CacheState<String>.State.noCache(state: (fetching: true, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.noCache(requirements: defaultRequirements) {
             $0.fetchingFirstTime()
         }.state()
 
@@ -53,8 +53,8 @@ class DataState_StateTest: XCTestCase {
     func test_state_givenNoCacheErrorDuringFetch_expectEqual() {
         let fetchError = FetchError()
 
-        let expectedState = DataState<String>.State.noCache(fetching: false, errorDuringFetch: fetchError)
-        let actual = DataState<String>.testing.noCache(requirements: defaultRequirements) {
+        let expectedState = CacheState<String>.State.noCache(state: (fetching: false, errorDuringFetch: fetchError))
+        let actual = CacheState<String>.testing.noCache(requirements: defaultRequirements) {
             $0.failedFirstFetch(error: fetchError)
         }.state()
 
@@ -66,8 +66,8 @@ class DataState_StateTest: XCTestCase {
         let fetched = Date()
         let cache = "cache"
 
-        let expectedState = DataState<String>.State.cache(cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
+        let expectedState = CacheState<String>.State.cache(state: (cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
             $0.cache(cache)
         }.state()
 
@@ -78,8 +78,8 @@ class DataState_StateTest: XCTestCase {
     func test_state_givenCacheEmpty_expectEqual() {
         let fetched = Date()
 
-        let expectedState = DataState<String>.State.cache(cache: nil, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched).state()
+        let expectedState = CacheState<String>.State.cache(state: (cache: nil, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched).state()
 
         XCTAssertEqual(expectedState, actual)
     }
@@ -88,8 +88,8 @@ class DataState_StateTest: XCTestCase {
     func test_state_givenCacheJustCompletedFirstFetch_expectEqual() {
         let fetched = Date()
 
-        let expectedState = DataState<String>.State.cache(cache: nil, lastFetched: fetched, firstCache: true, fetching: false, successfulFetch: false, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.noCache(requirements: defaultRequirements) {
+        let expectedState = CacheState<String>.State.cache(state: (cache: nil, lastFetched: fetched, firstCache: true, fetching: false, successfulFetch: true, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.noCache(requirements: defaultRequirements) {
             $0.successfulFirstFetch(timeFetched: fetched)
         }.state()
 
@@ -101,8 +101,8 @@ class DataState_StateTest: XCTestCase {
         let fetched = Date()
         let cache = "cache"
 
-        let expectedState = DataState<String>.State.cache(cache: cache, lastFetched: fetched, firstCache: false, fetching: true, successfulFetch: false, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
+        let expectedState = CacheState<String>.State.cache(state: (cache: cache, lastFetched: fetched, firstCache: false, fetching: true, successfulFetch: false, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
             $0.cache(cache)
             $0.fetching()
         }.state()
@@ -115,8 +115,8 @@ class DataState_StateTest: XCTestCase {
         let fetched = Date()
         let cache = "cache"
 
-        let expectedState = DataState<String>.State.cache(cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: true, errorDuringFetch: nil)
-        let actual = DataState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: Date()) {
+        let expectedState = CacheState<String>.State.cache(state: (cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: true, errorDuringFetch: nil))
+        let actual = CacheState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: Date()) {
             $0.cache(cache)
             $0.successfulFetch(timeFetched: fetched)
         }.state()
@@ -130,19 +130,11 @@ class DataState_StateTest: XCTestCase {
         let cache = "cache"
         let fetchError = FetchError()
 
-        let expectedState = DataState<String>.State.cache(cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: fetchError)
-        let actual = DataState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
+        let expectedState = CacheState<String>.State.cache(state: (cache: cache, lastFetched: fetched, firstCache: false, fetching: false, successfulFetch: false, errorDuringFetch: fetchError))
+        let actual = CacheState<String>.testing.cache(requirements: defaultRequirements, lastTimeFetched: fetched) {
             $0.cache(cache)
             $0.failedFetch(error: fetchError)
         }.state()
-
-        XCTAssertEqual(expectedState, actual)
-    }
-
-    // 10
-    func test_state_givenNone_expectEqual() {
-        let expectedState = DataState<String>.State.none
-        let actual = DataState<String>.testing.none().state()
 
         XCTAssertEqual(expectedState, actual)
     }

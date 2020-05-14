@@ -5,7 +5,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        if CommandLine.arguments.contains("--unit-testing") {
+            return true
+        }
+
+        window = UIWindow(frame: UIScreen.main.bounds)
+
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ViewControllerId") as! ViewController
+
+        window?.rootViewController = viewController
+        window?.makeKeyAndVisible()
+
         return true
     }
 

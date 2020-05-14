@@ -53,42 +53,42 @@ class RepositoryTest: XCTestCase {
         compositeDisposable = nil
     }
 
-    private func getFirstFetchEvent() -> DataState<String> {
+    private func getFirstFetchEvent() -> CacheState<String> {
         return try! DataStateStateMachine
             .noCacheExists(requirements: repository.requirements!).change()
             .firstFetch()
     }
 
-    private func getCacheEmptyEvent(lastTimeFetched: Date) -> DataState<String> {
+    private func getCacheEmptyEvent(lastTimeFetched: Date) -> CacheState<String> {
         return try! DataStateStateMachine
             .cacheExists(requirements: repository.requirements!, lastTimeFetched: lastTimeFetched).change()
             .cacheIsEmpty()
     }
 
-    private func getErrorFirstFetchEvent(_ error: Error) -> DataState<String> {
+    private func getErrorFirstFetchEvent(_ error: Error) -> CacheState<String> {
         return try! DataStateStateMachine
             .noCacheExists(requirements: repository.requirements!).change()
             .firstFetch().change()
             .errorFirstFetch(error: error)
     }
 
-    private func getCacheDataEvent(lastTimeFetched: Date, cachedData: String) -> DataState<String> {
+    private func getCacheDataEvent(lastTimeFetched: Date, cachedData: String) -> CacheState<String> {
         return try! DataStateStateMachine
             .cacheExists(requirements: repository.requirements!, lastTimeFetched: lastTimeFetched).change()
             .cachedData(cachedData)
     }
 
-    private func getCacheExistsNotRefreshingEvent(lastTimeFetched: Date) -> DataState<String> {
+    private func getCacheExistsNotRefreshingEvent(lastTimeFetched: Date) -> CacheState<String> {
         return DataStateStateMachine<String>
             .cacheExists(requirements: repository.requirements!, lastTimeFetched: lastTimeFetched)
     }
 
-    private func getCacheDoesNotExistNotFetchingEvent() -> DataState<String> {
+    private func getCacheDoesNotExistNotFetchingEvent() -> CacheState<String> {
         return DataStateStateMachine<String>
             .noCacheExists(requirements: repository.requirements!)
     }
 
-    private func getCacheExistsRefreshingEvent(lastTimeFetched: Date) -> DataState<String> {
+    private func getCacheExistsRefreshingEvent(lastTimeFetched: Date) -> CacheState<String> {
         return try! DataStateStateMachine<String>
             .cacheExists(requirements: repository.requirements!, lastTimeFetched: lastTimeFetched).change()
             .fetchingFreshCache()
@@ -162,7 +162,8 @@ class RepositoryTest: XCTestCase {
         let existingCache = "existing cache"
         let existingCacheFetched = Date()
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: existingCacheFetched))
-        let observeCache: Observable<String> = Observable.create { $0.onNext(existingCache)
+        let observeCache: Observable<String> = Observable.create {
+            $0.onNext(existingCache)
             return Disposables.create()
         } // Make an Observable that does not complete on it's own like: Observable.just() to test that `deinit` completes for us.
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: observeCache, fetchFreshData: Single.never()))
@@ -252,7 +253,7 @@ class RepositoryTest: XCTestCase {
         XCTAssertEqual(mockRefreshManager.invokedCancelRefreshCount, 1)
     }
 
-    func test_setRequirementsNil_observeNoneStateOfData() {
+    func test_setRequirementsNil_observe_expectNoNoneState() {
         initSyncStateManager(syncStateManagerFakeData: getSyncStateManagerFakeData(isDataTooOld: false, hasEverFetchedData: true, lastTimeFetchedData: Date()))
         let existingCache = "existing cache"
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache), fetchFreshData: Single.never()))
@@ -261,16 +262,12 @@ class RepositoryTest: XCTestCase {
 
         let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
-        let expectToReceiveNoneDataState = expectation(description: "Expect to receive none data state")
         let expectToNotDispose = expectation(description: "Expect to not stop observing")
         expectToNotDispose.isInverted = true
         compositeDisposable += repository.observe()
             .do(onNext: { state in
-                if state.cacheData == existingCache {
+                if state.cache == existingCache {
                     expectToReceiveExistingCache.fulfill()
-                }
-                if state == DataState.none() {
-                    expectToReceiveNoneDataState.fulfill()
                 }
             }, onSubscribe: {
                 expectToBeginObservingCache.fulfill()
@@ -281,7 +278,7 @@ class RepositoryTest: XCTestCase {
 
         wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
-        // This will cancel observing existing cache and go to none state.
+        // should not have any effect. Continue to observe cache.
         repository.requirements = nil
 
         waitForExpectations(timeout: TestConstants.AWAIT_DURATION, handler: nil)
@@ -300,20 +297,16 @@ class RepositoryTest: XCTestCase {
         let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
         let expectToReceiveNewCache = expectation(description: "Expect to receive new cache")
-        let expectToReceiveNoneDataState = expectation(description: "Expect to receive none data state")
         let expectToNotDispose = expectation(description: "Expect to not stop observing")
         expectToNotDispose.isInverted = true
         compositeDisposable += repository.observe()
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .do(onNext: { state in
-                if state.cacheData == existingCache {
+                if state.cache == existingCache {
                     expectToReceiveExistingCache.fulfill()
                 }
-                if state.cacheData == newCache {
+                if state.cache == newCache {
                     expectToReceiveNewCache.fulfill()
-                }
-                if state == DataState.none() {
-                    expectToReceiveNoneDataState.fulfill()
                 }
             }, onSubscribe: {
                 expectToBeginObservingCache.fulfill()
@@ -324,10 +317,7 @@ class RepositoryTest: XCTestCase {
 
         wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
-        // This will cancel observing existing cache and go to none state.
         repository.requirements = nil
-
-        wait(for: [expectToReceiveNoneDataState], timeout: TestConstants.AWAIT_DURATION)
 
         dataSource.fakeData.observeCachedData = Observable.create { $0.onNext(newCache)
             return Disposables.create()
@@ -424,7 +414,7 @@ class RepositoryTest: XCTestCase {
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         _ = try! repository.observe()
-            .filter { $0.cacheData == existingCache }
+            .filter { $0.cache == existingCache }
             .toBlocking()
             .first()
 
@@ -479,10 +469,10 @@ class RepositoryTest: XCTestCase {
         compositeDisposable += repository.observe()
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .do(onNext: { state in
-                if state.cacheData == existingCache {
+                if state.cache == existingCache {
                     expectToReceiveOldCache.fulfill()
                 }
-                if state.cacheData == newlyFetchedCache {
+                if state.cache == newlyFetchedCache {
                     expectToReceiveNewCache.fulfill()
                 }
             }, onSubscribe: {
@@ -516,7 +506,6 @@ class RepositoryTest: XCTestCase {
         // do not set requirements on the repository, yet.
 
         let expectStartObserving = expectation(description: "Expect observe to start observing cache")
-        let expectToReceiveANoneStateFirst = expectation(description: "Expect to receive a none state first")
         let expectToReceiveOldCache = expectation(description: "Expect to observe old cache data")
         expectToReceiveOldCache.assertForOverFulfill = false // I need to assert it runs at least once.
         let expectObserveToNotDispose = expectation(description: "Expect observe to not dispose and continue observing")
@@ -525,10 +514,7 @@ class RepositoryTest: XCTestCase {
         compositeDisposable += repository.observe()
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .do(onNext: { state in
-                if state == DataState.none() {
-                    expectToReceiveANoneStateFirst.fulfill()
-                }
-                if state.cacheData == existingCache {
+                if state.cache == existingCache {
                     expectToReceiveOldCache.fulfill()
                 }
             }, onSubscribe: {
@@ -538,7 +524,7 @@ class RepositoryTest: XCTestCase {
             })
             .subscribe()
 
-        wait(for: [expectStartObserving, expectToReceiveANoneStateFirst], timeout: TestConstants.AWAIT_DURATION)
+        wait(for: [expectStartObserving], timeout: TestConstants.AWAIT_DURATION)
 
         repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
@@ -663,17 +649,16 @@ class RepositoryTest: XCTestCase {
         let expectObserveToBegin = expectation(description: "Expect observe() to begin observing")
         let expectObserveToNotDispose = expectation(description: "Expect observe to not dispose")
         expectObserveToNotDispose.isInverted = true
-        let expectObserveToReceiveNoneStateOrFirstFetch = expectation(description: "Expect observe to receive none state and first fetch")
-        expectObserveToReceiveNoneStateOrFirstFetch.assertForOverFulfill = false
+        let expectObserveToReceiveFirstFetch = expectation(description: "Expect observe to receive first fetch")
+        expectObserveToReceiveFirstFetch.assertForOverFulfill = false
         let expectObserveToNotReceiveOtherEvents = expectation(description: "Expect observe to not receive any other events")
         expectObserveToNotReceiveOtherEvents.isInverted = true
         compositeDisposable += repository.observe()
             .do(onNext: { state in
                 if state == self.getFirstFetchEvent() ||
-                    state == DataState.none() ||
                     state == self.getErrorFirstFetchEvent(firstFetchFail) ||
                     state == self.getCacheDoesNotExistNotFetchingEvent() {
-                    expectObserveToReceiveNoneStateOrFirstFetch.fulfill()
+                    expectObserveToReceiveFirstFetch.fulfill()
                 } else {
                     expectObserveToNotReceiveOtherEvents.fulfill()
                 }
@@ -727,15 +712,15 @@ class RepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .do(onNext: { state in
-                if state.cacheData == existingCache {
+                if state.cache == existingCache {
                     expectToReceiveExistingCache.fulfill()
                 }
 
-                if state.errorDuringFetch != nil {
+                if state.refreshError != nil {
                     expectToReceiveFailedFetch.fulfill()
                 }
 
-                if state.cacheData == cacheAfterFetch {
+                if state.cache == cacheAfterFetch {
                     expectToReceiveCacheUpdateAfterFailedFetch.fulfill()
                 }
             }, onDispose: {
@@ -776,7 +761,7 @@ class RepositoryTest: XCTestCase {
             .noCacheExists(requirements: requirements).change()
             .firstFetch()
 
-        func getFirstCacheEvent() -> DataState<String>? {
+        func getFirstCacheEvent() -> CacheState<String>? {
             guard let timeFetched = syncStateManager.updateAgeOfData_age else {
                 return nil
             }
@@ -790,7 +775,7 @@ class RepositoryTest: XCTestCase {
                 if state == firstFetchState {
                     expectFirstFetchEvent.fulfill()
                 }
-                if state.justCompletedSuccessfulFirstFetch {
+                if state.justFinishedSuccessfulRefresh {
                     expectSuccessfulFirstFetchEvent.fulfill()
                 }
                 if let firstCacheEvent = getFirstCacheEvent(), state == firstCacheEvent {
@@ -841,7 +826,7 @@ class RepositoryTest: XCTestCase {
                 if state == firstFetchState {
                     expectFirstRepoToBeginFirstFetch.fulfill()
                 }
-                if state.justCompletedSuccessfulFirstFetch {
+                if state.justFinishedSuccessfulRefresh {
                     expectFirstRepoToSuccessfullyFinishFirstFetch.fulfill()
                 }
             })
@@ -865,7 +850,7 @@ class RepositoryTest: XCTestCase {
                 if state == firstFetchState {
                     expectSecondRepoToBeginFirstFetch.fulfill()
                 }
-                if state.justCompletedSuccessfulFirstFetch {
+                if state.justFinishedSuccessfulRefresh {
                     expectSecondRepoToSuccessfullyFinishFirstFetch.fulfill()
                 }
             })
@@ -999,7 +984,7 @@ class RepositoryTest: XCTestCase {
 
         let expectToObserveCache = expectation(description: "Expect to observe cache")
         compositeDisposable += repository.observe()
-            .map { (cacheState) -> DataState<Double> in
+            .map { (cacheState) -> CacheState<Double> in
                 cacheState.convert { (existingCache) -> Double? in
                     expectedNewCache
                 }

@@ -4,10 +4,14 @@ import RxSwift
 
 internal class MockPagingRepositoryDataSource: PagingRepositoryDataSource {
     typealias PagingRequirements = MockPagingRequirements
-    typealias Cache = String
+    typealias PagingCache = String
+    typealias NextPageRequirements = Void
     typealias Requirements = MockRequirements
-    typealias FetchResult = String
+    typealias PagingFetchResult = String
     typealias FetchError = Error
+
+    var deleteCacheCount = 0
+    var deleteCacheThen: (() -> Void)?
 
     var persistOnlyFirstPageCount = 0
     var persistOnlyFirstPageThen: (() -> Void)?
@@ -33,12 +37,21 @@ internal class MockPagingRepositoryDataSource: PagingRepositoryDataSource {
         self.maxAgeOfCache = maxAgeOfCache
     }
 
+    func getNextPagePagingRequirements(currentPagingRequirements: MockPagingRequirements, nextPageRequirements: Void) -> MockPagingRequirements {
+        return MockPagingRequirements(pageNumber: currentPagingRequirements.pagingNumber)
+    }
+
+    func deleteCache(_ requirements: MockRequirements) {
+        deleteCacheCount += 1
+        deleteCacheThen?()
+    }
+
     func persistOnlyFirstPage(requirements: MockRequirements) {
         persistOnlyFirstPageCount += 1
         persistOnlyFirstPageThen?()
     }
 
-    func fetchFreshCache(requirements: MockRequirements, pagingRequirements: MockPagingRequirements) -> Single<FetchResponse<String, Error>> {
+    func fetchFreshCache(requirements: MockRequirements, pagingRequirements: MockPagingRequirements) -> Single<FetchResponse<PagedFetchResponse<String, Void>, Error>> {
         fetchFreshDataCount += 1
         fetchFreshDataRequirements = requirements
         return fakeData.fetchFreshData
@@ -64,7 +77,7 @@ internal class MockPagingRepositoryDataSource: PagingRepositoryDataSource {
         var automaticallyRefresh: Bool
         var isDataEmpty: Bool
         var observeCachedData: Observable<String>
-        var fetchFreshData: Single<FetchResponse<String, Error>>
+        var fetchFreshData: Single<FetchResponse<PagedFetchResponse<String, Void>, Error>>
     }
 
     struct MockRequirements: RepositoryRequirements, Equatable {

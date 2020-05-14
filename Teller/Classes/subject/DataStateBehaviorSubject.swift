@@ -20,21 +20,21 @@ import RxSwift
 internal class DataStateBehaviorSubject<DataType: Any> {
     private let dataSourceQueue = DispatchQueue(label: "\(TellerConstants.namespace)DataStateBehaviorSubject_dataSourceQueue")
 
-    private let dataState: Atomic<DataState<DataType>>
+    private let dataState: Atomic<CacheState<DataType>>
 
-    internal let subject: BehaviorSubject<DataState<DataType>>
+    internal let subject: BehaviorSubject<CacheState<DataType>>
 
-    var currentState: DataState<DataType> {
+    var currentState: CacheState<DataType> {
         return try! subject.value()
     }
 
     init() {
-        let initialDataState = DataState<DataType>.none()
+        let initialDataState = CacheState<DataType>.none()
         self.subject = BehaviorSubject(value: initialDataState)
         self.dataState = Atomic(value: initialDataState)
     }
 
-    private func setNewState(_ newState: DataState<DataType>) {
+    private func setNewState(_ newState: CacheState<DataType>) {
         dataState.set(newState)
         subject.onNext(newState)
     }
@@ -43,7 +43,7 @@ internal class DataStateBehaviorSubject<DataType: Any> {
      When the `RepositoryGetDataRequirements` is changed in an `Repository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
      */
     func resetStateToNone() {
-        setNewState(DataState.none())
+        setNewState(CacheState.none())
     }
 
     func resetToNoCacheState(requirements: RepositoryRequirements) {
@@ -54,7 +54,7 @@ internal class DataStateBehaviorSubject<DataType: Any> {
         setNewState(DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched))
     }
 
-    func changeState(requirements: RepositoryRequirements, change: (DataStateStateMachine<DataType>) -> DataState<DataType>) {
+    func changeState(requirements: RepositoryRequirements, change: (DataStateStateMachine<DataType>) -> CacheState<DataType>) {
         Sync.lock(self)
         defer { Sync.unlock(self) }
 

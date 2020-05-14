@@ -32,7 +32,7 @@ class PagingRepositoryTest: XCTestCase {
         compositeDisposable = nil
     }
 
-    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<String, Error>> = Single.never(), automaticallyRefresh: Bool = true) -> MockPagingRepositoryDataSource.FakeData {
+    private func getDataSourceFakeData(isDataEmpty: Bool = false, observeCachedData: Observable<String> = Observable.empty(), fetchFreshData: Single<FetchResponse<PagedFetchResponse<String, Void>, Error>> = Single.never(), automaticallyRefresh: Bool = true) -> MockPagingRepositoryDataSource.FakeData {
         return MockPagingRepositoryDataSource.FakeData(automaticallyRefresh: automaticallyRefresh, isDataEmpty: isDataEmpty, observeCachedData: observeCachedData, fetchFreshData: fetchFreshData)
     }
 
@@ -121,8 +121,8 @@ class PagingRepositoryTest: XCTestCase {
      Baseline scenarios when the data state should not be told to persist only the first pages of cache.
      */
     func test_refresh_givenNoRefresh_givenNotFirstPage_givenCacheNotTooOld_expectDoNotOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.never(), fetchFreshData: refresh.asSingle(), automaticallyRefresh: true))
@@ -139,8 +139,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenNoRefresh_givenNotFirstPage_givenCacheTooOld_expectDoNotOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: true, observeCachedData: Observable.never(), fetchFreshData: refresh.asSingle(), automaticallyRefresh: true))
@@ -157,8 +157,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenForceRefresh_expectForceRefreshPersistsOnlyFirstPageCache() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         // Check to make sure save called on background thread.
@@ -180,8 +180,8 @@ class PagingRepositoryTest: XCTestCase {
     }
 
     func test_refresh_givenNoForceRefresh_givenObserveFirstPage_expectOnlyPersistFirstPageOfData() {
-        let refresh: ReplaySubject<FetchResponse<String, Error>> = ReplaySubject.createUnbounded()
-        refresh.onNext(Result<String, Error>.success(""))
+        let refresh: ReplaySubject<FetchResponse<PagedFetchResponse<String, Void>, Error>> = ReplaySubject.createUnbounded()
+        refresh.onNext(FetchResponse.success(PagedFetchResponse(areMorePages: false, nextPageRequirements: Void(), fetchResponse: "")))
         refresh.onCompleted()
 
         let existingCache = "existing cache"
@@ -196,7 +196,7 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == existingCache {
+                if dataState.cache?.cache == existingCache {
                     expectToGetCache.fulfill()
                 }
             })
@@ -225,7 +225,7 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == "first" {
+                if dataState.cache?.cache == "first" {
                     expectObserveCache.fulfill()
                 }
             })
@@ -249,7 +249,7 @@ class PagingRepositoryTest: XCTestCase {
 
         compositeDisposable += repository.observe()
             .subscribe(onNext: { dataState in
-                if dataState.cacheData == "first" {
+                if dataState.cache?.cache == "first" {
                     expectObserveCache.fulfill()
                 }
             })

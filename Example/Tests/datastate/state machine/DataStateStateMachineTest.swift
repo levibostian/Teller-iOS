@@ -2,7 +2,7 @@
 import XCTest
 
 class DataStateStateMachineTest: XCTestCase {
-    private var dataState: DataState<String>!
+    private var dataState: CacheState<String>!
     let getDataRequirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
     override func setUp() {
@@ -25,17 +25,14 @@ class DataStateStateMachineTest: XCTestCase {
     func test_noCacheExists_setsCorrectProperties() {
         dataState = DataStateStateMachine.noCacheExists(requirements: getDataRequirements)
 
-        XCTAssertTrue(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertNil(dataState.lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertFalse(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertNil(dataState.cacheAge)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_noCacheExists_travelingToNextNode() {
@@ -54,17 +51,14 @@ class DataStateStateMachineTest: XCTestCase {
         let lastTimeFetched = Date()
         dataState = DataStateStateMachine.cacheExists(requirements: getDataRequirements, lastTimeFetched: lastTimeFetched)
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_cacheExists_travelingToNextNode() {
@@ -89,17 +83,14 @@ class DataStateStateMachineTest: XCTestCase {
         dataState = DataStateStateMachine.noCacheExists(requirements: getDataRequirements)
         dataState = try! dataState.change().firstFetch()
 
-        XCTAssertTrue(dataState.noCacheExists)
-        XCTAssertTrue(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertNil(dataState.lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertFalse(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertNil(dataState.cacheAge)
+        XCTAssertTrue(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_firstFetch_travelingToNextNode() {
@@ -129,17 +120,14 @@ class DataStateStateMachineTest: XCTestCase {
         let fetchFail: Error = Failure()
         dataState = try! dataState.change().errorFirstFetch(error: fetchFail)
 
-        XCTAssertTrue(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertNil(dataState.lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertFalse(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertNil(dataState.cacheAge)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: dataState.errorDuringFirstFetch, rhs: fetchFail))
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNotNil(dataState.refreshError)
     }
 
     func test_errorFirstFetch_travelingToNextNode() {
@@ -170,17 +158,14 @@ class DataStateStateMachineTest: XCTestCase {
         let lastTimeFetched = Date()
         dataState = try! dataState.change().successfulFirstFetch(timeFetched: lastTimeFetched)
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertTrue(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertTrue(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_successfulFirstFetch_travelingToNextNode() {
@@ -208,17 +193,14 @@ class DataStateStateMachineTest: XCTestCase {
         dataState = try! dataState.change().fetchingFreshCache()
         dataState = try! dataState.change().cacheIsEmpty()
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertNil(dataState.cacheData)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertTrue(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertNil(dataState.cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertTrue(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_cacheIsEmpty_travelingToNextNode() {
@@ -247,17 +229,14 @@ class DataStateStateMachineTest: XCTestCase {
         let cache = "cache"
         dataState = try! dataState.change().cachedData(cache)
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertEqual(dataState.cacheData, cache)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertTrue(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertEqual(dataState.cache, cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertTrue(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_cachedData_travelingToNextNode() {
@@ -287,17 +266,14 @@ class DataStateStateMachineTest: XCTestCase {
         dataState = try! dataState.change().cachedData(cache)
         dataState = try! dataState.change().fetchingFreshCache()
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertEqual(dataState.cacheData, cache)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertTrue(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertEqual(dataState.cache, cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertTrue(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_fetchingFreshCache_travelingToNextNode() {
@@ -331,17 +307,14 @@ class DataStateStateMachineTest: XCTestCase {
         let fetchFailure = Failure()
         dataState = try! dataState.change().failFetchingFreshCache(fetchFailure)
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertEqual(dataState.cacheData, cache)
-        XCTAssertEqual(dataState.lastTimeFetched, lastTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertEqual(dataState.cache, cache)
+        XCTAssertEqual(dataState.cacheAge, lastTimeFetched)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertTrue(ErrorsUtil.areErrorsEqual(lhs: dataState.errorDuringFetch, rhs: fetchFailure))
-        XCTAssertFalse(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertFalse(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNotNil(dataState.refreshError)
     }
 
     func test_failFetchingFreshCache_travelingToNextNode() {
@@ -376,17 +349,14 @@ class DataStateStateMachineTest: XCTestCase {
         let newTimeFetched = Date()
         dataState = try! dataState.change().successfulFetchingFreshCache(timeFetched: newTimeFetched)
 
-        XCTAssertFalse(dataState.noCacheExists)
-        XCTAssertFalse(dataState.fetchingForFirstTime)
-        XCTAssertEqual(dataState.cacheData, cache)
-        XCTAssertEqual(dataState.lastTimeFetched, newTimeFetched)
-        XCTAssertFalse(dataState.isFetchingFreshData)
+        XCTAssertTrue(dataState.cacheExists)
+        XCTAssertEqual(dataState.cache, cache)
+        XCTAssertEqual(dataState.cacheAge, newTimeFetched)
+        XCTAssertFalse(dataState.isRefreshing)
         XCTAssertEqual(dataState.requirements! as! MockRepositoryDataSource.MockRequirements, getDataRequirements)
         XCTAssertNotNil(dataState.stateMachine)
-        XCTAssertNil(dataState.errorDuringFirstFetch)
-        XCTAssertFalse(dataState.justCompletedSuccessfulFirstFetch)
-        XCTAssertNil(dataState.errorDuringFetch)
-        XCTAssertTrue(dataState.justCompletedSuccessfullyFetchingFreshData)
+        XCTAssertTrue(dataState.justFinishedSuccessfulRefresh)
+        XCTAssertNil(dataState.refreshError)
     }
 
     func test_successfulFetchingFreshCache_travelingToNextNode() {
