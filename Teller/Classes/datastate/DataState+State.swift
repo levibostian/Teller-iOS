@@ -61,14 +61,14 @@ extension CacheState.State: Equatable where CacheType: Equatable {
     public static func == (lhs: CacheState<CacheType>.State, rhs: CacheState<CacheType>.State) -> Bool {
         switch (lhs, rhs) {
         case (let .noCache(state1), .noCache(let state2)):
-            return state1.isRefreshing == state2.isRefreshing &&
+            return state1.fetching == state2.fetching &&
                 ErrorsUtil.areErrorsEqual(lhs: state1.refreshError, rhs: state2.refreshError)
         case (let .cache(state1), .cache(let state2)):
             return state1.cache == state2.cache &&
-                state1.cacheAge.timeIntervalSince1970 == state2.cacheAge.timeIntervalSince1970 &&
-                state1.justFinishedFirstFetch == state2.justFinishedFirstFetch &&
-                state1.isRefreshing == state2.isRefreshing &&
-                state1.justFinishedSuccessfulRefresh == state2.justFinishedSuccessfulRefresh &&
+                state1.lastFetched.timeIntervalSince1970 == state2.lastFetched.timeIntervalSince1970 &&
+                state1.firstCache == state2.firstCache &&
+                state1.fetching == state2.fetching &&
+                state1.successfulFetch == state2.successfulFetch &&
                 ErrorsUtil.areErrorsEqual(lhs: state1.refreshError, rhs: state2.refreshError)
         default:
             return false
