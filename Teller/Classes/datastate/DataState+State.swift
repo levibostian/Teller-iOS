@@ -37,17 +37,3 @@ extension CacheState {
         }
     }
 }
-
-extension CacheState.State: Equatable where CacheType: Equatable {
-    public static func == (lhs: CacheState<CacheType>.State, rhs: CacheState<CacheType>.State) -> Bool {
-        switch (lhs, rhs) {
-        case (let .noCache, .noCache):
-            return true
-        case (let .cache(state1), .cache(let state2)):
-            return state1.cache == state2.cache &&
-                state1.cacheAge.timeIntervalSince1970 == state2.cacheAge.timeIntervalSince1970
-        default:
-            return false
-        }
-    }
-}
