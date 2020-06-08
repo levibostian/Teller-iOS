@@ -59,6 +59,8 @@
 		F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D27547216687D400D89CA5 /* GitHubService.swift */; };
 		F7D8F609248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F608248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift */; };
 		F7D8F60B248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60A248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift */; };
+		F7D8F610248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */; };
+		F7D8F611248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */; };
 		F7DDEDA221B00A6A005ADF92 /* DataStateStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA121B00A6A005ADF92 /* DataStateStateMachineTest.swift */; };
 		F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */; };
 		F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */; };
@@ -142,6 +144,7 @@
 		F7D27547216687D400D89CA5 /* GitHubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubService.swift; sourceTree = "<group>"; };
 		F7D8F608248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryDataSourceMockTest.swift; sourceTree = "<group>"; };
 		F7D8F60A248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryRequirementsForTesting.swift; sourceTree = "<group>"; };
+		F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITableViewExtensions.swift; sourceTree = "<group>"; };
 		F7DDEDA121B00A6A005ADF92 /* DataStateStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateMachineTest.swift; sourceTree = "<group>"; };
@@ -229,6 +232,7 @@
 				F7EA12462464ABDD00C2AEFE /* KeyValueStorage.swift */,
 				F7EA124A2464AEA600C2AEFE /* StringExtensions.swift */,
 				F7EA124D2464AEBC00C2AEFE /* DataExtensions.swift */,
+				F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */,
 			);
 			name = "Example for Teller";
 			path = Teller;
@@ -653,6 +657,7 @@
 				F7EA12472464ABDD00C2AEFE /* KeyValueStorage.swift in Sources */,
 				F7EA124E2464AEBC00C2AEFE /* DataExtensions.swift in Sources */,
 				F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */,
+				F7D8F610248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */,
 				F7EA124B2464AEA600C2AEFE /* StringExtensions.swift in Sources */,
 				F7EA12442464A6F300C2AEFE /* MoyaLogger.swift in Sources */,
 				F7B5CD06216682C900EDC914 /* ExampleRepository.swift in Sources */,
@@ -675,6 +680,7 @@
 				F782856823317D2B00CD7807 /* GitHubService.swift in Sources */,
 				F782856423317C4400CD7807 /* ExampleRepository.swift in Sources */,
 				F7818C6121517C820050607E /* MockRepositoryDataSource.swift in Sources */,
+				F7D8F611248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */,
 				F7EA124C2464AEA600C2AEFE /* StringExtensions.swift in Sources */,
 				F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */,
 				F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */,

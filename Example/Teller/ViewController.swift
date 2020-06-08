@@ -14,6 +14,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        tableView.showFooter = false // hide by default
+
         scrollingManager = ScrollingTableViewManager(tableView: tableView)
         scrollingManager.delegate = self
         tableView.dataSource = self
@@ -29,6 +31,8 @@ class ViewController: UIViewController {
                         let repoNames = pagedCache.cache
 
                         print("number of repos: \(repoNames.count)")
+
+                        self.tableView.showFooter = pagedCache.areMorePages
 
                         self.repoNames = repoNames
                         self.tableView.reloadData()
