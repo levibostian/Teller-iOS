@@ -258,8 +258,9 @@ class RepositoryTest: XCTestCase {
         let existingCache = "existing cache"
         initDataSource(fakeData: getDataSourceFakeData(isDataEmpty: false, observeCachedData: Observable.just(existingCache), fetchFreshData: Single.never()))
         initRepository()
-        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
+        let doNotExpectToObserveNone = expectation(description: "Expect to *not* observe none case")
+        doNotExpectToObserveNone.isInverted = true
         let expectToBeginObservingCache = expectation(description: "Expect to begin observing cache")
         let expectToReceiveExistingCache = expectation(description: "Expect to receive existing cache")
         let expectToNotDispose = expectation(description: "Expect to not stop observing")
@@ -269,12 +270,17 @@ class RepositoryTest: XCTestCase {
                 if state.cache == existingCache {
                     expectToReceiveExistingCache.fulfill()
                 }
+                if state == CacheState.none() {
+                    doNotExpectToObserveNone.fulfill()
+                }
             }, onSubscribe: {
                 expectToBeginObservingCache.fulfill()
             }, onDispose: {
                 expectToNotDispose.fulfill()
             })
             .subscribe()
+
+        repository.requirements = MockRepositoryDataSource.MockRequirements(randomString: nil)
 
         wait(for: [expectToBeginObservingCache, expectToReceiveExistingCache], timeout: TestConstants.AWAIT_DURATION)
 
