@@ -23,12 +23,12 @@ jobs:
   - stage: commit 
     script:
       - fastlane scan
-      - pod lib lint
-  - stage: pr
-    script:
       - pod lib lint --allow-warnings
+  - stage: pr
+    script:      
       - fastlane scan       
-      - danger --fail-on-errors=true 
+      - pod lib lint --allow-warnings
+#      - danger --fail-on-errors=true 
   - stage: deploy
     script: 
       - pod trunk push
