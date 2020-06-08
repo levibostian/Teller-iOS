@@ -15,7 +15,7 @@ Building an iOS app that fetches data from a network? With Teller, you can add a
 
 ## What is Teller?
 
-Caching the data that your app fetches from a network can make your app much more enjoyable to use. 
+Caching the data that your app fetches from a network call can make your app much more enjoyable to use. 
 
 1. Less loading screens. When the user of your app opens the app, they can view the cache without having to sit through a loading screen. 
 2. Help your user perform tasks, faster. When your user opens up your app, they want to complete a task within seconds. By using a cache, you can show data to your user faster to allow them to complete tasks. 
@@ -26,19 +26,24 @@ However, adding a cache to your app takes work. You need to...
 1. Fetch, save, and query the cache from a network. 
 2. Parse the cache to determine what state it is in. 
 3. Make sure you do not unnecessary fetches to update the device fetch (to save user battery) but you also don't want to fetch too infrequent or the cache will be out-of-date. 
+4. Handle [pagination](https://en.wikipedia.org/wiki/Pagination) for network data that is endless. 
 
-Teller takes care of tasks 2 and 3 outlined above. All you need to do is tell Teller how to fetch, save, and query the device cache and Teller takes care of the rest. 
+Teller takes care of all of the tasks above except #1 (that part if your job). All you need to do is tell Teller how to fetch, save, and query the device cache and Teller takes care of the rest. 
 
 This allows you to add a cache to your app within minutes without the boilerplate. 
+
+### Are you building an offline-first mobile app?
+
+Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy](https://github.com/levibostian/wendy-ios) (there is an [Android version too](https://github.com/levibostian/wendy-android)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at `GET` calls for your network API, Wendy is really good at `PUT, POST, DELETE` network API calls. Teller *pulls* data, Wendy *pushes* data. These 2 libraries work really nicely together! 
 
 ## Why use Teller?
 
 Not only does Teller help you add a cache to your app quickly and easily, Teller also allows you to make your app more transparent to your users. You will easily be able to tell your users...
 
-1. Exactly how old the cache is
-2. If the local cache they are looking at is being updated now (via a network call) or not
-3. If there was a fetch, if there was an error or not
-4. If the cache has ever been fetched successfully before or not
+1. Exactly how old the cache is.
+2. If the local cache they are looking at is being updated now (via a network call) or not.
+3. If there was a fetch, if there was an error or not.
+4. If the cache has ever been fetched successfully before or not.
 
 When you add a cache to your app it is important to be transparent about the cache so the user understands the state of the cache. Teller handles all of this for you. 
 
@@ -49,6 +54,7 @@ There are also some other benefits of Teller:
 * Not opinionated. Teller does not care where your data is stored or how it is queried. You simply tell Teller when you're done fetching, saving, and querying and Teller takes care of delivering it to the listeners.
 * Well tested. Currently running in production apps and includes unit/integration tests around code base. 
 * ~~Full documentation~~ (coming soon. In the meantime, this README is all the documentation you need)
+* Add a cache to your network calls that use [pagination](https://en.wikipedia.org/wiki/Pagination). 
 
 ## Installation
 
@@ -67,6 +73,8 @@ After using Teller for a handful of years now, I have been able to mature the li
 # Getting started
 
 Teller is designed with 1 goal in mind: Help you add cache support to your app quickly and easily. You help Teller understand where the cache is saved, how to get it, and Teller takes care of the rest. Let's get going. 
+
+*Note: If you're looking to using pagination with Teller, read this getting started guide first and then read [the pagination section](#pagination) to learn how to do that.*
 
 * First, create an implementation of `RepositoryDataSource`. 
 
@@ -109,9 +117,11 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     typealias FetchResult = [Repo]
     typealias FetchError = Error
     
+    // How old a cache can be before it's considered old and an automatic refresh should be performed. 
+    // Teller tries to reduce the number of network calls performed to save on bandwidth of your user's device. 
     var maxAgeOfCache: Period = Period(unit: 5, component: .hour)
     
-    func fetchFreshCache(requirements: ReposRepositoryRequirements) -> Single<FetchResponse<[Repo], FetchError>> {
+    func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<Cache, FetchError>> {
         // Return network call that returns a RxSwift Single.
         // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
                 
@@ -125,13 +135,13 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     }
     
     // Note: Teller runs this function from a background thread.
-    func saveCache(_ fetchedData: [Repo], requirements: ReposRepositoryRequirements) throws {
+    func saveCache(_ fetchedData: Cache, requirements: Requirements) throws {
         // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
         // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
     }
     
     // Note: Teller runs this function from the UI thread
-    func observeCache(requirements: ReposRepositoryRequirements) -> Observable<[Repo]> {
+    func observeCache(requirements: Requirements) -> Observable<Cache> {
         // Return Observable that is observing the cached data.
         //
         // When any of the repos in the database have been changed, we want to trigger an Observable update.
@@ -141,14 +151,14 @@ class ReposRepositoryDataSource: RepositoryDataSource {
     }
 
     // Note: Teller runs this function from the same thread as `observeCachedData()`
-    func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements) -> Bool {
+    func isCacheEmpty(_ cache: Cache, requirements: Requirements) -> Bool {
         return cache.isEmpty
     }
     
 }
 ```
 
-* The last step. Observe your cache. Do this with a `Repository` instance.
+* The last step. Observe your cache. Do this with a `TellerRepository` instance.
 
 ```swift 
 let disposeBag = DisposeBag()
@@ -159,27 +169,207 @@ repository
     .observe()
     .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
     .subscribeOn(MainScheduler.instance)
-    .subscribe(onNext: { (dataState: CacheState<[Repo]>) in
-        switch dataState.state {
-        case .none: break
-            // It is currently undetermined if there is a cache or not. This usually happens when switching requirements in a Repository. 
-        case .noCache(let fetching, let errorDuringFetch):
+    .subscribe(onNext: { (cacheState: CacheState<[Repo]>) in
+        // Teller provides a handy way to parse the `CacheState` to understand the state your cache is in. 
+        switch cacheState.state {
+        // No cache exists. A successful network request has not happened yet. 
+        case .noCache:
             // Repos have never been fetched before for the GitHub user.
             break
-        case .cache(let cache, let lastFetched, let firstCache, let fetching, let successfulFetch, let errorDuringFetch):
-            // Repos have been fetched before for the GitHub user.
-            // If `cache` is nil, the cache is empty.
-            break
+        case .cache(let cache, let cacheAge):            
+            // Repos have been fetched before for the GitHub user.            
+            let isCacheEmpty = cache == nil // If `cache` is nil, the cache is empty.
+            // Use `cacheAge` in your UI to tell the user how long ago the last successful network request was. 
         }
+
+        // You can inspect a lot more about the state of your cache. 
+        cacheState.isRefreshing // If a network request is happening right now to refresh the cache
+        cacheState.justFinishedFirstFetch // The first successful network call just finished
+        cacheState.refreshError // Get error from network call if there was one during refresh
+        // ... and more. Use these properties in the UI of your app to be transparent about your cache!
     })
     .disposed(by: disposeBag)
 ```
 
-Done! You are using Teller!
+In order for Teller to do it's magic, you need to (1) initialize the `requirements` property and (2) `observe()` the `TellerRepository` instance. This gives Teller the information it needs to begin. If you forget to set `requirements`, nothing will happen when you `observe()`. 
 
-In order for Teller to do it's magic, you need to (1) initialize the `requirements` property and (2) `observe()` the `TellerRepository` instance. This gives Teller the information it needs to begin. 
+Done! You are using Teller! Continue reading this document to learn about the advanced 
 
-Enjoy!
+# Pagination 
+
+It's assumed that you have read the [getting started](#getting-started) section. This section will build on top of that. 
+
+Teller does all of the hard work for adding pagination to your app's cache. All you need to do is take what you learned about how to use Teller thus far and add a few more functions. 
+
+* First, create an implementation of `PagingRepositoryDataSource`. This example will build upon the DataSource in the [getting started](#getting-started) section.
+
+```swift
+// `PagingRepositoryRequirements` is a special object used to understand how to fetch pages of data from a network. 
+// Some APIs you work with might
+// ...use a page number, like GitHub: https://developer.github.com/v3/guides/traversing-with-pagination/
+// ...use an ID of your last retrieved item, like SoundCloud https://developers.soundcloud.com/docs/api/guide#pagination
+// ...use an ID of the first and last retrieved item, like Twitter  https://developer.twitter.com/en/docs/ads/general/guides/pagination
+// 
+// Whatever your API uses, you put those properties in this object to keep track of what page you are viewing now. 
+struct ReposPagingRequirements: PagingRepositoryRequirements {
+    let pageNumber: Int
+
+    func nextPage() -> ReposPagingRequirements {
+        return ReposPagingRequirements(pageNumber: pageNumber + 1)
+    }
+}
+
+class ReposRepositoryDataSource: PagingRepositoryDataSource {
+    // The data type your cache is. What `observe()` will use. 
+    typealias PagingCache = [Repo]
+    // `RepositoryRequirements` subclass you're using
+    typealias Requirements = ReposRepositoryRequirements
+    // `PagingRepositoryRequirements` subclass you're using
+    typealias PagingRequirements = ReposPagingRequirements
+    // If you're using an API like Twitter or SoundCloud where future network calls depend 
+    // data discovered from the previous network call, this field takes care of that. 
+    // Use an Int, String, Tuple, Struct, etc for this. 
+    // The GitHub API will simply go to the next page number so this field is not used.     
+    typealias NextPageRequirements = Void
+    // The data type returned from network calls. 
+    typealias PagingFetchResult = [Repo]
+    // Use a custom Error for network calls in your fetch calls. 
+    typealias FetchError = Error
+
+    static let reposPageSize = 50
+
+    // You can use whatever method you wish for performing a HTTP network call. Moya is used in this example. 
+    let moyaProvider = MoyaProvider<GitHubService>(plugins: [HttpLoggerMoyaPlugin()])
+    let keyValueStorage = UserDefaultsKeyValueStorage(userDefaults: UserDefaults.standard)
+
+    var maxAgeOfCache: Period = Period(unit: 5, component: .hour)
+
+    var currentRepos: [Repo] {
+        guard let currentReposData = keyValueStorage.string(forKey: .repos)?.data else {
+            return []
+        }
+
+        return try! JSONDecoder().decode([Repo].self, from: currentReposData)
+    }
+
+    // When you call `goToNextPage()` on your `TellerPagingRepository`, this function is called to get a new `PagingRequirements` for the next network call. 
+    func getNextPagePagingRequirements(currentPagingRequirements: PagingRequirements, nextPageRequirements: NextPageRequirements?) -> PagingRequirements {
+        return currentPagingRequirements.nextPage()
+    }
+
+    // Teller will call this automatically when it needs. You need to delete all of your cache for the given `Requirements`. 
+    // Note: Teller runs this function from a background thread.
+    func deleteCache(_ requirements: Requirements) {
+        keyValueStorage.delete(key: .repos)
+    }
+
+    // Teller will call this automatically when it needs. You need to delete all of your cache for the given `Requirements` *except* for the first page of cache.
+    // Note: Teller runs this function from a background thread.
+    func persistOnlyFirstPage(requirements: ReposRepositoryRequirements) {
+        let currentRepos = self.currentRepos
+        guard currentRepos.count > ReposRepositoryDataSource.reposPageSize else {
+            return
+        }
+
+        let firstPageRepos = Array(currentRepos[0...ReposRepositoryDataSource.reposPageSize])
+
+        keyValueStorage.setString((try! JSONEncoder().encode(firstPageRepos)).string!, forKey: .repos)
+    }
+
+    // The network call function has changed in the return type that you return. 
+    func fetchFreshCache(requirements: ReposRepositoryRequirements, pagingRequirements: PagingRequirements) -> Single<FetchResponse<FetchResult, Error>> {
+        // Return network call that returns a RxSwift Single.
+        // The project Moya (https://github.com/moya/moya) is my favorite library to do this.
+        return moyaProvider.rx.request(.listRepos(user: requirements.username, pageNumber: pagingRequirements.pageNumber))
+            .map { (response) -> FetchResponse<FetchResult, FetchError> in
+                let repos = try! JSONDecoder().decode([Repo].self, from: response.data)
+
+                let responseHeaders = response.response!.allHeaderFields
+                let paginationNext = responseHeaders["link"] as? String ?? responseHeaders["Link"] as! String
+                let areMorePagesAvailable = paginationNext.contains("rel=\"next\"")
+
+                // When using pagination, Teller requires your fetch function to return more information regarding the network calls. 
+                // You need to determine if there are more pages to fetch, or not. 
+                // Also, populate `nextPageRequirements` with whatever you want that will get passed to `getNextPagePagingRequirements` when you call `goToNextPage()`. 
+                // 
+                // If there was a failure, use FetchResponse.failure(Error) and the error will be sent to your user in the UI
+                return FetchResponse.success(PagedFetchResponse(areMorePages: areMorePagesAvailable, nextPageRequirements: nil, fetchResponse: repos))
+            }
+    }
+
+    // Save the cache. Friendly reminder to *append* the new cache to storage. You don't want to replace the cache you already have as pagination builds on top of each other. 
+    // Note: Teller runs this function from a background thread.    
+    func saveCache(_ cache: [Repo], requirements: ReposRepositoryRequirements, pagingRequirements: PagingRequirements) throws {
+        // Save data to CoreData, Realm, UserDefaults, File, whatever you wish here.
+        // If there is an error, you may throw it, and have it get passed to the observer of the Repository.
+        var combinedRepos = currentRepos
+        combinedRepos.append(contentsOf: cache)
+
+        keyValueStorage.setString((try! JSONEncoder().encode(combinedRepos)).string!, forKey: .repos)
+    }
+
+    // This function has not changed from the getting started guide.     
+    // Note: Teller runs this function from the UI thread
+    func observeCache(requirements: ReposRepositoryRequirements, pagingRequirements: ReposPagingRequirements) -> Observable<PagingCache> {
+        // Return Observable that is observing the cached data.
+        //
+        // When any of the repos in the database have been changed, we want to trigger an Observable update.
+        // Teller may call `observeCachedData` regularly to keep data fresh.
+
+        return keyValueStorage.observeString(forKey: .repos)
+            .map { (string) -> PagingCache in
+                try! JSONDecoder().decode([Repo].self, from: string.data!)
+            }
+    }
+
+    // This function has not changed from the getting started guide.   
+    // Note: Teller runs this function from the same thread as `observeCachedData()`
+    func isCacheEmpty(_ cache: [Repo], requirements: ReposRepositoryRequirements, pagingRequirements: ReposPagingRequirements) -> Bool {
+        return cache.isEmpty
+    }
+}
+```
+
+* The last step. Observe your cache. Do this with a `TellerPagingRepository` instance.
+
+```swift 
+let disposeBag = DisposeBag()
+let repository = TellerPagingRepository(dataSource: ReposRepositoryDataSource(), firstPageRequirements: ReposRepositoryDataSource.PagingRequirements(pageNumber: 1))
+
+let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
+repository.requirements = reposGetDataRequirements
+repository
+    .observe()
+    .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+    .subscribeOn(MainScheduler.instance)
+    .subscribe(onNext: { (dataState: CacheState<PagedCache<[Repo]>>) in
+        switch dataState.state {
+        case .noCache:
+            // Repos have never been fetched before for the GitHub user.
+            break
+        case .cache(let cache, let cacheAge):
+            // Repos have been fetched before for the GitHub user.
+            // If `cache` is nil, the cache is empty.
+            if let pagedCache = cache {
+                let repositories = pagedCache.cache
+                let areMorePages = pagedCache.areMorePages
+
+                // Show/hide a "Loading more" footer in your UITableView by `areMorePages` value.
+            } else {
+                // The cache is empty! There are no repos for that particular username.
+                // Display a view in your app that tells the user there are no repositories to show.
+            }
+
+            // Access all of the properties you're used to when not using pagination:
+            cacheState.isRefreshing
+        }
+    })
+    .disposed(by: disposeBag)
+
+// When the `UITableView` is scrolled down to the bottom, do...
+repository.goToNextPage()
+// ...and the next page of cache will be fetched!
+```
 
 ## Keep app data up-to-date
 
@@ -272,15 +462,15 @@ It's recommended to keep the default functionality of enabling this feature. How
 
 Teller was built with unit/integration/UI testing in mind. Here is how to use Teller in your tests:
 
-## Write unit tests against `RepositoryDataSource` implementations
+## Write unit tests against `RepositoryDataSource` or `PagingRepositoryDataSource` implementations
 
-Your implementations of `RepositoryDataSource` should be no problem. `RepositoryDataSource` is just a protocol. You can unit test your implementation using dependency injection, for example, to test all of the functions of `RepositoryDataSource`. 
+Your implementations of `RepositoryDataSource` or `PagingRepositoryDataSource` should be no problem. `RepositoryDataSource` and `PagingRepositoryDataSource` are just protocols. You can unit test your implementation using dependency injection, for example, to test all of the functions of `RepositoryDataSource` or `PagingRepositoryDataSource`. 
 
-## Write unit tests for code that depends on `TellerRepository`
+## Write unit tests for code that depends on `TellerRepository` or `TellerPagingRepository`
 
-For your app's code that uses the Teller `TellerRepository` class, use the pre-built `TellerRepository` mock for your unit tests. Inject the mock into your class under test using dependency injection. 
+For your app's code that uses the Teller `TellerRepository` or `TellerPagingRepository` class, use the pre-built `TellerRepositoryMock` or `TellerPagingRepositoryMock` for your unit tests. Inject the mock into your class under test using dependency injection. 
 
-Here is an example XCTest for unit testing a class that depends on Teller's `TellerRepository`. 
+Here is an example XCTest for unit testing a class that depends on Teller's `TellerRepository` (use the same concept below for working with `TellerPagingRepository` except use `TellerPagingRepositoryMock`). 
 
 ```swift
 import RxBlocking
@@ -294,7 +484,7 @@ class RepositoryViewModelTest: XCTestCase {
 
     override func setUp() {
         // Create an instance of `RepositoryMock`
-        repository = RepositoryMock(dataSource: ReposRepositoryDataSource())
+        repository = TellerRepositoryMock(dataSource: ReposRepositoryDataSource())
         // Provide the repository mock to your code under test with dependency injection
         viewModel = ReposViewModel(reposRepository: repository)
     }
@@ -427,17 +617,13 @@ class YourIntegrationTests: XCTestCase {
 
 ## Example app
 
-This library does *not* yet have a fully functional example iOS app created (yet). However, if you check out the directory: `Example/Teller/` you will see example code snippets that you can use to learn about how to use Teller, learn best practices, and compile inside of XCode. 
+However, if you check out the directory: `Example/Teller/` you will see a fully functional iOS app with code snippets you can use to learn about how to use Teller, learn best practices, and compile inside of XCode. 
 
 ## Documentation
 
 Documentation is coming shortly. This README is all of the documentation created thus far.
 
 If you read the README and still have questions, please, [create an issue](https://github.com/levibostian/teller-ios/issues/new) with your question. I will respond with an answer and update the README docs to help others in the future. 
-
-## Are you building an offline-first mobile app?
-
-Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy](https://github.com/levibostian/wendy-ios) (there is an [Android version too](https://github.com/levibostian/wendy-android)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at `GET` calls for your network API, Wendy is really good at `PUT, POST, DELETE` network API calls. Teller *pulls* data, Wendy *pushes* data. These 2 libraries work really nicely together! 
 
 ## Development 
 

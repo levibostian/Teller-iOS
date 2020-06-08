@@ -129,7 +129,7 @@ class ReposRepositoryDataSource: PagingRepositoryDataSource {
 class ExampleUsingRepository {
     func observe() {
         let disposeBag = DisposeBag()
-        let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
+        let repository = TellerPagingRepository(dataSource: ReposRepositoryDataSource(), firstPageRequirements: ReposRepositoryDataSource.PagingRequirements(pageNumber: 1))
 
         let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements
@@ -145,7 +145,15 @@ class ExampleUsingRepository {
                 case .cache(let cache, let cacheAge):
                     // Repos have been fetched before for the GitHub user.
                     // If `cache` is nil, the cache is empty.
-                    break
+                    if let pagedCache = cache {
+                        let repositories = pagedCache.cache
+                        let areMorePages = pagedCache.areMorePages
+
+                        // Show/hide a "Loading more" footer in your UITableView by `areMorePages` value.
+                    } else {
+                        // The cache is empty! There are no repos for that particular username.
+                        // Display a view in your app that tells the user there are no repositories to show.
+                    }
                 }
             })
             .disposed(by: disposeBag)
@@ -153,7 +161,7 @@ class ExampleUsingRepository {
 
     func refreshIfNoCache() {
         let disposeBag = DisposeBag()
-        let repository = TellerRepository(dataSource: ReposRepositoryDataSource())
+        let repository = TellerPagingRepository(dataSource: ReposRepositoryDataSource(), firstPageRequirements: ReposRepositoryDataSource.PagingRequirements(pageNumber: 1))
 
         let reposGetDataRequirements = ReposRepositoryDataSource.Requirements(username: "username to get repos for")
         repository.requirements = reposGetDataRequirements
