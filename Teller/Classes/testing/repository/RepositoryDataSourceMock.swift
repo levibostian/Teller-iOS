@@ -6,10 +6,11 @@ import RxSwift
 
  Note: Unit tests will not fully test your implementation of Teller in your app. Create a mix of unit and integration tests in order to get good test coverage.
  */
-public class RepositoryDataSourceMock<Cache: Any, Requirements: RepositoryRequirements, FetchResult: Any>: RepositoryDataSource {
+public class RepositoryDataSourceMock<Cache: Any, Requirements: RepositoryRequirements, FetchResult: Any, FetchError: Error>: RepositoryDataSource {
     public typealias Cache = Cache
     public typealias Requirements = Requirements
     public typealias FetchResult = FetchResult
+    public typealias FetchError = FetchError
 
     public var mockCalled: Bool = false // if *any* interactions done on mock. Sets/gets or methods called.
 
@@ -44,8 +45,8 @@ public class RepositoryDataSourceMock<Cache: Any, Requirements: RepositoryRequir
     }
 
     public var fetchFreshCacheInvocations: [Requirements] = []
-    public var fetchFreshCacheClosure: ((Requirements) -> Single<FetchResponse<FetchResult, Error>>)?
-    public func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult, Error>> {
+    public var fetchFreshCacheClosure: ((Requirements) -> Single<FetchResponse<FetchResult, FetchError>>)?
+    public func fetchFreshCache(requirements: Requirements) -> Single<FetchResponse<FetchResult, FetchError>> {
         mockCalled = true
         fetchFreshCacheCallsCount += 1
         fetchFreshCacheInvocations.append(requirements)

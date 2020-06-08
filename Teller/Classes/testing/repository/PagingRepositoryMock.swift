@@ -22,6 +22,21 @@ public class TellerPagingRepositoryMock<DataSource: PagingRepositoryDataSource>:
         }
     }
 
+    public var goToNextPageCallsCount = 0
+    public var goToNextPageCalled: Bool {
+        return goToNextPageCallsCount > 0
+    }
+
+    public var goToNextPageClosure: (() -> Void)?
+
+    override public func goToNextPage() {
+        mockCalled = true
+        goToNextPageCallsCount += 1
+        goToNextPageClosure?()
+
+        super.goToNextPage()
+    }
+
     /**
      Below is a direct copy/paste from Repository mock.
      */

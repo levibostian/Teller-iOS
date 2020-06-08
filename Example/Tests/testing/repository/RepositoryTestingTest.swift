@@ -6,8 +6,8 @@ import XCTest
  */
 class RepositoryTestingTest: XCTestCase {
     private let defaultRequirements = RepositoryRequirementsForTesting(foo: "")
-    private var dataSource: RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>!
-    private var repository: TellerRepository<RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>>!
+    private var dataSource: RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String, Error>!
+    private var repository: TellerRepository<RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String, Error>>!
     private var syncStateManager: RepositorySyncStateManager!
 
     override func setUp() {

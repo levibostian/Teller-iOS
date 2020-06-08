@@ -37,7 +37,7 @@ extension PagedCache: Equatable where Cache: Equatable {
 
 public protocol PagingRepositoryDataSource: RepositoryDataSource {
     associatedtype PagingRequirements: PagingRepositoryRequirements
-    associatedtype NextPageRequirements
+    associatedtype NextPageRequirements: Any
     associatedtype PagingCache: Any
     associatedtype PagingFetchResult: Any
 
