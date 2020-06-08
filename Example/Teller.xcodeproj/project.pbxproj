@@ -33,7 +33,7 @@
 		F7818C5F21517C220050607E /* RepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5E21517C220050607E /* RepositoryTest.swift */; };
 		F7818C6121517C820050607E /* MockRepositoryDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6021517C820050607E /* MockRepositoryDataSource.swift */; };
 		F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */; };
-		F7818C912152CE440050607E /* DataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* DataState+StateTest.swift */; };
+		F7818C912152CE440050607E /* CacheState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* CacheState+StateTest.swift */; };
 		F782856423317C4400CD7807 /* ExampleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleRepository.swift */; };
 		F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		F782856623317D2B00CD7807 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
@@ -47,7 +47,7 @@
 		F7841A892460C205001315FE /* RepoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* RepoTableViewCell.swift */; };
 		F7841A8A2460C205001315FE /* RepoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* RepoTableViewCell.swift */; };
 		F7909F1521BB2EF60034055D /* MockRepositoryRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */; };
-		F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* DataStateTest.swift */; };
+		F7AFBDEC21505339008ECB51 /* CacheStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */; };
 		F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */; };
 		F7B5CD04216680B600EDC914 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7B5CD03216680B600EDC914 /* RxCocoa.framework */; };
 		F7B5CD06216682C900EDC914 /* ExampleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleRepository.swift */; };
@@ -122,14 +122,14 @@
 		F7818C5E21517C220050607E /* RepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryTest.swift; sourceTree = "<group>"; };
 		F7818C6021517C820050607E /* MockRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositoryDataSource.swift; sourceTree = "<group>"; };
 		F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositorySyncStateManager.swift; sourceTree = "<group>"; };
-		F7818C902152CE440050607E /* DataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataState+StateTest.swift"; sourceTree = "<group>"; };
+		F7818C902152CE440050607E /* CacheState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CacheState+StateTest.swift"; sourceTree = "<group>"; };
 		F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTestingLib.swift; sourceTree = "<group>"; };
 		F78285722332595B00CD7807 /* DataStateTestingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStateTestingTest.swift; sourceTree = "<group>"; };
 		F7841A84246086F0001315FE /* PagingRepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryTest.swift; sourceTree = "<group>"; };
 		F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPagingRepositoryDataSource.swift; sourceTree = "<group>"; };
 		F7841A882460C205001315FE /* RepoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoTableViewCell.swift; sourceTree = "<group>"; };
 		F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositoryRefreshManager.swift; sourceTree = "<group>"; };
-		F7AFBDEB21505339008ECB51 /* DataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateTest.swift; sourceTree = "<group>"; };
+		F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateTest.swift; sourceTree = "<group>"; };
 		F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshResultTest.swift; sourceTree = "<group>"; };
 		F7B5CD03216680B600EDC914 /* RxCocoa.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RxCocoa.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7B5CD05216682C900EDC914 /* ExampleRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleRepository.swift; sourceTree = "<group>"; };
@@ -396,8 +396,8 @@
 		F7AFBDE821505109008ECB51 /* datastate */ = {
 			isa = PBXGroup;
 			children = (
-				F7AFBDEB21505339008ECB51 /* DataStateTest.swift */,
-				F7818C902152CE440050607E /* DataState+StateTest.swift */,
+				F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */,
+				F7818C902152CE440050607E /* CacheState+StateTest.swift */,
 				F7DDEDA021B00975005ADF92 /* state machine */,
 			);
 			path = datastate;
@@ -671,7 +671,7 @@
 				F7841A8724608731001315FE /* MockPagingRepositoryDataSource.swift in Sources */,
 				F782856623317D2B00CD7807 /* ViewController.swift in Sources */,
 				F76131242387524400200FCE /* RepositoryMockTest.swift in Sources */,
-				F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */,
+				F7AFBDEC21505339008ECB51 /* CacheStateTest.swift in Sources */,
 				F782856823317D2B00CD7807 /* GitHubService.swift in Sources */,
 				F782856423317C4400CD7807 /* ExampleRepository.swift in Sources */,
 				F7818C6121517C820050607E /* MockRepositoryDataSource.swift in Sources */,
@@ -691,7 +691,7 @@
 				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7B66A6522D66AF60077CF50 /* TestConstants.swift in Sources */,
-				F7818C912152CE440050607E /* DataState+StateTest.swift in Sources */,
+				F7818C912152CE440050607E /* CacheState+StateTest.swift in Sources */,
 				F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */,
 				F7D8F609248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,

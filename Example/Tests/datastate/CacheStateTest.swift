@@ -44,4 +44,27 @@ class DataStateTest: XCTestCase {
         XCTAssertEqual(actual.justFinishedSuccessfulRefresh, given?.justFinishedSuccessfulRefresh)
         XCTAssertNil(actual.refreshError)
     }
+
+    func test_isFirstFetch_givenCacheExistsAndIsFetching_expectFalse() {
+        dataState = try! DataStateStateMachine
+            .cacheExists(requirements: getDataRequirements, lastTimeFetched: Date()).change()
+            .fetchingFreshCache()
+
+        XCTAssertFalse(dataState.isFirstFetch)
+    }
+
+    func test_isFirstFetch_givenNotRefreshing_expectFalse() {
+        dataState = DataStateStateMachine
+            .noCacheExists(requirements: getDataRequirements)
+
+        XCTAssertFalse(dataState.isFirstFetch)
+    }
+
+    func test_isFirstFetch_givenCacheDoesNotExistAndIsRefreshing_expectTrue() {
+        dataState = try! DataStateStateMachine
+            .noCacheExists(requirements: getDataRequirements).change()
+            .firstFetch()
+
+        XCTAssertTrue(dataState.isFirstFetch)
+    }
 }

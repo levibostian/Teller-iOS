@@ -24,6 +24,10 @@ public class CacheState<CacheType: Any> {
     public let justFinishedFirstFetch: Bool
     public let refreshError: Error?
 
+    public var isFirstFetch: Bool {
+        return !cacheExists && isRefreshing
+    }
+
     internal init(cacheExists: Bool,
                   cache: CacheType?,
                   cacheAge: Date?,
