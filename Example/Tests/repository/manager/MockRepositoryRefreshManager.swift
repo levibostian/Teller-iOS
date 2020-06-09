@@ -6,7 +6,7 @@ internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDel
     var invokedRefreshBegin = false
     var invokedRefreshBeginCount = 0
     var invokedRefreshBeginThen: (() -> Void)?
-    func refreshBegin(requirements: RepositoryRequirements) {
+    func refreshBegin(tag: String) {
         invokedRefreshBegin = true
         invokedRefreshBeginCount += 1
         invokedRefreshBeginThen?()
@@ -15,22 +15,14 @@ internal class MockRepositoryRefreshManagerDelegate: RepositoryRefreshManagerDel
     var invokedRefreshComplete = false
     var invokedRefreshCompleteCount = 0
     var invokedRefreshCompleteThen: (() -> Void)?
-    func refreshComplete<String, Error>(_ response: FetchResponse<String, Error>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void) {
+    func refreshSuccessful<FetchResponseData, ErrorType>(_ response: FetchResponse<FetchResponseData, ErrorType>, tag: String) where ErrorType: Error {
         invokedRefreshComplete = true
         invokedRefreshCompleteCount += 1
         invokedRefreshCompleteThen?()
-
-        onComplete()
     }
 }
 
 internal class MockRepositoryRefreshManager: RepositoryRefreshManager {
-    init() {
-        // Set default delegate so that tests can complete, by default.
-        // func refreshComplete<String>(_ response: FetchResponse<String>, requirements: RepositoryRequirements, onComplete: @escaping () -> Void), the onComplete() param needs to be called for the tests to complete.
-        self.delegate = MockRepositoryRefreshManagerDelegate()
-    }
-
     var invokedDelegateSetter = false
     var invokedDelegateSetterCount = 0
     var invokedDelegate: RepositoryRefreshManagerDelegate?
@@ -52,12 +44,26 @@ internal class MockRepositoryRefreshManager: RepositoryRefreshManager {
         }
     }
 
+    var invokedAddDelegate = false
+    var invokedAddDelegateCount = 0
+    func addDelegate(_ delegate: RepositoryRefreshManagerDelegate) {
+        invokedAddDelegate = true
+        invokedAddDelegateCount += 1
+    }
+
+    var invokedRemoveDelegate = false
+    var invokedRemoveDelegateCount = 0
+    func removeDelegate(_ delegate: RepositoryRefreshManagerDelegate) {
+        invokedRemoveDelegate = true
+        invokedRemoveDelegateCount += 1
+    }
+
     var invokedRefresh = false
     var invokedRefreshCount = 0
     var invokedRefreshParameters: (task: Single<FetchResponse<String, Error>>, Void)?
     var invokedRefreshParametersList = [(task: Single<FetchResponse<String, Error>>, Void)]()
     var stubbedRefreshResult: Single<RefreshResult>!
-    func refresh<Fetch: Any, ErrorType: Error>(task: Single<FetchResponse<Fetch, ErrorType>>, requirements: RepositoryRequirements) -> Single<RefreshResult> {
+    func getRefresh<FetchResponseData, ErrorType>(task: Single<FetchResponse<FetchResponseData, ErrorType>>, tag: String, requester: RepositoryRefreshManagerDelegate) -> Single<RefreshResult> where ErrorType: Error {
         invokedRefresh = true
         invokedRefreshCount += 1
         invokedRefreshParameters = (task, ()) as! (task: Single<FetchResponse<String, Error>>, Void)
@@ -67,7 +73,7 @@ internal class MockRepositoryRefreshManager: RepositoryRefreshManager {
 
     var invokedCancelRefresh = false
     var invokedCancelRefreshCount = 0
-    func cancelRefresh() {
+    func cancelRefresh(tag: String, requester: RepositoryRefreshManagerDelegate) {
         invokedCancelRefresh = true
         invokedCancelRefreshCount += 1
     }

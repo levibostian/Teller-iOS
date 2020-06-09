@@ -3,14 +3,15 @@ import RxSwift
 import Teller
 
 class ReposViewModel {
-    private let reposRepository: Repository<ReposRepositoryDataSource>
+    private let reposRepository: TellerPagingRepository<ReposRepositoryDataSource>
 
-    init(reposRepository: Repository<ReposRepositoryDataSource>) {
-        self.reposRepository = reposRepository
+    init(repository: TellerPagingRepository<ReposRepositoryDataSource> = TellerPagingRepository(dataSource: ReposRepositoryDataSource(), firstPageRequirements: ReposRepositoryDataSource.PagingRequirements(pageNumber: 1))) {
+        self.reposRepository = repository
     }
 
-    func observeRepos() -> Observable<DataState<ReposRepositoryDataSource.Cache>> {
+    func observeRepos() -> Observable<CacheState<ReposRepositoryDataSource.Cache>> {
         return reposRepository.observe()
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .observeOn(MainScheduler.instance)
     }
 
@@ -18,16 +19,24 @@ class ReposViewModel {
         return try! reposRepository.refreshIfNoCache()
     }
 
-    func observeRepoNames() -> Observable<DataState<[String]>> {
+    /**
+     Exists to demonstrate DataState.convert()
+     */
+    func observeRepoNames() -> Observable<PagedCacheState<[String]>> {
         return reposRepository.observe()
-            .map { (dataState) -> DataState<[String]> in
-                dataState.convert { (repos) -> [String]? in
+            .map { (cacheState) -> PagedCacheState<[String]> in
+                cacheState.convert { (repos) -> [String]? in
                     repos?.map { (repo) -> String in
                         repo.name
                     }
                 }
             }
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
             .observeOn(MainScheduler.instance)
+    }
+
+    func gotoNextPageOfRepos() {
+        reposRepository.goToNextPage()
     }
 
     func setReposToObserve(username: String) {

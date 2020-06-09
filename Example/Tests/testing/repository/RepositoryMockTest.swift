@@ -4,11 +4,11 @@ import RxSwift
 import XCTest
 
 class RepositoryMockTest: XCTestCase {
-    var repository: RepositoryMock<ReposRepositoryDataSource>!
+    var repository: TellerRepositoryMock<ReposRepositoryDataSource>!
     let defaultRequirements = ReposRepositoryDataSource.Requirements(username: "")
 
     override func setUp() {
-        repository = RepositoryMock(dataSource: ReposRepositoryDataSource())
+        repository = TellerRepositoryMock(dataSource: ReposRepositoryDataSource())
     }
 
     // MARK: - requirements
@@ -236,7 +236,7 @@ class RepositoryMockTest: XCTestCase {
 
     func test_observe_expectMockOnlyAfterSet() {
         repository.observeClosure = {
-            Observable.just(DataState.testing.none())
+            Observable.just(CacheState.testing.noCache(requirements: self.defaultRequirements))
         }
 
         XCTAssertFalse(repository.mockCalled)
@@ -248,7 +248,7 @@ class RepositoryMockTest: XCTestCase {
 
     func test_observe_expectCalledOnlyAfterSet() {
         repository.observeClosure = {
-            Observable.just(DataState.testing.none())
+            Observable.just(CacheState.testing.noCache(requirements: self.defaultRequirements))
         }
 
         XCTAssertFalse(repository.observeCalled)
@@ -264,7 +264,7 @@ class RepositoryMockTest: XCTestCase {
 
     func test_observe_expectCalledCountIncrementAfterSet() {
         repository.observeClosure = {
-            Observable.just(DataState.testing.none())
+            Observable.just(CacheState.testing.noCache(requirements: self.defaultRequirements))
         }
 
         XCTAssertEqual(repository.observeCallsCount, 0)
@@ -279,9 +279,9 @@ class RepositoryMockTest: XCTestCase {
     }
 
     func test_observe_expectReturnsFromClosure() {
-        var givenInvocations: [DataState<ReposRepositoryDataSource.Cache>] = [
-            DataState.testing.none(),
-            DataState.testing.noCache(requirements: ReposRepositoryDataSource.Requirements(username: ""))
+        var givenInvocations: [CacheState<ReposRepositoryDataSource.Cache>] = [
+            CacheState.testing.noCache(requirements: ReposRepositoryDataSource.Requirements(username: "")),
+            CacheState.testing.cache(requirements: ReposRepositoryDataSource.Requirements(username: ""), lastTimeFetched: Date())
         ]
         let expectedInvocations = givenInvocations
 

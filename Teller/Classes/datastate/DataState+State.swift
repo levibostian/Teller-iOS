@@ -1,83 +1,36 @@
 import Foundation
 
-extension DataState {
+extension CacheState {
     /**
      Parse the `DataState` for you to more easily display the state of the cache in your UI.
+
+     The enum cases have very little parameters in them. In the past, Teller had a long list of 4-8 parameters. This made the code not as maintainable and hard to use when using in an app because you may have 75% of those params not being used. We go with the design now that you can access the public properties of `CacheState` if you want them and we provide only the most relevant parameters to you. For example: it is not very helpful to include the state of refreshing in each of the cases because in the UI of your app you are more then likely handling the refreshing not in the enum cases but outside of that in 1 place. Why provide parameters that are not relevant to that block of code?
      */
     public enum State {
-        /**
-         It is undetermined if there is a cache that exists or not. This is usually the case for when just setting requirements on a `Repository`.
-         */
-        case none
         /**
          A cache has not been successfully fetched before.
 
          fetching - is a cache being fetched right now
          errorDuringFetch - a fetch just finished but there was an error.
          */
-        case noCache(fetching: Bool, errorDuringFetch: Error?)
+        case noCache
         /**
-         A cache has been successfully fetched before.
+         A cache has been successfully fetched before. The cache might be empty, though!
 
-         cache - if nil, it's an empty cache. Else, it stores the cache data for you to display.
-         lastFetched - The Date that the cache was last successfully fetched.
-         firstCache - if true, the first cache has been successfully fetched for this cache.
-         fetching - is the existing cache being updated right now?
-         successfulFetch - if a fetch just finished and it was successful
-         errorDuringFetch - a fetch just finished but there was an error.
+         We have decided to combine the "cache empty, but exists" and the "cache exists and is not empty" states into 1 enum case here. That's because in the UI of your app you may share some of the same code for both of these choices. Therefore, it's best to combine the two to prevent lots of duplicate code for your app.
          */
-        case cache(cache: DataType?, lastFetched: Date, firstCache: Bool, fetching: Bool, successfulFetch: Bool, errorDuringFetch: Error?)
+        case cache(cache: CacheType?, cacheAge: Date)
     }
 
-    /**
-     Parse the `DataState` for you to more easily display the fetching state of the cache in your UI.
-     */
-    public enum FetchingState {
-        /**
-         There is a fetch currently happening or a fetch just completeted.
-
-         fetching - indicates if a fetch is happening right now
-         noCache - if true, a cache has not been successfully fetched before
-         errorDuringFetch - a fetch just finished but there was an error.
-         successfulFetch - if a fetch just finished and it was successful
-         */
-        case fetching(fetching: Bool, noCache: Bool, errorDuringFetch: Error?, successfulFetch: Bool)
-    }
-
-    public func state() -> State {
+    public var state: State {
         if isNone {
-            return State.none
+            fatalError("Should not happen. Observing of a cache state should ignore none states")
         }
 
-        if noCacheExists {
-            return State.noCache(fetching: fetchingForFirstTime, errorDuringFetch: errorDuringFirstFetch)
+        if !cacheExists {
+            return State.noCache
         } else {
-            return State.cache(cache: cacheData, lastFetched: lastTimeFetched!, firstCache: justCompletedSuccessfulFirstFetch, fetching: isFetchingFreshData, successfulFetch: justCompletedSuccessfullyFetchingFreshData, errorDuringFetch: errorDuringFetch)
-        }
-    }
-
-    public func fetchingState() -> FetchingState {
-        return FetchingState.fetching(fetching: isFetchingFreshData || fetchingForFirstTime, noCache: noCacheExists, errorDuringFetch: errorDuringFirstFetch ?? errorDuringFetch, successfulFetch: justCompletedSuccessfulFirstFetch || justCompletedSuccessfullyFetchingFreshData)
-    }
-}
-
-extension DataState.State: Equatable where DataType: Equatable {
-    public static func == (lhs: DataState<DataType>.State, rhs: DataState<DataType>.State) -> Bool {
-        switch (lhs, rhs) {
-        case (.none, .none):
-            return true
-        case (let .noCache(fetching1, errorDuringFetch1), .noCache(let fetching2, let errorDuringFetch2)):
-            return fetching1 == fetching2 &&
-                ErrorsUtil.areErrorsEqual(lhs: errorDuringFetch1, rhs: errorDuringFetch2)
-        case (let .cache(cache1, lastFetched1, firstCache1, fetching1, successfulFetch1, errorDuringFetch1), .cache(let cache2, let lastFetched2, let firstCache2, let fetching2, let successfulFetch2, let errorDuringFetch2)):
-            return cache1 == cache2 &&
-                lastFetched1.timeIntervalSince1970 == lastFetched2.timeIntervalSince1970 &&
-                firstCache1 == firstCache2 &&
-                fetching1 == fetching2 &&
-                successfulFetch1 == successfulFetch2 &&
-                ErrorsUtil.areErrorsEqual(lhs: errorDuringFetch1, rhs: errorDuringFetch2)
-        default:
-            return false
+            return State.cache(cache: cache, cacheAge: cacheAge!)
         }
     }
 }

@@ -33,7 +33,7 @@
 		F7818C5F21517C220050607E /* RepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C5E21517C220050607E /* RepositoryTest.swift */; };
 		F7818C6121517C820050607E /* MockRepositoryDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6021517C820050607E /* MockRepositoryDataSource.swift */; };
 		F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */; };
-		F7818C912152CE440050607E /* DataState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* DataState+StateTest.swift */; };
+		F7818C912152CE440050607E /* CacheState+StateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7818C902152CE440050607E /* CacheState+StateTest.swift */; };
 		F782856423317C4400CD7807 /* ExampleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleRepository.swift */; };
 		F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		F782856623317D2B00CD7807 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
@@ -42,8 +42,12 @@
 		F782856A23317D3500CD7807 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */; };
 		F78285732332595B00CD7807 /* DataStateTestingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78285722332595B00CD7807 /* DataStateTestingTest.swift */; };
+		F7841A85246086F0001315FE /* PagingRepositoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A84246086F0001315FE /* PagingRepositoryTest.swift */; };
+		F7841A8724608731001315FE /* MockPagingRepositoryDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */; };
+		F7841A892460C205001315FE /* RepoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* RepoTableViewCell.swift */; };
+		F7841A8A2460C205001315FE /* RepoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7841A882460C205001315FE /* RepoTableViewCell.swift */; };
 		F7909F1521BB2EF60034055D /* MockRepositoryRefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */; };
-		F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* DataStateTest.swift */; };
+		F7AFBDEC21505339008ECB51 /* CacheStateTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */; };
 		F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */; };
 		F7B5CD04216680B600EDC914 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7B5CD03216680B600EDC914 /* RxCocoa.framework */; };
 		F7B5CD06216682C900EDC914 /* ExampleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5CD05216682C900EDC914 /* ExampleRepository.swift */; };
@@ -53,12 +57,24 @@
 		F7C3CCDA217A7EFA00FA0879 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */; };
 		F7D275462166878E00D89CA5 /* Moya.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F7D275452166878E00D89CA5 /* Moya.framework */; };
 		F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D27547216687D400D89CA5 /* GitHubService.swift */; };
+		F7D8F609248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F608248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift */; };
+		F7D8F60B248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60A248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift */; };
+		F7D8F610248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */; };
+		F7D8F611248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */; };
 		F7DDEDA221B00A6A005ADF92 /* DataStateStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA121B00A6A005ADF92 /* DataStateStateMachineTest.swift */; };
 		F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */; };
 		F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */; };
 		F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */; };
 		F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDAC21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift */; };
 		F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */; };
+		F7EA12442464A6F300C2AEFE /* MoyaLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA12432464A6F300C2AEFE /* MoyaLogger.swift */; };
+		F7EA12452464A82A00C2AEFE /* MoyaLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA12432464A6F300C2AEFE /* MoyaLogger.swift */; };
+		F7EA12472464ABDD00C2AEFE /* KeyValueStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA12462464ABDD00C2AEFE /* KeyValueStorage.swift */; };
+		F7EA12482464ABDD00C2AEFE /* KeyValueStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA12462464ABDD00C2AEFE /* KeyValueStorage.swift */; };
+		F7EA124B2464AEA600C2AEFE /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA124A2464AEA600C2AEFE /* StringExtensions.swift */; };
+		F7EA124C2464AEA600C2AEFE /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA124A2464AEA600C2AEFE /* StringExtensions.swift */; };
+		F7EA124E2464AEBC00C2AEFE /* DataExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA124D2464AEBC00C2AEFE /* DataExtensions.swift */; };
+		F7EA124F2464AEBC00C2AEFE /* DataExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EA124D2464AEBC00C2AEFE /* DataExtensions.swift */; };
 		F7EC6AB821B7230F002D272A /* RepositoryRefreshManagerTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7EC6AB721B7230E002D272A /* RepositoryRefreshManagerTest.swift */; };
 /* End PBXBuildFile section */
 
@@ -108,11 +124,14 @@
 		F7818C5E21517C220050607E /* RepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryTest.swift; sourceTree = "<group>"; };
 		F7818C6021517C820050607E /* MockRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositoryDataSource.swift; sourceTree = "<group>"; };
 		F7818C6221517F2C0050607E /* MockRepositorySyncStateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositorySyncStateManager.swift; sourceTree = "<group>"; };
-		F7818C902152CE440050607E /* DataState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataState+StateTest.swift"; sourceTree = "<group>"; };
+		F7818C902152CE440050607E /* CacheState+StateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CacheState+StateTest.swift"; sourceTree = "<group>"; };
 		F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTestingLib.swift; sourceTree = "<group>"; };
 		F78285722332595B00CD7807 /* DataStateTestingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStateTestingTest.swift; sourceTree = "<group>"; };
+		F7841A84246086F0001315FE /* PagingRepositoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryTest.swift; sourceTree = "<group>"; };
+		F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPagingRepositoryDataSource.swift; sourceTree = "<group>"; };
+		F7841A882460C205001315FE /* RepoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoTableViewCell.swift; sourceTree = "<group>"; };
 		F7909F1421BB2EF60034055D /* MockRepositoryRefreshManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRepositoryRefreshManager.swift; sourceTree = "<group>"; };
-		F7AFBDEB21505339008ECB51 /* DataStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateTest.swift; sourceTree = "<group>"; };
+		F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateTest.swift; sourceTree = "<group>"; };
 		F7AFBDF121505B99008ECB51 /* RefreshResultTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshResultTest.swift; sourceTree = "<group>"; };
 		F7B5CD03216680B600EDC914 /* RxCocoa.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RxCocoa.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7B5CD05216682C900EDC914 /* ExampleRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleRepository.swift; sourceTree = "<group>"; };
@@ -123,12 +142,19 @@
 		F7C3CCD9217A7EFA00FA0879 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = CHANGELOG.md; path = ../CHANGELOG.md; sourceTree = "<group>"; };
 		F7D275452166878E00D89CA5 /* Moya.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Moya.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F7D27547216687D400D89CA5 /* GitHubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubService.swift; sourceTree = "<group>"; };
+		F7D8F608248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryDataSourceMockTest.swift; sourceTree = "<group>"; };
+		F7D8F60A248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingRepositoryRequirementsForTesting.swift; sourceTree = "<group>"; };
+		F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITableViewExtensions.swift; sourceTree = "<group>"; };
 		F7DDEDA121B00A6A005ADF92 /* DataStateStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStateStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA321B15DCC005ADF92 /* NoCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA521B15EFC005ADF92 /* CacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDA721B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchingFreshCacheStateMachineTest.swift; sourceTree = "<group>"; };
 		F7DDEDAC21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUtilMock.swift; sourceTree = "<group>"; };
 		F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TellerTest.swift; sourceTree = "<group>"; };
+		F7EA12432464A6F300C2AEFE /* MoyaLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoyaLogger.swift; sourceTree = "<group>"; };
+		F7EA12462464ABDD00C2AEFE /* KeyValueStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyValueStorage.swift; sourceTree = "<group>"; };
+		F7EA124A2464AEA600C2AEFE /* StringExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
+		F7EA124D2464AEBC00C2AEFE /* DataExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExtensions.swift; sourceTree = "<group>"; };
 		F7EC6AB721B7230E002D272A /* RepositoryRefreshManagerTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryRefreshManagerTest.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -201,6 +227,12 @@
 				F7D27547216687D400D89CA5 /* GitHubService.swift */,
 				F782856F23318FC800CD7807 /* PlaygroundTestingLib.swift */,
 				F76A2D1A238892DD000A90AA /* ReposViewModel.swift */,
+				F7841A882460C205001315FE /* RepoTableViewCell.swift */,
+				F7EA12432464A6F300C2AEFE /* MoyaLogger.swift */,
+				F7EA12462464ABDD00C2AEFE /* KeyValueStorage.swift */,
+				F7EA124A2464AEA600C2AEFE /* StringExtensions.swift */,
+				F7EA124D2464AEBC00C2AEFE /* DataExtensions.swift */,
+				F7D8F60F248EC37200CF3ADF /* UITableViewExtensions.swift */,
 			);
 			name = "Example for Teller";
 			path = Teller;
@@ -231,6 +263,7 @@
 				F7DDEDAE21B5AAE7005ADF92 /* TellerTest.swift */,
 				F7B66A6422D66AF60077CF50 /* TestConstants.swift */,
 				F778B9F72389ABD10005076E /* RepositoryRequirementsForTesting.swift */,
+				F7D8F60A248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -290,6 +323,7 @@
 				F76131232387524400200FCE /* RepositoryMockTest.swift */,
 				F778B9F12389A3390005076E /* RepositoryTestingTest.swift */,
 				F778B9F52389A9000005076E /* RepositoryDataSourceMockTest.swift */,
+				F7D8F608248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift */,
 			);
 			path = repository;
 			sourceTree = "<group>";
@@ -366,8 +400,8 @@
 		F7AFBDE821505109008ECB51 /* datastate */ = {
 			isa = PBXGroup;
 			children = (
-				F7AFBDEB21505339008ECB51 /* DataStateTest.swift */,
-				F7818C902152CE440050607E /* DataState+StateTest.swift */,
+				F7AFBDEB21505339008ECB51 /* CacheStateTest.swift */,
+				F7818C902152CE440050607E /* CacheState+StateTest.swift */,
 				F7DDEDA021B00975005ADF92 /* state machine */,
 			);
 			path = datastate;
@@ -381,6 +415,8 @@
 				F7818C5E21517C220050607E /* RepositoryTest.swift */,
 				F7818C6021517C820050607E /* MockRepositoryDataSource.swift */,
 				F7818C43215074EA0050607E /* manager */,
+				F7841A84246086F0001315FE /* PagingRepositoryTest.swift */,
+				F7841A8624608731001315FE /* MockPagingRepositoryDataSource.swift */,
 			);
 			path = repository;
 			sourceTree = "<group>";
@@ -618,11 +654,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7EA12472464ABDD00C2AEFE /* KeyValueStorage.swift in Sources */,
+				F7EA124E2464AEBC00C2AEFE /* DataExtensions.swift in Sources */,
 				F7D27548216687D400D89CA5 /* GitHubService.swift in Sources */,
+				F7D8F610248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */,
+				F7EA124B2464AEA600C2AEFE /* StringExtensions.swift in Sources */,
+				F7EA12442464A6F300C2AEFE /* MoyaLogger.swift in Sources */,
 				F7B5CD06216682C900EDC914 /* ExampleRepository.swift in Sources */,
 				F76A2D1B238892DD000A90AA /* ReposViewModel.swift in Sources */,
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				F7841A892460C205001315FE /* RepoTableViewCell.swift in Sources */,
 				F782857023318FC900CD7807 /* PlaygroundTestingLib.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -631,27 +673,36 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7841A8724608731001315FE /* MockPagingRepositoryDataSource.swift in Sources */,
 				F782856623317D2B00CD7807 /* ViewController.swift in Sources */,
 				F76131242387524400200FCE /* RepositoryMockTest.swift in Sources */,
-				F7AFBDEC21505339008ECB51 /* DataStateTest.swift in Sources */,
+				F7AFBDEC21505339008ECB51 /* CacheStateTest.swift in Sources */,
 				F782856823317D2B00CD7807 /* GitHubService.swift in Sources */,
 				F782856423317C4400CD7807 /* ExampleRepository.swift in Sources */,
 				F7818C6121517C820050607E /* MockRepositoryDataSource.swift in Sources */,
+				F7D8F611248EC37200CF3ADF /* UITableViewExtensions.swift in Sources */,
+				F7EA124C2464AEA600C2AEFE /* StringExtensions.swift in Sources */,
 				F782856523317D2B00CD7807 /* AppDelegate.swift in Sources */,
 				F7DDEDA821B15FB8005ADF92 /* FetchingFreshCacheStateMachineTest.swift in Sources */,
+				F7D8F60B248E954900CF3ADF /* PagingRepositoryRequirementsForTesting.swift in Sources */,
 				F7818C5F21517C220050607E /* RepositoryTest.swift in Sources */,
+				F7EA124F2464AEBC00C2AEFE /* DataExtensions.swift in Sources */,
 				F7DDEDAD21B5A8C2005ADF92 /* UserDefaultsUtilMock.swift in Sources */,
+				F7EA12482464ABDD00C2AEFE /* KeyValueStorage.swift in Sources */,
 				F7909F1521BB2EF60034055D /* MockRepositoryRefreshManager.swift in Sources */,
+				F7841A85246086F0001315FE /* PagingRepositoryTest.swift in Sources */,
 				F7818C5621514AE70050607E /* PeriodTest.swift in Sources */,
 				F7EC6AB821B7230F002D272A /* RepositoryRefreshManagerTest.swift in Sources */,
 				F7818C5121507B090050607E /* TellerUserDefaultsUtilTest.swift in Sources */,
 				F721D2122187C3D500C2C7E8 /* TestsSchedulersProvider.swift in Sources */,
 				F7818C45215074F70050607E /* TellerRepositorySyncStateManagerTest.swift in Sources */,
 				F7B66A6522D66AF60077CF50 /* TestConstants.swift in Sources */,
-				F7818C912152CE440050607E /* DataState+StateTest.swift in Sources */,
+				F7818C912152CE440050607E /* CacheState+StateTest.swift in Sources */,
 				F7DDEDA621B15EFC005ADF92 /* CacheStateMachineTest.swift in Sources */,
+				F7D8F609248E951900CF3ADF /* PagingRepositoryDataSourceMockTest.swift in Sources */,
 				F7818C6321517F2C0050607E /* MockRepositorySyncStateManager.swift in Sources */,
 				F778B9F22389A3390005076E /* RepositoryTestingTest.swift in Sources */,
+				F7841A8A2460C205001315FE /* RepoTableViewCell.swift in Sources */,
 				F7AFBDF221505B99008ECB51 /* RefreshResultTest.swift in Sources */,
 				F7DDEDA421B15DCC005ADF92 /* NoCacheStateMachineTest.swift in Sources */,
 				F7DDEDAF21B5AAE7005ADF92 /* TellerTest.swift in Sources */,
@@ -660,6 +711,7 @@
 				F778B9FB2389B28E0005076E /* XCTestExtensions.swift in Sources */,
 				F7818C5D215172180050607E /* DataStateBehaviorSubjectTest.swift in Sources */,
 				F7DDEDA221B00A6A005ADF92 /* DataStateStateMachineTest.swift in Sources */,
+				F7EA12452464A82A00C2AEFE /* MoyaLogger.swift in Sources */,
 				F778B9EB2388991C0005076E /* ReposViewModel.swift in Sources */,
 				F778B9F62389A9000005076E /* RepositoryDataSourceMockTest.swift in Sources */,
 				F72A285C21876F96007444D7 /* TellerErrorTest.swift in Sources */,

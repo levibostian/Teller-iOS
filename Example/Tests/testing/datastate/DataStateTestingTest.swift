@@ -12,18 +12,11 @@ class DataStateTestingTest: XCTestCase {
         requirements = ReposRepositoryRequirements(username: "")
     }
 
-    func test_none_expectResultToEqualStateMachine() {
-        let fromStateMachine: DataState<String> = DataState.none()
-        let testing: DataState<String> = DataStateTesting.none()
-
-        XCTAssertEqual(fromStateMachine, testing)
-    }
-
     // MARK: - noCache
 
     func test_noCache_expectResultToEqualStateMachine() {
         let fromStateMachine = DataStateStateMachine<String>.noCacheExists(requirements: requirements)
-        let testing: DataState<String> = DataStateTesting.noCache(requirements: requirements)
+        let testing: CacheState<String> = CacheStateTesting.noCache(requirements: requirements)
 
         XCTAssertEqual(fromStateMachine, testing)
     }
@@ -31,7 +24,7 @@ class DataStateTestingTest: XCTestCase {
     func test_noCache_fetching_expectResultToEqualStateMachine() {
         let fromStateMachine = try! DataStateStateMachine<String>.noCacheExists(requirements: requirements).change()
             .firstFetch()
-        let testing: DataState<String> = DataStateTesting.noCache(requirements: requirements) {
+        let testing: CacheState<String> = CacheStateTesting.noCache(requirements: requirements) {
             $0.fetchingFirstTime()
         }
 
@@ -44,7 +37,7 @@ class DataStateTestingTest: XCTestCase {
         let fromStateMachine = try! DataStateStateMachine<String>.noCacheExists(requirements: requirements).change()
             .firstFetch().change()
             .errorFirstFetch(error: error)
-        let testing: DataState<String> = DataStateTesting.noCache(requirements: requirements) {
+        let testing: CacheState<String> = CacheStateTesting.noCache(requirements: requirements) {
             $0.failedFirstFetch(error: error)
         }
 
@@ -57,7 +50,7 @@ class DataStateTestingTest: XCTestCase {
         let fromStateMachine = try! DataStateStateMachine<String>.noCacheExists(requirements: requirements).change()
             .firstFetch().change()
             .successfulFirstFetch(timeFetched: timeFetched)
-        let testing: DataState<String> = DataStateTesting.noCache(requirements: requirements) {
+        let testing: CacheState<String> = CacheStateTesting.noCache(requirements: requirements) {
             $0.successfulFirstFetch(timeFetched: timeFetched)
         }
 
@@ -71,7 +64,7 @@ class DataStateTestingTest: XCTestCase {
 
         let fromStateMachine = try! DataStateStateMachine<String>.cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
             .cacheIsEmpty()
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched)
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched)
 
         XCTAssertEqual(fromStateMachine, testing)
     }
@@ -82,7 +75,7 @@ class DataStateTestingTest: XCTestCase {
         let fromStateMachine = try! DataStateStateMachine<String>.cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
             .cacheIsEmpty().change()
             .fetchingFreshCache()
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
             $0.fetching()
         }
 
@@ -97,7 +90,7 @@ class DataStateTestingTest: XCTestCase {
             .cacheIsEmpty().change()
             .fetchingFreshCache().change()
             .failFetchingFreshCache(failedFetch)
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
             $0.failedFetch(error: failedFetch)
         }
 
@@ -112,7 +105,7 @@ class DataStateTestingTest: XCTestCase {
             .cacheIsEmpty().change()
             .fetchingFreshCache().change()
             .successfulFetchingFreshCache(timeFetched: newTimeFetched)
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeInThePast) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeInThePast) {
             $0.successfulFetch(timeFetched: newTimeFetched)
         }
 
@@ -127,7 +120,7 @@ class DataStateTestingTest: XCTestCase {
 
         let fromStateMachine = try! DataStateStateMachine<String>.cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
             .cachedData(cache)
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
             $0.cache(cache)
         }
 
@@ -141,7 +134,7 @@ class DataStateTestingTest: XCTestCase {
         let fromStateMachine = try! DataStateStateMachine<String>.cacheExists(requirements: requirements, lastTimeFetched: timeFetched).change()
             .cachedData(cache).change()
             .fetchingFreshCache()
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
             $0.cache(cache)
             $0.fetching()
         }
@@ -158,7 +151,7 @@ class DataStateTestingTest: XCTestCase {
             .cachedData(cache).change()
             .fetchingFreshCache().change()
             .failFetchingFreshCache(fetchFail)
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeFetched) {
             $0.cache(cache)
             $0.failedFetch(error: fetchFail)
         }
@@ -175,7 +168,7 @@ class DataStateTestingTest: XCTestCase {
             .cachedData(cache).change()
             .fetchingFreshCache().change()
             .successfulFetchingFreshCache(timeFetched: newTimeFetched)
-        let testing: DataState<String> = DataStateTesting.cache(requirements: requirements, lastTimeFetched: timeInThePast) {
+        let testing: CacheState<String> = CacheStateTesting.cache(requirements: requirements, lastTimeFetched: timeInThePast) {
             $0.cache(cache)
             $0.successfulFetch(timeFetched: newTimeFetched)
         }

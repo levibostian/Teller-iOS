@@ -1,13 +1,9 @@
 import Foundation
 
-public class DataStateTesting {
+public class CacheStateTesting {
     private init() {}
 
-    public static func none<DataType: Any>() -> DataState<DataType> {
-        return DataState.none()
-    }
-
-    public static func noCache<DataType: Any>(requirements: RepositoryRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> DataState<DataType> {
+    public static func noCache<DataType: Any>(requirements: RepositoryRequirements, more: ((inout NoCacheExistsDsl) -> Void)? = nil) -> CacheState<DataType> {
         var noCacheExists = NoCacheExistsDsl()
 
         if let more = more {
@@ -38,7 +34,7 @@ public class DataStateTesting {
         return stateMachine
     }
 
-    public static func cache<DataType: Any>(requirements: RepositoryRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> DataState<DataType> {
+    public static func cache<DataType: Any>(requirements: RepositoryRequirements, lastTimeFetched: Date, more: ((inout CacheExistsDsl<DataType>) -> Void)? = nil) -> CacheState<DataType> {
         var cacheExists = CacheExistsDsl<DataType>()
 
         if let more = more {

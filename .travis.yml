@@ -1,5 +1,5 @@
 os: osx
-osx_image: xcode11.2
+osx_image: xcode11.5
 language: swift
 
 cache:
@@ -8,6 +8,7 @@ cache:
   
 before_install:
   - gem install cocoapods
+  - gem install fastlane # for running tests via scan   
   - pod --version
   - pod repo update
 install:
@@ -21,13 +22,13 @@ jobs:
   include:
   - stage: commit 
     script:
-      - bundle exec fastlane scan
-      - pod lib lint
+      - fastlane scan
+      - pod lib lint --allow-warnings
   - stage: pr
-    script:
-      - bundle exec fastlane scan
-      - pod lib lint
-      - danger --fail-on-errors=true 
+    script:      
+      - fastlane scan       
+      - pod lib lint --allow-warnings
+#      - danger --fail-on-errors=true 
   - stage: deploy
     script: 
       - pod trunk push

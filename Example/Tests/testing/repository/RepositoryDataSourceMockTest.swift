@@ -4,7 +4,7 @@ import RxSwift
 import XCTest
 
 class RepositoryDataSourceMockTest: XCTestCase {
-    var dataSource: RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String>!
+    var dataSource: RepositoryDataSourceMock<String, RepositoryRequirementsForTesting, String, Error>!
     let defaultRequirements = RepositoryRequirementsForTesting()
 
     override func setUp() {

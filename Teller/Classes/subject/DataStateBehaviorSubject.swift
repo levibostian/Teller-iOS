@@ -19,56 +19,48 @@ import RxSwift
 // You may see many `try!` statements in this file. The code based used to have many `fatalError` statements but those are (1) not testable and (2) not flexible with the potential try/catch in the future if we see a potential for that. So, using `try!` allows us to have errors thrown that we can then fix later.
 internal class DataStateBehaviorSubject<DataType: Any> {
     private let dataSourceQueue = DispatchQueue(label: "\(TellerConstants.namespace)DataStateBehaviorSubject_dataSourceQueue")
-    private var _dataState: DataState<DataType>! {
-        didSet {
-            subject.onNext(_dataState)
-        }
-    }
 
-    private var dataState: DataState<DataType>! {
-        get {
-            var dataStateCopy: DataState<DataType>?
-            dataSourceQueue.sync {
-                dataStateCopy = self._dataState
-            }
-            return dataStateCopy!
-        }
-        set {
-            dataSourceQueue.sync {
-                self._dataState = newValue
-            }
-        }
-    }
+    private let dataState: Atomic<CacheState<DataType>>
 
-    internal let subject: BehaviorSubject<DataState<DataType>>
+    internal let subject: BehaviorSubject<CacheState<DataType>>
 
-    var currentState: DataState<DataType> {
+    var currentState: CacheState<DataType> {
         return try! subject.value()
     }
 
     init() {
-        let initialDataState = DataState<DataType>.none()
+        let initialDataState = CacheState<DataType>.none()
         self.subject = BehaviorSubject(value: initialDataState)
-        self.dataState = initialDataState
+        self.dataState = Atomic(value: initialDataState)
+    }
+
+    private func setNewState(_ newState: CacheState<DataType>) {
+        dataState.set(newState)
+        subject.onNext(newState)
     }
 
     /**
      When the `RepositoryGetDataRequirements` is changed in an `Repository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
      */
     func resetStateToNone() {
-        dataState = DataState.none()
+        setNewState(CacheState.none())
     }
 
     func resetToNoCacheState(requirements: RepositoryRequirements) {
-        dataState = DataStateStateMachine<DataType>.noCacheExists(requirements: requirements)
+        setNewState(DataStateStateMachine<DataType>.noCacheExists(requirements: requirements))
     }
 
     func resetToCacheState(requirements: RepositoryRequirements, lastTimeFetched: Date) {
-        dataState = DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched)
+        setNewState(DataStateStateMachine<DataType>.cacheExists(requirements: requirements, lastTimeFetched: lastTimeFetched))
     }
 
-    func changeState(requirements: RepositoryRequirements, change: (DataStateStateMachine<DataType>) -> DataState<DataType>) {
-        guard let existingRequirements = dataState.requirements else {
+    func changeState(requirements: RepositoryRequirements, change: (DataStateStateMachine<DataType>) -> CacheState<DataType>) {
+        Sync.lock(self)
+        defer { Sync.unlock(self) }
+
+        let currentDataState = dataState.get
+
+        guard let existingRequirements = currentDataState.requirements else {
             return
         }
 
@@ -76,10 +68,11 @@ internal class DataStateBehaviorSubject<DataType: Any> {
             return
         }
 
-        guard !dataState.isNone else {
+        guard !currentDataState.isNone else {
             fatalError("data state cannot be none. Reset it to another state, then change it.")
         }
 
-        dataState = change(dataState.stateMachine!)
+        let newDataState = change(currentDataState.stateMachine!)
+        setNewState(newDataState)
     }
 }

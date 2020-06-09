@@ -16,7 +16,7 @@ public class RepositoryTesting {
 
      This function runs `Repository.saveCache()` on the current thread you call this function on. If you need to run the `saveCache()` function on a background thread, use `initStateAsync()` instead.
      */
-    public static func initState<DataSource: RepositoryDataSource>(repository: Repository<DataSource>, requirements: DataSource.Requirements, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) -> SetValues {
+    public static func initState<DataSource: RepositoryDataSource>(repository: TellerRepository<DataSource>, requirements: DataSource.Requirements, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) -> SetValues {
         return RepositoryTesting().initState(repository: repository, requirements: requirements, more: more)
     }
 
@@ -25,11 +25,11 @@ public class RepositoryTesting {
 
      This function runs `Repository.saveCache()` on a background thread. If you do not care what thread run the `saveCache()` function runs on, use `initState()` instead.
      */
-    public static func initStateAsync<DataSource: RepositoryDataSource>(repository: Repository<DataSource>, requirements: DataSource.Requirements, onComplete: @escaping (SetValues) -> Void, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) {
+    public static func initStateAsync<DataSource: RepositoryDataSource>(repository: TellerRepository<DataSource>, requirements: DataSource.Requirements, onComplete: @escaping (SetValues) -> Void, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) {
         return RepositoryTesting().initStateAsync(repository: repository, requirements: requirements, onComplete: onComplete, more: more)
     }
 
-    private func initStateAsync<DataSource: RepositoryDataSource>(repository: Repository<DataSource>, requirements: DataSource.Requirements, onComplete: @escaping (SetValues) -> Void, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) {
+    private func initStateAsync<DataSource: RepositoryDataSource>(repository: TellerRepository<DataSource>, requirements: DataSource.Requirements, onComplete: @escaping (SetValues) -> Void, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) {
         var cacheExistsDsl = StateOfOnlineRepositoryDsl<DataSource.FetchResult>()
         if let more = more {
             more(&cacheExistsDsl)
@@ -58,7 +58,7 @@ public class RepositoryTesting {
         }
     }
 
-    private func initStateLastFetched<DataSource: RepositoryDataSource>(repository: Repository<DataSource>, requirements: DataSource.Requirements, cacheExistsDsl: StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Date {
+    private func initStateLastFetched<DataSource: RepositoryDataSource>(repository: TellerRepository<DataSource>, requirements: DataSource.Requirements, cacheExistsDsl: StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Date {
         var lastFetched = cacheExistsDsl.cacheExistsDsl?.props.lastFetched ?? Date()
         if let proposedCacheState = cacheExistsDsl.cacheExistsDsl?.props {
             if proposedCacheState.cacheTooOld {
@@ -73,7 +73,7 @@ public class RepositoryTesting {
         return lastFetched
     }
 
-    private func initState<DataSource: RepositoryDataSource>(repository: Repository<DataSource>, requirements: DataSource.Requirements, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) -> SetValues {
+    private func initState<DataSource: RepositoryDataSource>(repository: TellerRepository<DataSource>, requirements: DataSource.Requirements, more: ((inout StateOfOnlineRepositoryDsl<DataSource.FetchResult>) -> Void)? = nil) -> SetValues {
         var cacheExistsDsl = StateOfOnlineRepositoryDsl<DataSource.FetchResult>()
         if let more = more {
             more(&cacheExistsDsl)

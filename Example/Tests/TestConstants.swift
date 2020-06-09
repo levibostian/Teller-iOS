@@ -1,5 +1,5 @@
 import Foundation
 
 class TestConstants {
-    static let AWAIT_DURATION = 1.0
+    static let AWAIT_DURATION = 3.0
 }
