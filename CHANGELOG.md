@@ -1,3 +1,14 @@
+## [0.8.0] - 06-12-20
+
+Paging and sharing network calls between all repository instances. 
+
+### Added 
+- add isFirstFetch to cachestate
+- add mock objects for paging feature
+- improve paging api. Add function to easily go to the next page of the cache. Filter none state when observing cache. Create cache state object just for paging.
+- create repository for paging
+- share network calls between all repositories
+
 ## [0.7.1] - 01-04-2020
 
 Forgot to add `refreshIfNoCache` functionality to `RepositoryMock` from 0.7.0 release. 
