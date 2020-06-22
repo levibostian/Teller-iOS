@@ -371,6 +371,10 @@ repository.goToNextPage()
 // ...and the next page of cache will be fetched!
 ```
 
+Here are some references for you if you need more help with paging.
+* [Determine when `UITableView` is scrolled to the bottom of the list](https://github.com/levibostian/folio) to know when to load the next page of the cache. 
+* [How to show a loading view at the bottom of your `UITableView`]() to notify the users of your app that you are loading more data. Use `cache.areMorePages` like shown in this doc to determine when to hide/show this loading view. 
+
 ## Keep app data up-to-date
 
 When users open up your app, they want to see fresh data. Not data that is out dated. To do this, it's best to perform background refreshes while your app is in the background. 
