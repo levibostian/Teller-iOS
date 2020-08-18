@@ -13,6 +13,10 @@ Building an iOS app that fetches data from a network? With Teller, you can add a
 
 *Android developer?* Check out the [Android version of Teller](https://github.com/levibostian/Teller-Android/). 
 
+### Announcement - version 1.0
+
+Version 1.0 has been announced and is in development. Check out [the issue](https://github.com/levibostian/Teller-iOS/issues/99) to learn more. The pre-1.0 code will be in maintenance mode until v1.0 is complete. Pre-1.0 is used by myself in production apps today, but you have been warned that there will more then likely be large breaking changes when 1.0 comes out. 
+
 ## What is Teller?
 
 Caching the data that your app fetches from a network call can make your app much more enjoyable to use. 
